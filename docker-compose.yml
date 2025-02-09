@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:17.2
+    container_name: postgres-jobs
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: jobs
+      POSTGRES_PASSWORD: pwd
+      POSTGRES_DB: jobs
+    volumes:
+      - C:\docker-data\postgres\jobs:/var/lib/postgresql/data
