@@ -1,11 +1,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/kelseyhightower/envconfig"
 	"log/slog"
 	"os"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type config struct {
@@ -17,13 +17,13 @@ type config struct {
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
 
-	if err := run(context.Background()); err != nil {
+	if err := run(); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context) error {
+func run() error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
