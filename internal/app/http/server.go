@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"log/slog"
 	"net"
 	"net/http"
 	"time"
@@ -25,10 +27,10 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler() http.Handler {
+func APIRootHandler(s *channel.Service, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
-	h := api.NewHandler()
+	h := api.NewHandler(s, log)
 	r.Mount("/api", h.Routes())
 
 	return r

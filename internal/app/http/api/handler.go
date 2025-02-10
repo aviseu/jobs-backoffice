@@ -1,15 +1,23 @@
 package api
 
 import (
+	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
-type Handler struct{}
+type Handler struct {
+	s   *channel.Service
+	log *slog.Logger
+}
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(s *channel.Service, log *slog.Logger) *Handler {
+	return &Handler{
+		s:   s,
+		log: log,
+	}
 }
 
 func (h *Handler) Routes() http.Handler {

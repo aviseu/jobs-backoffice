@@ -1,7 +1,9 @@
 package api_test
 
 import (
+	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/aviseu/jobs/internal/app/http"
+	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"
 	"net/http/httptest"
@@ -18,7 +20,10 @@ type HandlerSuite struct {
 
 func (suite *HandlerSuite) Test_Create_Success() {
 	// Prepare
-	h := http.APIRootHandler()
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", nil)
 	suite.NoError(err)
@@ -27,6 +32,9 @@ func (suite *HandlerSuite) Test_Create_Success() {
 	// Execute
 	h.ServeHTTP(rr, req)
 
-	// Assert
+	// Assert response
 	suite.Equal("CreateChannel", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
 }

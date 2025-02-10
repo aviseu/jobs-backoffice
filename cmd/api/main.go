@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -58,8 +60,12 @@ func run(ctx context.Context) error {
 		}
 	}(db)
 
+	// services
+	r := postgres.NewChannelRepository(db)
+	s := channel.NewService(r)
+
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler())
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(s, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		serverErrors <- server.ListenAndServe()
