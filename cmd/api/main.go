@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/aviseu/jobs/internal/app/http"
 	"github.com/aviseu/jobs/internal/app/storage"
+	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"

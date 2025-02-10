@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"log/slog"
 	"net/http"
 
+	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/go-chi/chi/v5"
 )
 
