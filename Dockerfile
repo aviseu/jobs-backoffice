@@ -22,3 +22,14 @@ COPY --from=builder /app/dist/app /app
 EXPOSE 8080 9090 4000
 
 ENTRYPOINT ["/app"]
+
+
+FROM gcr.io/distroless/static:nonroot AS job
+
+ARG APP
+
+WORKDIR /
+
+COPY --from=builder /app/dist/app /app
+
+ENTRYPOINT ["/app"]
