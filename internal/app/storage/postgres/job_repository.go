@@ -16,7 +16,7 @@ func NewJobRepository(db *sqlx.DB) *JobRepository {
 }
 
 func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
-	j := FromDomainJob(job)
+	j := fromDomainJob(job)
 	_, err := r.db.NamedExecContext(
 		ctx,
 		`INSERT INTO jobs (id, url, title, description, source, location, remote, posted_at, created_at, updated_at)

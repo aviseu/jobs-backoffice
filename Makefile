@@ -18,3 +18,6 @@ migrate-create:
 
 migrate-up:
 	sh -c "migrate -path config/migrations -database postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable up"
+
+migrate-down:
+	sh -c "migrate -path config/migrations -database postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable down"

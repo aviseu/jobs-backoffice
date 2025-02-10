@@ -19,7 +19,7 @@ type Job struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func FromDomainJob(job *job.Job) *Job {
+func fromDomainJob(job *job.Job) *Job {
 	return &Job{
 		ID:          job.ID(),
 		URL:         job.URL(),
