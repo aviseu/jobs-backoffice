@@ -7,12 +7,12 @@ import (
 )
 
 type ChannelRepository struct {
-	channels map[uuid.UUID]*channel.Channel
+	Channels map[uuid.UUID]*channel.Channel
 	err      error
 }
 
 func NewChannelRepository() *ChannelRepository {
-	return &ChannelRepository{channels: make(map[uuid.UUID]*channel.Channel)}
+	return &ChannelRepository{Channels: make(map[uuid.UUID]*channel.Channel)}
 }
 
 func (r *ChannelRepository) FailWith(err error) {
@@ -24,6 +24,6 @@ func (r *ChannelRepository) Save(_ context.Context, ch *channel.Channel) error {
 		return r.err
 	}
 
-	r.channels[ch.ID()] = ch
+	r.Channels[ch.ID()] = ch
 	return nil
 }
