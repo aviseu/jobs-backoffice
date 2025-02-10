@@ -1,5 +1,5 @@
 create table jobs (
-    uuid serial primary key,
+    id uuid primary key,
     url text not null,
     title text not null,
     description jsonb not null,
