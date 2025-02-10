@@ -2,13 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/aviseu/jobs/internal/app/storage"
+	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"os"
 
 	"github.com/kelseyhightower/envconfig"
+	_ "github.com/lib/pq"
 )
 
 type config struct {
+	DB  storage.Config
 	Log struct {
 		Level slog.Level `default:"info"`
 	}
@@ -35,6 +39,19 @@ func run() error {
 	slog.Info("configuring logging...")
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.Log.Level}))
 	slog.SetDefault(log)
+
+	// setup database
+	slog.Info("setting up database...")
+	db, err := storage.SetupDatabase(cfg.DB)
+	if err != nil {
+		return fmt.Errorf("failed to setup database: %w", err)
+	}
+	defer func(db *sqlx.DB) {
+		err := db.Close()
+		if err != nil {
+			slog.Error(fmt.Errorf("failed to close database connection: %w", err).Error())
+		}
+	}(db)
 
 	return nil
 }
