@@ -12,3 +12,9 @@ stop:
 
 build-import:
 	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs/cmd/import
+
+migrate-create:
+	sh -c "migrate create -ext sql -dir config/migrations -seq $(name)"
+
+migrate-up:
+	sh -c "migrate -path config/migrations -database postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable up"
