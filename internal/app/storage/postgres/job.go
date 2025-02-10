@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/aviseu/jobs/internal/app/domain"
+	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/google/uuid"
 	"time"
 )
@@ -19,7 +19,7 @@ type Job struct {
 	UpdatedAt   time.Time `db:"updated_at"`
 }
 
-func FromDomainJob(job *domain.Job) *Job {
+func FromDomainJob(job *job.Job) *Job {
 	return &Job{
 		ID:          job.ID(),
 		URL:         job.URL(),

@@ -2,7 +2,7 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs/internal/app/domain"
+	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/google/uuid"
@@ -23,7 +23,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	// Prepare
 	id := uuid.New()
 	pAt := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
-	j := domain.NewJob(
+	j := job.New(
 		id,
 		"https://example.com/job/id",
 		"Software Engineer",
@@ -42,19 +42,19 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 
 	// Assert state change
-	var job postgres.Job
-	err = suite.DB.Get(&job, "SELECT * FROM jobs WHERE id = $1", id)
+	var dbJob postgres.Job
+	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
-	suite.Equal(id, job.ID)
-	suite.Equal("https://example.com/job/id", job.URL)
-	suite.Equal("Software Engineer", job.Title)
-	suite.Equal("Job Description", job.Description)
-	suite.Equal("Indeed", job.Source)
-	suite.Equal("Amsterdam", job.Location)
-	suite.True(job.Remote)
-	suite.True(job.PostedAt.Equal(pAt))
-	suite.True(job.CreatedAt.After(time.Now().Add(-2 * time.Second)))
-	suite.True(job.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(id, dbJob.ID)
+	suite.Equal("https://example.com/job/id", dbJob.URL)
+	suite.Equal("Software Engineer", dbJob.Title)
+	suite.Equal("Job Description", dbJob.Description)
+	suite.Equal("Indeed", dbJob.Source)
+	suite.Equal("Amsterdam", dbJob.Location)
+	suite.True(dbJob.Remote)
+	suite.True(dbJob.PostedAt.Equal(pAt))
+	suite.True(dbJob.CreatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.True(dbJob.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 }
 
 func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
@@ -76,7 +76,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 
 	pAt := time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)
-	j := domain.NewJob(
+	j := job.New(
 		id,
 		"https://example.com/job/id/new",
 		"Software Engineer new",
@@ -101,25 +101,25 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(1, count)
 
-	var job postgres.Job
-	err = suite.DB.Get(&job, "SELECT * FROM jobs WHERE id = $1", id)
+	var dbJob postgres.Job
+	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
-	suite.Equal(id, job.ID)
-	suite.Equal("https://example.com/job/id/new", job.URL)
-	suite.Equal("Software Engineer new", job.Title)
-	suite.Equal("Job Description new", job.Description)
-	suite.Equal("Indeed new", job.Source)
-	suite.Equal("Amsterdam new", job.Location)
-	suite.False(job.Remote)
-	suite.True(job.PostedAt.Equal(pAt))
-	suite.True(job.CreatedAt.Equal(cAt))
-	suite.True(job.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(id, dbJob.ID)
+	suite.Equal("https://example.com/job/id/new", dbJob.URL)
+	suite.Equal("Software Engineer new", dbJob.Title)
+	suite.Equal("Job Description new", dbJob.Description)
+	suite.Equal("Indeed new", dbJob.Source)
+	suite.Equal("Amsterdam new", dbJob.Location)
+	suite.False(dbJob.Remote)
+	suite.True(dbJob.PostedAt.Equal(pAt))
+	suite.True(dbJob.CreatedAt.Equal(cAt))
+	suite.True(dbJob.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 }
 
 func (suite *JobRepositorySuite) Test_Save_Error() {
 	// Prepare
 	id := uuid.New()
-	j := domain.NewJob(
+	j := job.New(
 		id,
 		"https://example.com/job/id",
 		"Software Engineer",

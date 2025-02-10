@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs/internal/app/domain"
+	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,7 +15,7 @@ func NewJobRepository(db *sqlx.DB) *JobRepository {
 	return &JobRepository{db: db}
 }
 
-func (r *JobRepository) Save(ctx context.Context, job *domain.Job) error {
+func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
 	j := FromDomainJob(job)
 	_, err := r.db.NamedExecContext(
 		ctx,

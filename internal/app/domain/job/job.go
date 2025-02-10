@@ -1,4 +1,4 @@
-package domain
+package job
 
 import (
 	"github.com/google/uuid"
@@ -18,16 +18,16 @@ type Job struct {
 	updatedAt   time.Time
 }
 
-type JobOptional func(*Job)
+type Optional func(*Job)
 
-func WithTimestamps(c, u time.Time) JobOptional {
+func WithTimestamps(c, u time.Time) Optional {
 	return func(j *Job) {
 		j.createdAt = c
 		j.updatedAt = u
 	}
 }
 
-func NewJob(id uuid.UUID, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
+func New(id uuid.UUID, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
 	j := &Job{
 		id:          id,
 		url:         url,
