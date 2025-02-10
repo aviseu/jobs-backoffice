@@ -18,8 +18,17 @@ type Job struct {
 	updatedAt   time.Time
 }
 
-func NewJob(id uuid.UUID, url, title, description, source, location string, remote bool, postedAt, createdAt, updatedAt time.Time) *Job {
-	return &Job{
+type JobOptional func(*Job)
+
+func WithTimestamps(c, u time.Time) JobOptional {
+	return func(j *Job) {
+		j.createdAt = c
+		j.updatedAt = u
+	}
+}
+
+func NewJob(id uuid.UUID, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
+	j := &Job{
 		id:          id,
 		url:         url,
 		title:       title,
@@ -28,9 +37,15 @@ func NewJob(id uuid.UUID, url, title, description, source, location string, remo
 		location:    location,
 		remote:      remote,
 		postedAt:    postedAt,
-		createdAt:   createdAt,
-		updatedAt:   updatedAt,
+		createdAt:   time.Now(),
+		updatedAt:   time.Now(),
 	}
+
+	for _, opt := range opts {
+		opt(j)
+	}
+
+	return j
 }
 
 func (j *Job) ID() uuid.UUID {
