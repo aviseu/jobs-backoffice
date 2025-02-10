@@ -55,7 +55,7 @@ jobs:
           tags: |
             type=sha,format=long,priority=40
 
-      - name: Build and push (${{ matrix.app }})
+      - name: Build and push (import)
         uses: docker/build-push-action@v6
         with:
           context: .

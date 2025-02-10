@@ -9,3 +9,6 @@ start:
 
 stop:
 	docker-compose down
+
+build-import:
+	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs/cmd/import
