@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/jmoiron/sqlx"
 )
@@ -28,7 +29,6 @@ func (r *ChannelRepository) Save(ctx context.Context, ch *channel.Channel) error
 					updated_at = EXCLUDED.updated_at`,
 		c,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to save channel %s: %w", ch.ID(), err)
 	}

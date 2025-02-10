@@ -1,8 +1,9 @@
 package channel
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Status int
@@ -27,12 +28,12 @@ func (i Integration) String() string {
 }
 
 type Channel struct {
-	id          uuid.UUID
+	createdAt   time.Time
+	updatedAt   time.Time
 	name        string
 	integration Integration
 	status      Status
-	createdAt   time.Time
-	updatedAt   time.Time
+	id          uuid.UUID
 }
 
 type Optional func(*Channel)

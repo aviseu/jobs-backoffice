@@ -2,10 +2,12 @@ package http
 
 import (
 	"context"
-	"github.com/go-chi/chi/v5"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/aviseu/jobs/internal/app/http/api"
+	"github.com/go-chi/chi/v5"
 )
 
 type Config struct {
@@ -23,12 +25,11 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIServer() http.Handler {
+func APIRootHandler() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, world!"))
-	})
+	h := api.NewHandler()
+	r.Mount("/api", h.Routes())
 
 	return r
 }

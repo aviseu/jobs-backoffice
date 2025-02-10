@@ -1,18 +1,19 @@
 package postgres
 
 import (
+	"time"
+
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/google/uuid"
-	"time"
 )
 
 type Channel struct {
-	ID          uuid.UUID `db:"id"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
 	Name        string    `db:"name"`
 	Integration int       `db:"integration"`
 	Status      int       `db:"status"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          uuid.UUID `db:"id"`
 }
 
 func fromDomainChannel(ch *channel.Channel) *Channel {

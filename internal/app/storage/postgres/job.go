@@ -1,22 +1,23 @@
 package postgres
 
 import (
+	"time"
+
 	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/google/uuid"
-	"time"
 )
 
 type Job struct {
-	ID          uuid.UUID `db:"id"`
+	PostedAt    time.Time `db:"posted_at"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
 	URL         string    `db:"url"`
 	Title       string    `db:"title"`
 	Description string    `db:"description"`
 	Source      string    `db:"source"`
 	Location    string    `db:"location"`
+	ID          uuid.UUID `db:"id"`
 	Remote      bool      `db:"remote"`
-	PostedAt    time.Time `db:"posted_at"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
 }
 
 func fromDomainJob(job *job.Job) *Job {

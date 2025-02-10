@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/aviseu/jobs/internal/app/storage"
-	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"os"
 
+	"github.com/aviseu/jobs/internal/app/storage"
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 )

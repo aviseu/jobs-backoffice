@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs/internal/app/http"
-	"github.com/aviseu/jobs/internal/app/storage"
-	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/aviseu/jobs/internal/app/http"
+	"github.com/aviseu/jobs/internal/app/storage"
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 )
@@ -59,7 +59,7 @@ func run(ctx context.Context) error {
 	}(db)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIServer())
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler())
 	serverErrors := make(chan error, 1)
 	go func() {
 		serverErrors <- server.ListenAndServe()

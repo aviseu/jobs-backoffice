@@ -1,21 +1,22 @@
 package job
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Job struct {
-	id          uuid.UUID
+	postedAt    time.Time
+	createdAt   time.Time
+	updatedAt   time.Time
 	url         string
 	title       string
 	description string
 	source      string
 	location    string
+	id          uuid.UUID
 	remote      bool
-	postedAt    time.Time
-	createdAt   time.Time
-	updatedAt   time.Time
 }
 
 type Optional func(*Job)

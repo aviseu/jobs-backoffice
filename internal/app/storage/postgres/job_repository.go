@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+
 	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/jmoiron/sqlx"
 )
@@ -32,7 +33,6 @@ func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
 					updated_at = EXCLUDED.updated_at`,
 		j,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to save job %s: %w", job.ID(), err)
 	}
