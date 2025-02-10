@@ -2,7 +2,7 @@ create table jobs (
     id uuid primary key,
     url text not null,
     title text not null,
-    description jsonb not null,
+    description text not null,
     source text not null,
     location text not null,
     remote bool not null default false,
