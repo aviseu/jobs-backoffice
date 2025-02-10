@@ -2,6 +2,7 @@ package channel
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -20,13 +21,19 @@ func NewService(r Repository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, error) {
+	var errs error
+
 	i, ok := ParseIntegration(cmd.Integration)
 	if !ok {
-		return nil, fmt.Errorf("failed to find integration %s: %w", cmd.Integration, ErrInvalidIntegration)
+		errs = errors.Join(errs, fmt.Errorf("failed to find integration %s: %w", cmd.Integration, ErrInvalidIntegration))
 	}
 
 	if cmd.Name == "" {
-		return nil, ErrNameIsRequired
+		errs = errors.Join(errs, ErrNameIsRequired)
+	}
+
+	if errs != nil {
+		return nil, errs
 	}
 
 	ch := New(

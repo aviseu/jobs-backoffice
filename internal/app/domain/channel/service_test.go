@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/errs"
 	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -42,12 +43,12 @@ func (suite *ServiceSuite) Test_Create_Success() {
 	suite.Len(r.Channels, 1)
 }
 
-func (suite *ServiceSuite) Test_Create_InvalidIntegration_Fail() {
+func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
 	cmd := channel.NewCreateCommand(
-		"Channel Name",
+		"",
 		"bad_integration",
 	)
 
@@ -56,25 +57,10 @@ func (suite *ServiceSuite) Test_Create_InvalidIntegration_Fail() {
 
 	// Assert
 	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrNameIsRequired)
 	suite.ErrorIs(err, channel.ErrInvalidIntegration)
 	suite.ErrorContains(err, "bad_integration")
-}
-
-func (suite *ServiceSuite) Test_Create_NameIsRequired_Fail() {
-	// Prepare
-	r := testutils.NewChannelRepository()
-	s := channel.NewService(r)
-	cmd := channel.NewCreateCommand(
-		"",
-		"arbeitnow",
-	)
-
-	// Execute
-	_, err := s.Create(context.Background(), cmd)
-
-	// Assert
-	suite.Error(err)
-	suite.ErrorIs(err, channel.ErrNameIsRequired)
+	suite.True(errs.IsValidationError(err))
 }
 
 func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
@@ -93,4 +79,5 @@ func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 	// Assert
 	suite.Error(err)
 	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
 }

@@ -1,8 +1,12 @@
 package channel
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/aviseu/jobs/internal/app/errs"
+)
 
 var (
-	ErrInvalidIntegration = errors.New("invalid integration")
-	ErrNameIsRequired     = errors.New("name is required")
+	ErrInvalidIntegration = errs.NewValidationError(errors.New("invalid integration"))
+	ErrNameIsRequired     = errs.NewValidationError(errors.New("name is required"))
 )
