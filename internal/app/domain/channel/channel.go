@@ -23,7 +23,7 @@ const (
 	IntegrationArbeitnow Integration = iota
 )
 
-var integrations map[Integration]string = map[Integration]string{
+var integrations = map[Integration]string{
 	IntegrationArbeitnow: "arbeitnow",
 }
 
