@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/aviseu/jobs/internal/app/http"
 	"github.com/aviseu/jobs/internal/app/storage"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
@@ -13,6 +17,7 @@ import (
 
 type config struct {
 	DB  storage.Config
+	API http.Config
 	Log struct {
 		Level slog.Level `default:"info"`
 	}
@@ -21,13 +26,13 @@ type config struct {
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
 
-	if err := run(); err != nil {
+	if err := run(context.Background()); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(ctx context.Context) error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
@@ -52,6 +57,32 @@ func run() error {
 			slog.Error(fmt.Errorf("failed to close database connection: %w", err).Error())
 		}
 	}(db)
+
+	// start server
+	server := http.SetupServer(ctx, cfg.API, http.APIServer())
+	serverErrors := make(chan error, 1)
+	go func() {
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	// shutdown
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+
+	case <-done:
+		slog.Info("shutting down server...")
+
+		ctx, cancel := context.WithTimeout(ctx, cfg.API.ShutdownTimeout)
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
+			return fmt.Errorf("failed to shutdown server: %w", err)
+		}
+	}
 
 	return nil
 }
