@@ -9,7 +9,7 @@ import (
 type Status int
 
 const (
-	StatusInactive = iota
+	StatusInactive Status = iota
 	StatusActive
 )
 
@@ -20,11 +20,25 @@ func (s Status) String() string {
 type Integration int
 
 const (
-	IntegrationArbeitnow = iota
+	IntegrationArbeitnow Integration = iota
 )
 
+var integrations map[Integration]string = map[Integration]string{
+	IntegrationArbeitnow: "arbeitnow",
+}
+
 func (i Integration) String() string {
-	return [...]string{"arbeitnow"}[i]
+	return integrations[i]
+}
+
+func ParseIntegration(s string) (Integration, bool) {
+	for _, i := range integrations {
+		if i == s {
+			return IntegrationArbeitnow, true
+		}
+	}
+
+	return -1, false
 }
 
 type Channel struct {

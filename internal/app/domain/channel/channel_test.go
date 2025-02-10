@@ -60,3 +60,20 @@ func (suite *ChannelSuite) Test_WithTimestamps_Success() {
 	suite.True(ch.CreatedAt().Equal(cAt))
 	suite.True(ch.UpdatedAt().Equal(uAt))
 }
+
+func (suite *ChannelSuite) Test_ParseIntegration_Success() {
+	// Execute
+	i, ok := channel.ParseIntegration("arbeitnow")
+
+	// Assert
+	suite.True(ok)
+	suite.Equal(channel.IntegrationArbeitnow, i)
+}
+
+func (suite *ChannelSuite) Test_ParseIntegration_Error() {
+	// Execute
+	_, ok := channel.ParseIntegration("invalid")
+
+	// Assert
+	suite.False(ok)
+}
