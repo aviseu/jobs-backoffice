@@ -11,7 +11,6 @@ env:
   WORKLOAD_IDENTITY_PROVIDER: projects/911924781524/locations/global/workloadIdentityPools/github-actions/providers/github
   SERVICE_ACCOUNT: github@aviseu-jobs.iam.gserviceaccount.com
   REGION: us-central1
-  ZONE: us-central1-c
   GCLOUD_REPOSITORY: jobs
 
 jobs:
