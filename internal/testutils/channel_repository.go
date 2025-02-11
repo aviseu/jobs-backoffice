@@ -15,6 +15,14 @@ func NewChannelRepository() *ChannelRepository {
 	return &ChannelRepository{Channels: make(map[uuid.UUID]*channel.Channel)}
 }
 
+func (r *ChannelRepository) First() *channel.Channel {
+	for _, ch := range r.Channels {
+		return ch
+	}
+
+	return nil
+}
+
 func (r *ChannelRepository) Add(ch *channel.Channel) {
 	r.Channels[ch.ID()] = ch
 }

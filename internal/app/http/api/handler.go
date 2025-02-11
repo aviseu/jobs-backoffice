@@ -31,6 +31,7 @@ func (h *Handler) Routes() http.Handler {
 	r.Get("/channels", h.ListChannels)
 	r.Get("/channels/{id}", h.FindChannel)
 	r.Post("/channels", h.CreateChannel)
+	r.Patch("/channels/{id}", h.UpdateChannel)
 
 	return r
 }
@@ -101,6 +102,46 @@ func (h *Handler) FindChannel(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	resp := NewChannelResponse(p)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
+		return
+	}
+}
+
+func (h *Handler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateChannelRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	cmd := channel.NewUpdateCommand(id, req.Name)
+	ch, err := h.s.Update(r.Context(), cmd)
+	if err != nil {
+		if errors.Is(err, channel.ErrChannelNotFound) {
+			h.handleFail(w, err, http.StatusNotFound)
+			return
+		}
+
+		if errs.IsValidationError(err) {
+			h.handleFail(w, err, http.StatusBadRequest)
+			return
+		}
+
+		h.handleError(w, fmt.Errorf("failed to update post %s: %w", idStr, err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := NewChannelResponse(ch)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
 		return

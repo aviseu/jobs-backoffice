@@ -11,3 +11,13 @@ func NewCreateChannelRequest(name, integration string) *CreateChannelRequest {
 		Integration: integration,
 	}
 }
+
+type UpdateChannelRequest struct {
+	Name string `json:"name"`
+}
+
+func NewUpdateChannelRequest(name string) *UpdateChannelRequest {
+	return &UpdateChannelRequest{
+		Name: name,
+	}
+}
