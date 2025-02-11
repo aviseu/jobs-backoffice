@@ -59,3 +59,20 @@ func (s *Service) All(ctx context.Context) ([]*Channel, error) {
 func (s *Service) Find(ctx context.Context, id uuid.UUID) (*Channel, error) {
 	return s.r.Find(ctx, id)
 }
+
+func (s *Service) Update(ctx context.Context, cmd *UpdateCommand) (*Channel, error) {
+	ch, err := s.r.Find(ctx, cmd.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find channel: %w", err)
+	}
+
+	if err := ch.Update(cmd.Name); err != nil {
+		return nil, fmt.Errorf("failed to update channel: %w", err)
+	}
+
+	if err := s.r.Save(ctx, ch); err != nil {
+		return nil, fmt.Errorf("failed to update channel: %w", err)
+	}
+
+	return ch, nil
+}

@@ -99,3 +99,14 @@ func (ch *Channel) CreatedAt() time.Time {
 func (ch *Channel) UpdatedAt() time.Time {
 	return ch.updatedAt
 }
+
+func (ch *Channel) Update(name string) error {
+	if name == "" {
+		return ErrNameIsRequired
+	}
+
+	ch.name = name
+	ch.updatedAt = time.Now()
+
+	return nil
+}

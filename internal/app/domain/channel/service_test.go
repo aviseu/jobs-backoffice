@@ -148,3 +148,73 @@ func (suite *ServiceSuite) Test_Find_Error() {
 	suite.ErrorContains(err, "boom!")
 	suite.False(errs.IsValidationError(err))
 }
+
+func (suite *ServiceSuite) Test_Update_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+	cmd := channel.NewUpdateCommand(ch.ID(), "channel 2")
+
+	// Execute
+	ch2, err := s.Update(context.Background(), cmd)
+
+	// Assert
+	suite.NoError(err)
+	suite.Equal("channel 2", ch2.Name())
+	suite.Equal(ch.Integration(), ch2.Integration())
+	suite.Equal(ch.Status(), ch2.Status())
+	suite.True(ch.CreatedAt().Equal(ch2.CreatedAt()))
+	suite.False(ch.UpdatedAt().Before(ch2.UpdatedAt()))
+}
+
+func (suite *ServiceSuite) Test_Update_NotFound() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	cmd := channel.NewUpdateCommand(uuid.New(), "channel 2")
+
+	// Execute
+	_, err := s.Update(context.Background(), cmd)
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrChannelNotFound)
+	suite.True(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Update_Error() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+	cmd := channel.NewUpdateCommand(ch.ID(), "channel 2")
+
+	// Execute
+	_, err := s.Update(context.Background(), cmd)
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Update_Validation_Fail() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+	cmd := channel.NewUpdateCommand(ch.ID(), "")
+
+	// Execute
+	_, err := s.Update(context.Background(), cmd)
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrNameIsRequired)
+	suite.True(errs.IsValidationError(err))
+}
