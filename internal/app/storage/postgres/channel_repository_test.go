@@ -42,8 +42,8 @@ func (suite *ChannelRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
 	suite.Equal("Channel Name", dbChannel.Name)
-	suite.Equal(channel.IntegrationArbeitnow, dbChannel.Integration)
-	suite.Equal(channel.StatusActive, dbChannel.Status)
+	suite.Equal(channel.IntegrationArbeitnow, channel.Integration(dbChannel.Integration))
+	suite.Equal(channel.StatusActive, channel.Status(dbChannel.Status))
 	suite.True(dbChannel.CreatedAt.After(time.Now().Add(-2 * time.Second)))
 	suite.True(dbChannel.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 }
@@ -89,8 +89,8 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
 	suite.Equal("Channel Name new", dbChannel.Name)
-	suite.Equal(channel.IntegrationArbeitnow, dbChannel.Integration)
-	suite.Equal(channel.StatusActive, dbChannel.Status)
+	suite.Equal(channel.IntegrationArbeitnow, channel.Integration(dbChannel.Integration))
+	suite.Equal(channel.StatusActive, channel.Status(dbChannel.Status))
 }
 
 func (suite *ChannelRepositorySuite) Test_Save_Error() {
