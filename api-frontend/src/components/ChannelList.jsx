@@ -12,7 +12,7 @@ const ChannelList = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get('http://localhost:8080/api/channels');
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/channels`);
                 const data = response.data.channels;
                 if (Array.isArray(data)) {
                     setChannels(data);

@@ -14,7 +14,7 @@ const ChannelDetails = () => {
 
     const fetchChannel = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/channels/${id}`);
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/channels/${id}`);
             if (response.data.name) {
                 setName(response.data.name);
             } else {
@@ -45,7 +45,7 @@ const ChannelDetails = () => {
         setUpdating(true);
         setError(null);
         try {
-            const response = await axios.patch(`http://localhost:8080/api/channels/${id}`, {name: name});
+            const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/channels/${id}`, {name: name});
             setTimeout(() => navigate("/" + id), 1);
         } catch (err) {
             console.log(err)

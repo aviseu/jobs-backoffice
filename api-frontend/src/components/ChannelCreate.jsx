@@ -16,7 +16,7 @@ const ChannelCreate = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get("http://localhost:8080/api/integrations");
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/integrations`);
                 const data = response.data.integrations;
                 if (Array.isArray(data)) {
                     setOptions(data);
@@ -50,7 +50,7 @@ const ChannelCreate = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.post('http://localhost:8080/api/channels', {name, integration})
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/channels`, {name, integration})
             setTimeout(() => navigate("/" + response.data.id), 1);
         } catch (err) {
             console.log(err)

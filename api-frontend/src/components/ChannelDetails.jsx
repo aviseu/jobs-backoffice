@@ -13,7 +13,7 @@ const ChannelDetails = () => {
 
     const fetchChannel = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/channels/${id}`);
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/channels/${id}`);
             setChannel(response.data);
         } catch (err) {
             console.log(err)
@@ -38,7 +38,7 @@ const ChannelDetails = () => {
         setUpdating(true);
         setError(null);
         try {
-            const response = await axios.put(`http://localhost:8080/api/channels/${id}/${action}`);
+            const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/channels/${id}/${action}`);
             await fetchChannel();
         } catch (err) {
             console.log(err)
