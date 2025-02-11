@@ -1,9 +1,11 @@
 package testutils
 
 import (
+	"cmp"
 	"context"
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/google/uuid"
+	"slices"
 )
 
 type ChannelRepository struct {
@@ -40,6 +42,10 @@ func (r *ChannelRepository) All(_ context.Context) ([]*channel.Channel, error) {
 	for _, ch := range r.Channels {
 		channels = append(channels, ch)
 	}
+
+	slices.SortFunc(channels, func(a, b *channel.Channel) int {
+		return cmp.Compare(a.Name(), b.Name())
+	})
 
 	return channels, nil
 }
