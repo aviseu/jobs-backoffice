@@ -27,7 +27,7 @@ func NewHandler(s *channel.Service, log *slog.Logger) *Handler {
 func (h *Handler) Routes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/channels", h.GetChannels)
+	r.Get("/channels", h.ListChannels)
 	r.Post("/channels", h.CreateChannel)
 
 	return r
@@ -61,7 +61,7 @@ func (h *Handler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetChannels(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request) {
 	channels, err := h.s.All(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
