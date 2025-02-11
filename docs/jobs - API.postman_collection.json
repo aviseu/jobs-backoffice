@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "f1ed34a6-72bb-4a8b-9746-d830d06b4ade",
+		"name": "jobs - API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7661048"
+	},
+	"item": [
+		{
+			"name": "channel - create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"arbeitnow\",\r\n    \"integration\": \"arbeitnow\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/channels",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"channels"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
