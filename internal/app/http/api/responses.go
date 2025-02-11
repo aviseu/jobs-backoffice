@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"time"
+
+	"github.com/aviseu/jobs/internal/app/domain/channel"
 )
 
 type ChannelResponse struct {
