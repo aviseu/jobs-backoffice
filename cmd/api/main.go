@@ -61,6 +61,7 @@ func run(ctx context.Context) error {
 	}(db)
 
 	// services
+	slog.Info("setting up services...")
 	r := postgres.NewChannelRepository(db)
 	s := channel.NewService(r)
 
@@ -68,6 +69,7 @@ func run(ctx context.Context) error {
 	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(s, log))
 	serverErrors := make(chan error, 1)
 	go func() {
+		slog.Info("starting server...")
 		serverErrors <- server.ListenAndServe()
 	}()
 
