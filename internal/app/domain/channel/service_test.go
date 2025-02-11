@@ -102,3 +102,49 @@ func (suite *ServiceSuite) Test_All_Success() {
 	suite.Equal(ch1, chs[0])
 	suite.Equal(ch2, chs[1])
 }
+
+func (suite *ServiceSuite) Test_Find_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+
+	// Execute
+	ch2, err := s.Find(context.Background(), ch.ID())
+
+	// Assert
+	suite.NoError(err)
+	suite.Equal(ch, ch2)
+}
+
+func (suite *ServiceSuite) Test_Find_NotFound() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+
+	// Execute
+	_, err := s.Find(context.Background(), uuid.New())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrChannelNotFound)
+	suite.True(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Find_Error() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+
+	// Execute
+	_, err := s.Find(context.Background(), ch.ID())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}

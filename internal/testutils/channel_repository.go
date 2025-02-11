@@ -36,6 +36,19 @@ func (r *ChannelRepository) All(_ context.Context) ([]*channel.Channel, error) {
 	return channels, nil
 }
 
+func (r *ChannelRepository) Find(_ context.Context, id uuid.UUID) (*channel.Channel, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+
+	ch, ok := r.Channels[id]
+	if !ok {
+		return nil, channel.ErrChannelNotFound
+	}
+
+	return ch, nil
+}
+
 func (r *ChannelRepository) Save(_ context.Context, ch *channel.Channel) error {
 	if r.err != nil {
 		return r.err
