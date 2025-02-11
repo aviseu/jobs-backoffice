@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 
@@ -28,6 +29,7 @@ func (h *Handler) Routes() http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/channels", h.ListChannels)
+	r.Get("/channels/{id}", h.FindChannel)
 	r.Post("/channels", h.CreateChannel)
 
 	return r
@@ -74,6 +76,34 @@ func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request) {
 	resp := NewListChannelsResponse(channels)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
+	}
+}
+
+func (h *Handler) FindChannel(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.s.Find(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, channel.ErrChannelNotFound) {
+			h.handleFail(w, err, http.StatusNotFound)
+			return
+		}
+
+		h.handleError(w, fmt.Errorf("failed to find post %s: %w", idStr, err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := NewChannelResponse(p)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
+		return
 	}
 }
 
