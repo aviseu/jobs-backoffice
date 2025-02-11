@@ -106,3 +106,12 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 
 	return nil
 }
+
+func (*Service) Integrations() []Integration {
+	ii := make([]Integration, 0, len(integrations))
+	for i, _ := range integrations {
+		ii = append(ii, i)
+	}
+
+	return ii
+}

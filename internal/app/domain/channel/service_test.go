@@ -310,3 +310,16 @@ func (suite *ServiceSuite) Test_Deactivate_Error() {
 	suite.ErrorContains(err, "boom!")
 	suite.False(errs.IsValidationError(err))
 }
+
+func (suite *ServiceSuite) Test_Integrations_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+
+	// Execute
+	integrations := s.Integrations()
+
+	// Assert
+	suite.Len(integrations, 1)
+	suite.Contains(integrations, channel.IntegrationArbeitnow)
+}

@@ -57,3 +57,19 @@ func NewListChannelsResponse(channels []*channel.Channel) *ListChannelsResponse 
 
 	return resp
 }
+
+type IntegrationsResponse struct {
+	Integrations []string `json:"integrations"`
+}
+
+func NewListIntegrationsResponse(integrations []channel.Integration) *IntegrationsResponse {
+	resp := &IntegrationsResponse{
+		Integrations: make([]string, 0, len(integrations)),
+	}
+
+	for _, i := range integrations {
+		resp.Integrations = append(resp.Integrations, i.String())
+	}
+
+	return resp
+}

@@ -655,7 +655,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_NotFound() {
 	// Execute
 	h.ServeHTTP(rr, req)
 
-	// Assert
+	// Assert response
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
 	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
@@ -678,7 +678,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_InvalidID() {
 	// Execute
 	h.ServeHTTP(rr, req)
 
-	// Assert
+	// Assert response
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
 	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
@@ -714,7 +714,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	// Execute
 	h.ServeHTTP(rr, req)
 
-	// Assert
+	// Assert response
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
@@ -729,4 +729,27 @@ func (suite *HandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "boom!")
+}
+
+func (suite *HandlerSuite) Test_ListIntegrations_Success() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, http.Config{}, log)
+
+	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert response
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"integrations":["arbeitnow"]}`+"\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
 }

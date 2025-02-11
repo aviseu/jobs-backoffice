@@ -35,6 +35,8 @@ func (h *Handler) Routes() http.Handler {
 	r.Put("/channels/{id}/activate", h.ActivateChannel)
 	r.Put("/channels/{id}/deactivate", h.DeactivateChannel)
 
+	r.Get("/integrations", h.ListIntegrations)
+
 	return r
 }
 
@@ -192,6 +194,16 @@ func (h *Handler) DeactivateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	resp := NewListIntegrationsResponse(h.s.Integrations())
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
+	}
 }
 
 func (h *Handler) handleFail(w http.ResponseWriter, err error, code int) {

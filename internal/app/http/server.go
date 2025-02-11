@@ -2,8 +2,6 @@ package http
 
 import (
 	"context"
-	"fmt"
-	"github.com/go-chi/cors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -12,6 +10,7 @@ import (
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/aviseu/jobs/internal/app/http/api"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 type Config struct {
@@ -34,8 +33,6 @@ func APIRootHandler(s *channel.Service, cfg Config, log *slog.Logger) http.Handl
 	r := chi.NewRouter()
 
 	if cfg.Cors {
-
-		fmt.Println("in!")
 		r.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://*", "http://*"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
