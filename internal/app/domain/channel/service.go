@@ -76,3 +76,33 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateCommand) (*Channel, err
 
 	return ch, nil
 }
+
+func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
+	ch, err := s.r.Find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to find channel: %w", err)
+	}
+
+	ch.Activate()
+
+	if err := s.r.Save(ctx, ch); err != nil {
+		return fmt.Errorf("failed to activate channel: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
+	ch, err := s.r.Find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to find channel: %w", err)
+	}
+
+	ch.Deactivate()
+
+	if err := s.r.Save(ctx, ch); err != nil {
+		return fmt.Errorf("failed to activate channel: %w", err)
+	}
+
+	return nil
+}

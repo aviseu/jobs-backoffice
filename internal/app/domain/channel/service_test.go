@@ -218,3 +218,95 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	suite.ErrorIs(err, channel.ErrNameIsRequired)
 	suite.True(errs.IsValidationError(err))
 }
+
+func (suite *ServiceSuite) Test_Activate_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusInactive)
+	r.Add(ch)
+
+	// Execute
+	err := s.Activate(context.Background(), ch.ID())
+
+	// Assert
+	suite.NoError(err)
+	suite.Equal(channel.StatusActive, ch.Status())
+}
+
+func (suite *ServiceSuite) Test_Activate_NotFound() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+
+	// Execute
+	err := s.Activate(context.Background(), uuid.New())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrChannelNotFound)
+	suite.True(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Activate_Error() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusInactive)
+	r.Add(ch)
+
+	// Execute
+	err := s.Activate(context.Background(), ch.ID())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Deactivate_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+
+	// Execute
+	err := s.Deactivate(context.Background(), ch.ID())
+
+	// Assert
+	suite.NoError(err)
+	suite.Equal(channel.StatusInactive, ch.Status())
+}
+
+func (suite *ServiceSuite) Test_Deactivate_NotFound() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+
+	// Execute
+	err := s.Deactivate(context.Background(), uuid.New())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorIs(err, channel.ErrChannelNotFound)
+	suite.True(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_Deactivate_Error() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch)
+
+	// Execute
+	err := s.Deactivate(context.Background(), ch.ID())
+
+	// Assert
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}

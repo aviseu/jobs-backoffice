@@ -110,3 +110,13 @@ func (ch *Channel) Update(name string) error {
 
 	return nil
 }
+
+func (ch *Channel) Activate() {
+	ch.status = StatusActive
+	ch.updatedAt = time.Now()
+}
+
+func (ch *Channel) Deactivate() {
+	ch.status = StatusInactive
+	ch.updatedAt = time.Now()
+}
