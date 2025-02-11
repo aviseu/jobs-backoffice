@@ -4,6 +4,7 @@
     <working_directory value="$PROJECT_DIR$" />
     <envs>
       <env name="DB_DSN" value="postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable" />
+      <env name="API_CORS" value="1" />
     </envs>
     <EXTENSION ID="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />

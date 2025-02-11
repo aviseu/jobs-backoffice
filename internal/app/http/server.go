@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"fmt"
+	"github.com/go-chi/cors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 type Config struct {
 	Addr            string        `default:":8080"`
 	ShutdownTimeout time.Duration `default:"5s"`
+	Cors            bool          `default:"false"`
 }
 
 func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
@@ -27,8 +30,21 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler(s *channel.Service, log *slog.Logger) http.Handler {
+func APIRootHandler(s *channel.Service, cfg Config, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
+
+	if cfg.Cors {
+
+		fmt.Println("in!")
+		r.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"https://*", "http://*"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: false,
+			MaxAge:           300,
+		}))
+	}
 
 	h := api.NewHandler(s, log)
 	r.Mount("/api", h.Routes())

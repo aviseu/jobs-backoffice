@@ -66,7 +66,7 @@ func run(ctx context.Context) error {
 	s := channel.NewService(r)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(s, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(s, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")
