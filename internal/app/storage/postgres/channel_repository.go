@@ -2,9 +2,12 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -49,4 +52,18 @@ func (r *ChannelRepository) All(ctx context.Context) ([]*channel.Channel, error)
 	}
 
 	return result, nil
+}
+
+func (r *ChannelRepository) Find(ctx context.Context, id uuid.UUID) (*channel.Channel, error) {
+	var c Channel
+	err := r.db.GetContext(ctx, &c, "SELECT * FROM channels WHERE id = $1", id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("failed to find channel %s: %w", id, channel.ErrChannelNotFound)
+		}
+
+		return nil, fmt.Errorf("failed to find channel %s: %w", id, err)
+	}
+
+	return toDomainChannel(&c), nil
 }

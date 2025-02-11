@@ -3,6 +3,7 @@ package postgres_test
 import (
 	"context"
 	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/errs"
 	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/google/uuid"
@@ -142,9 +143,11 @@ func (suite *ChannelRepositorySuite) Test_All_Success() {
 	// Execute
 	chs, err := r.All(context.Background())
 
-	// Assert
+	// Assert result
 	suite.NoError(err)
 	suite.Len(chs, 2)
+
+	// Assert state change
 
 	suite.Equal(id1, chs[0].ID())
 	suite.Equal("Channel Name 1", chs[0].Name())
@@ -172,4 +175,67 @@ func (suite *ChannelRepositorySuite) Test_All_Error() {
 	suite.Nil(chs)
 	suite.Error(err)
 	suite.ErrorContains(err, "sql: database is closed")
+}
+
+func (suite *ChannelRepositorySuite) Test_Find_Success() {
+	// Prepare
+	id := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		id,
+		"Channel Name",
+		channel.IntegrationArbeitnow,
+		channel.StatusActive,
+		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	)
+	suite.NoError(err)
+
+	r := postgres.NewChannelRepository(suite.DB)
+
+	// Execute
+	ch, err := r.Find(context.Background(), id)
+
+	// Assert result
+	suite.NoError(err)
+
+	// Assert state change
+
+	suite.Equal(id, ch.ID())
+	suite.Equal("Channel Name", ch.Name())
+	suite.Equal(channel.IntegrationArbeitnow, ch.Integration())
+	suite.Equal(channel.StatusActive, ch.Status())
+	suite.True(ch.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(ch.UpdatedAt().Equal(time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
+}
+
+func (suite *ChannelRepositorySuite) Test_Find_NotFound() {
+	// Prepare
+	id := uuid.New()
+	r := postgres.NewChannelRepository(suite.DB)
+
+	// Execute
+	ch, err := r.Find(context.Background(), id)
+
+	// Assert
+	suite.Nil(ch)
+	suite.Error(err)
+	suite.ErrorContains(err, id.String())
+	suite.ErrorIs(err, channel.ErrChannelNotFound)
+	suite.True(errs.IsValidationError(err))
+}
+
+func (suite *ChannelRepositorySuite) Test_Find_Error() {
+	// Prepare
+	id := uuid.New()
+	r := postgres.NewChannelRepository(suite.BadDB)
+
+	// Execute
+	ch, err := r.Find(context.Background(), id)
+
+	// Assert
+	suite.Nil(ch)
+	suite.Error(err)
+	suite.ErrorContains(err, id.String())
+	suite.ErrorContains(err, "sql: database is closed")
+	suite.False(errs.IsValidationError(err))
 }
