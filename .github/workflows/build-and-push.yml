@@ -114,5 +114,3 @@ jobs:
           context: api-frontend
           push: true
           tags: ${{ steps.subscriber_meta.outputs.tags }}
-          build-args: |
-            VITE_BACKEND_ADDRESS=https://example.com
