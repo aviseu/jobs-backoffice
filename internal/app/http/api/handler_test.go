@@ -5,6 +5,7 @@ import (
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/aviseu/jobs/internal/app/http"
 	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"
 	"net/http/httptest"
@@ -110,4 +111,32 @@ func (suite *HandlerSuite) Test_Create_RepositoryFail_Fail() {
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "failed to create channel: boom!")
+}
+
+func (suite *HandlerSuite) Test_GetChannels_Success() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	ch1 := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
+	r.Add(ch1)
+	ch2 := channel.New(uuid.New(), "channel 2", channel.IntegrationArbeitnow, channel.StatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
+	r.Add(ch2)
+
+	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"channels":[{"id":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"id":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
 }

@@ -27,6 +27,7 @@ func NewHandler(s *channel.Service, log *slog.Logger) *Handler {
 func (h *Handler) Routes() http.Handler {
 	r := chi.NewRouter()
 
+	r.Get("/channels", h.GetChannels)
 	r.Post("/channels", h.CreateChannel)
 
 	return r
@@ -55,6 +56,22 @@ func (h *Handler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	resp := NewChannelResponse(ch)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
+	}
+}
+
+func (h *Handler) GetChannels(w http.ResponseWriter, r *http.Request) {
+	channels, err := h.s.All(r.Context())
+	if err != nil {
+		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	resp := NewListChannelsResponse(channels)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
 	}

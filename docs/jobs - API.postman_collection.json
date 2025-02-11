@@ -34,6 +34,26 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "channel - list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/channels",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"channels"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

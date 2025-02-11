@@ -41,3 +41,19 @@ func NewErrorResponse(err error) *ErrorResponse {
 		},
 	}
 }
+
+type ListChannelsResponse struct {
+	Channels []*ChannelResponse `json:"channels"`
+}
+
+func NewListChannelsResponse(channels []*channel.Channel) *ListChannelsResponse {
+	resp := &ListChannelsResponse{
+		Channels: make([]*ChannelResponse, 0, len(channels)),
+	}
+
+	for _, ch := range channels {
+		resp.Channels = append(resp.Channels, NewChannelResponse(ch))
+	}
+
+	return resp
+}
