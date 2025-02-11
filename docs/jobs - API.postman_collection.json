@@ -105,6 +105,50 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "channel - activate",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/channels/5cb01bfc-54db-4072-b546-8792c510c716/activate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"channels",
+						"5cb01bfc-54db-4072-b546-8792c510c716",
+						"activate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "channel - deactivate",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/channels/5cb01bfc-54db-4072-b546-8792c510c716/deactivate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"channels",
+						"5cb01bfc-54db-4072-b546-8792c510c716",
+						"deactivate"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

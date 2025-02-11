@@ -422,3 +422,265 @@ func (suite *HandlerSuite) Test_UpdateChannel_Error_Fail() {
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "boom!")
 }
+
+func (suite *HandlerSuite) Test_ActivateChannel_Success() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	ch := channel.New(
+		uuid.New(),
+		"channel 1",
+		channel.IntegrationArbeitnow,
+		channel.StatusInactive,
+		channel.WithTimestamps(
+			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		),
+	)
+	r.Add(ch)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert state change
+	suite.Len(r.Channels, 1)
+	c := r.First()
+	suite.Equal(channel.StatusActive, c.Status())
+	suite.True(c.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(c.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+
+	// Assert response
+	suite.Equal(oghttp.StatusNoContent, rr.Code)
+	suite.Empty(rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_ActivateChannel_NotFound() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/activate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusNotFound, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_ActivateChannel_InvalidID() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/activate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_ActivateChannel_Error_Fail() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	ch := channel.New(
+		uuid.New(),
+		"channel 1",
+		channel.IntegrationArbeitnow,
+		channel.StatusInactive,
+		channel.WithTimestamps(
+			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		),
+	)
+	r.Add(ch)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
+
+	// Assert state change
+	suite.Len(r.Channels, 1)
+	c := r.First()
+	suite.Equal(channel.StatusInactive, c.Status())
+
+	// Assert log
+	lines := testutils.LogLines(lbuf)
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "boom!")
+}
+
+func (suite *HandlerSuite) Test_DeactivateChannel_Success() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	ch := channel.New(
+		uuid.New(),
+		"channel 1",
+		channel.IntegrationArbeitnow,
+		channel.StatusActive,
+		channel.WithTimestamps(
+			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		),
+	)
+	r.Add(ch)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert state change
+	suite.Len(r.Channels, 1)
+	c := r.First()
+	suite.Equal(channel.StatusInactive, c.Status())
+	suite.True(c.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(c.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+
+	// Assert response
+	suite.Equal(oghttp.StatusNoContent, rr.Code)
+	suite.Empty(rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_DeactivateChannel_NotFound() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/deactivate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusNotFound, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_DeactivateChannel_InvalidID() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/deactivate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *HandlerSuite) Test_DeactivateChannel_Error_Fail() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	r := testutils.NewChannelRepository()
+	r.FailWith(errors.New("boom!"))
+	s := channel.NewService(r)
+	h := http.APIRootHandler(s, log)
+
+	ch := channel.New(
+		uuid.New(),
+		"channel 1",
+		channel.IntegrationArbeitnow,
+		channel.StatusActive,
+		channel.WithTimestamps(
+			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		),
+	)
+	r.Add(ch)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
+
+	// Assert state change
+	suite.Len(r.Channels, 1)
+	c := r.First()
+	suite.Equal(channel.StatusActive, c.Status())
+
+	// Assert log
+	lines := testutils.LogLines(lbuf)
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "boom!")
+}

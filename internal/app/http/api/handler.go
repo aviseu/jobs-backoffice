@@ -32,6 +32,8 @@ func (h *Handler) Routes() http.Handler {
 	r.Get("/channels/{id}", h.FindChannel)
 	r.Post("/channels", h.CreateChannel)
 	r.Patch("/channels/{id}", h.UpdateChannel)
+	r.Put("/channels/{id}/activate", h.ActivateChannel)
+	r.Put("/channels/{id}/deactivate", h.DeactivateChannel)
 
 	return r
 }
@@ -146,6 +148,50 @@ func (h *Handler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
 		return
 	}
+}
+
+func (h *Handler) ActivateChannel(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.s.Activate(r.Context(), id); err != nil {
+		if errors.Is(err, channel.ErrChannelNotFound) {
+			h.handleFail(w, err, http.StatusNotFound)
+			return
+		}
+
+		h.handleError(w, fmt.Errorf("failed to activate post %s: %w", idStr, err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) DeactivateChannel(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.s.Deactivate(r.Context(), id); err != nil {
+		if errors.Is(err, channel.ErrChannelNotFound) {
+			h.handleFail(w, err, http.StatusNotFound)
+			return
+		}
+
+		h.handleError(w, fmt.Errorf("failed to deactivate post %s: %w", idStr, err))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) handleFail(w http.ResponseWriter, err error, code int) {
