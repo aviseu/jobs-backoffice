@@ -9,6 +9,7 @@ import (
 )
 
 type Repository interface {
+	All(ctx context.Context) ([]*Channel, error)
 	Save(context.Context, *Channel) error
 }
 
@@ -48,4 +49,8 @@ func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, err
 	}
 
 	return ch, nil
+}
+
+func (s *Service) All(ctx context.Context) ([]*Channel, error) {
+	return s.r.All(ctx)
 }

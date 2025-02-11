@@ -6,6 +6,7 @@ import (
 	"github.com/aviseu/jobs/internal/app/domain/channel"
 	"github.com/aviseu/jobs/internal/app/errs"
 	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
@@ -80,4 +81,24 @@ func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 	suite.Error(err)
 	suite.ErrorContains(err, "boom!")
 	suite.False(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_All_Success() {
+	// Prepare
+	r := testutils.NewChannelRepository()
+	s := channel.NewService(r)
+
+	ch1 := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch1)
+	ch2 := channel.New(uuid.New(), "channel 2", channel.IntegrationArbeitnow, channel.StatusActive)
+	r.Add(ch2)
+
+	// Execute
+	chs, err := s.All(context.Background())
+
+	// Assert
+	suite.NoError(err)
+	suite.Len(chs, 2)
+	suite.Equal(ch1, chs[0])
+	suite.Equal(ch2, chs[1])
 }
