@@ -26,3 +26,13 @@ func fromDomainChannel(ch *channel.Channel) *Channel {
 		UpdatedAt:   ch.UpdatedAt(),
 	}
 }
+
+func toDomainChannel(ch *Channel) *channel.Channel {
+	return channel.New(
+		ch.ID,
+		ch.Name,
+		channel.Integration(ch.Integration),
+		channel.Status(ch.Status),
+		channel.WithTimestamps(ch.CreatedAt, ch.UpdatedAt),
+	)
+}
