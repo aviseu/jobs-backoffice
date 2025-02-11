@@ -110,7 +110,7 @@ jobs:
       - name: Build and push (api-frontend)
         uses: docker/build-push-action@v6
         with:
-          target: job
+          target: frontend
           context: api-frontend
           push: true
           tags: ${{ steps.subscriber_meta.outputs.tags }}
