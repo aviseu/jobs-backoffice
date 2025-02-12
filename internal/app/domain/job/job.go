@@ -149,7 +149,8 @@ func (j *Job) MarkAsChanged() {
 
 func (j *Job) IsEqual(other *Job) bool {
 	// ignore publish status
-	return j.id == other.id &&
+	return j.status == other.status &&
+		j.id == other.id &&
 		j.channelID == other.channelID &&
 		j.url == other.url &&
 		j.title == other.title &&
@@ -157,6 +158,5 @@ func (j *Job) IsEqual(other *Job) bool {
 		j.source == other.source &&
 		j.location == other.location &&
 		j.remote == other.remote &&
-		j.postedAt.Equal(other.postedAt) &&
-		j.status == other.status
+		j.postedAt.Equal(other.postedAt)
 }
