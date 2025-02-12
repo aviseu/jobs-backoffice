@@ -2,6 +2,7 @@ package arbeitnow_test
 
 import (
 	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/google/uuid"
 	"net/http"
@@ -47,6 +48,9 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	suite.True(jobs[0].PostedAt().Equal(time.Unix(1739357344, 0)))
 	suite.Equal("https://www.arbeitnow.com/jobs/companies/opus-one-recruitment-gmbh/bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288", jobs[0].URL())
 	suite.True(jobs[0].Remote())
+	suite.Equal(job.StatusActive, jobs[0].Status())
+	suite.Equal(job.PublishStatusUnpublished, jobs[0].PublishStatus())
+	suite.Equal(ch.ID(), jobs[0].ChannelID())
 
 	// Assert requests made
 	suite.Len(c.Logs, 2)

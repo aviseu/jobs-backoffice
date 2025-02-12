@@ -55,6 +55,7 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 		result = append(result, job.New(
 			uuid.NewSHA1(s.ch.ID(), []byte(j.Slug)), // UUID V5
 			s.ch.ID(),
+			job.StatusActive,
 			j.URL,
 			j.Title,
 			j.Description,

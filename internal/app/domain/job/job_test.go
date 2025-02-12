@@ -25,6 +25,7 @@ func (suite *JobSuite) Test_Success() {
 	j := job.New(
 		id,
 		chID,
+		job.StatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -37,6 +38,8 @@ func (suite *JobSuite) Test_Success() {
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
+	suite.Equal(job.StatusActive, j.Status())
+	suite.Equal(job.PublishStatusUnpublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())
@@ -48,7 +51,7 @@ func (suite *JobSuite) Test_Success() {
 	suite.True(j.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
 }
 
-func (suite *JobSuite) Test_WithTimestamps_Success() {
+func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 	// Prepare
 	id := uuid.New()
 	chID := uuid.New()
@@ -57,6 +60,7 @@ func (suite *JobSuite) Test_WithTimestamps_Success() {
 	j := job.New(
 		id,
 		chID,
+		job.StatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -68,11 +72,14 @@ func (suite *JobSuite) Test_WithTimestamps_Success() {
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		),
+		job.WithPublishStatus(job.PublishStatusPublished),
 	)
 
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
+	suite.Equal(job.StatusActive, j.Status())
+	suite.Equal(job.PublishStatusPublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())

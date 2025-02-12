@@ -21,10 +21,12 @@ func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
 	j := fromDomainJob(job)
 	_, err := r.db.NamedExecContext(
 		ctx,
-		`INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at)
-				VALUES (:id, :channel_id, :url, :title, :description, :source, :location, :remote, :posted_at, :created_at, :updated_at)
+		`INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at)
+				VALUES (:id, :channel_id, :status, :publish_status, :url, :title, :description, :source, :location, :remote, :posted_at, :created_at, :updated_at)
 				ON CONFLICT (id) DO UPDATE SET
 					channel_id = EXCLUDED.channel_id,
+					status = EXCLUDED.status,
+					publish_status = EXCLUDED.publish_status,
 					url = EXCLUDED.url,
 					title = EXCLUDED.title,
 					description = EXCLUDED.description,

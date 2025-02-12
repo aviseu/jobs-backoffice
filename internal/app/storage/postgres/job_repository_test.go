@@ -27,6 +27,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	j := job.New(
 		id,
 		chID,
+		job.StatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -34,6 +35,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 		"Amsterdam",
 		true,
 		pAt,
+		job.WithPublishStatus(job.PublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.DB)
 
@@ -49,6 +51,8 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
 	suite.Equal(chID, dbJob.ChannelID)
+	suite.Equal(job.StatusActive, job.Status(dbJob.Status))
+	suite.Equal(job.PublishStatusPublished, job.PublishStatus(dbJob.PublishStatus))
 	suite.Equal("https://example.com/job/id", dbJob.URL)
 	suite.Equal("Software Engineer", dbJob.Title)
 	suite.Equal("Job Description", dbJob.Description)
@@ -65,9 +69,11 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	id := uuid.New()
 	chID := uuid.New()
 	cAt := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
-	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		id,
 		chID,
+		int(job.StatusInactive),
+		int(job.PublishStatusUnpublished),
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -85,6 +91,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	j := job.New(
 		id,
 		chID2,
+		job.StatusActive,
 		"https://example.com/job/id/new",
 		"Software Engineer new",
 		"Job Description new",
@@ -92,6 +99,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 		"Amsterdam new",
 		false,
 		pAt,
+		job.WithPublishStatus(job.PublishStatusPublished),
 	)
 
 	r := postgres.NewJobRepository(suite.DB)
@@ -113,6 +121,8 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
 	suite.Equal(chID2, dbJob.ChannelID)
+	suite.Equal(job.StatusActive, job.Status(dbJob.Status))
+	suite.Equal(job.PublishStatusPublished, job.PublishStatus(dbJob.PublishStatus))
 	suite.Equal("https://example.com/job/id/new", dbJob.URL)
 	suite.Equal("Software Engineer new", dbJob.Title)
 	suite.Equal("Job Description new", dbJob.Description)
@@ -131,6 +141,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	j := job.New(
 		id,
 		chID,
+		job.StatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -138,6 +149,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 		"Amsterdam",
 		true,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		job.WithPublishStatus(job.PublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.BadDB)
 
@@ -154,9 +166,11 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	// Prepare
 	chID1 := uuid.New()
 	jID1 := uuid.New()
-	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID1,
 		chID1,
+		int(job.StatusInactive),
+		int(job.PublishStatusUnpublished),
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -169,9 +183,11 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	)
 	suite.NoError(err)
 	jID2 := uuid.New()
-	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID2,
 		chID1,
+		int(job.StatusActive),
+		int(job.PublishStatusPublished),
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -185,9 +201,11 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	suite.NoError(err)
 	chID2 := uuid.New()
 	jID3 := uuid.New()
-	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID3,
 		chID2,
+		int(job.StatusActive),
+		int(job.PublishStatusPublished),
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
