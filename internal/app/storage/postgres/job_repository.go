@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	"github.com/aviseu/jobs/internal/app/domain/job"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 

@@ -134,3 +134,29 @@ func (j *Job) Status() Status {
 func (j *Job) PublishStatus() PublishStatus {
 	return j.publishStatus
 }
+
+func (j *Job) MarkAsMissing() {
+	j.status = StatusInactive
+	j.publishStatus = PublishStatusUnpublished
+	j.updatedAt = time.Now()
+}
+
+func (j *Job) MarkAsChanged() {
+	j.status = StatusActive
+	j.publishStatus = PublishStatusUnpublished
+	j.updatedAt = time.Now()
+}
+
+func (j *Job) IsEqual(other *Job) bool {
+	// ignore publish status
+	return j.id == other.id &&
+		j.channelID == other.channelID &&
+		j.url == other.url &&
+		j.title == other.title &&
+		j.description == other.description &&
+		j.source == other.source &&
+		j.location == other.location &&
+		j.remote == other.remote &&
+		j.postedAt.Equal(other.postedAt) &&
+		j.status == other.status
+}

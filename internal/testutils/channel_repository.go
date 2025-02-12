@@ -14,7 +14,9 @@ type ChannelRepository struct {
 }
 
 func NewChannelRepository() *ChannelRepository {
-	return &ChannelRepository{Channels: make(map[uuid.UUID]*channel.Channel)}
+	return &ChannelRepository{
+		Channels: make(map[uuid.UUID]*channel.Channel),
+	}
 }
 
 func (r *ChannelRepository) First() *channel.Channel {
