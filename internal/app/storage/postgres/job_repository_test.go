@@ -22,9 +22,11 @@ type JobRepositorySuite struct {
 func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	// Prepare
 	id := uuid.New()
+	chID := uuid.New()
 	pAt := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	j := job.New(
 		id,
+		chID,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -46,6 +48,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
+	suite.Equal(chID, dbJob.ChannelID)
 	suite.Equal("https://example.com/job/id", dbJob.URL)
 	suite.Equal("Software Engineer", dbJob.Title)
 	suite.Equal("Job Description", dbJob.Description)
@@ -60,9 +63,11 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	// Prepare
 	id := uuid.New()
+	chID := uuid.New()
 	cAt := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
-	_, err := suite.DB.Exec("INSERT INTO jobs (id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 		id,
+		chID,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -76,8 +81,10 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 
 	pAt := time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)
+	chID2 := uuid.New()
 	j := job.New(
 		id,
+		chID2,
 		"https://example.com/job/id/new",
 		"Software Engineer new",
 		"Job Description new",
@@ -105,6 +112,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
+	suite.Equal(chID2, dbJob.ChannelID)
 	suite.Equal("https://example.com/job/id/new", dbJob.URL)
 	suite.Equal("Software Engineer new", dbJob.Title)
 	suite.Equal("Job Description new", dbJob.Description)
@@ -119,8 +127,10 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 func (suite *JobRepositorySuite) Test_Save_Error() {
 	// Prepare
 	id := uuid.New()
+	chID := uuid.New()
 	j := job.New(
 		id,
+		chID,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",

@@ -19,10 +19,12 @@ type JobSuite struct {
 func (suite *JobSuite) Test_Success() {
 	// Prepare
 	id := uuid.New()
+	chID := uuid.New()
 
 	// Execute
 	j := job.New(
 		id,
+		chID,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -34,6 +36,7 @@ func (suite *JobSuite) Test_Success() {
 
 	// Assert
 	suite.Equal(id, j.ID())
+	suite.Equal(chID, j.ChannelID())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())
@@ -48,10 +51,12 @@ func (suite *JobSuite) Test_Success() {
 func (suite *JobSuite) Test_WithTimestamps_Success() {
 	// Prepare
 	id := uuid.New()
+	chID := uuid.New()
 
 	// Execute
 	j := job.New(
 		id,
+		chID,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -67,6 +72,7 @@ func (suite *JobSuite) Test_WithTimestamps_Success() {
 
 	// Assert
 	suite.Equal(id, j.ID())
+	suite.Equal(chID, j.ChannelID())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())

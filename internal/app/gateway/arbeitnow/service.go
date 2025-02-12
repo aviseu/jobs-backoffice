@@ -54,6 +54,7 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 	for _, j := range jobs {
 		result = append(result, job.New(
 			uuid.NewSHA1(s.ch.ID(), []byte(j.Slug)), // UUID V5
+			s.ch.ID(),
 			j.URL,
 			j.Title,
 			j.Description,
@@ -65,4 +66,8 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 	}
 
 	return result, nil
+}
+
+func (s *Service) Channel() *channel.Channel {
+	return s.ch
 }

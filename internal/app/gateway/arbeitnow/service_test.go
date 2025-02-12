@@ -83,3 +83,21 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	suite.ErrorContains(err, "failed to request with http code 405 and body:")
 	suite.ErrorContains(err, "failed to get jobs page 1 on channel 3fae894d-3484-4274-b337-fcd35a9f135c")
 }
+
+func (suite *ServiceSuite) Test_Channel_Success() {
+	// Prepare
+	ch := channel.New(
+		uuid.New(),
+		"arbeitnow integration",
+		channel.IntegrationArbeitnow,
+		channel.StatusActive,
+	)
+	c := testutils.NewRequestLogger(http.DefaultClient)
+	s := arbeitnow.NewService(c, arbeitnow.Config{URL: "https://google.com"}, ch)
+
+	// Execute
+	ch2 := s.Channel()
+
+	// Assert result
+	suite.Equal(ch, ch2)
+}

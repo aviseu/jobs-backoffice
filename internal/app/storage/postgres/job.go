@@ -18,19 +18,21 @@ type Job struct {
 	Location    string    `db:"location"`
 	ID          uuid.UUID `db:"id"`
 	Remote      bool      `db:"remote"`
+	ChannelID   uuid.UUID `db:"channel_id"`
 }
 
-func fromDomainJob(job *job.Job) *Job {
+func fromDomainJob(j *job.Job) *Job {
 	return &Job{
-		ID:          job.ID(),
-		URL:         job.URL(),
-		Title:       job.Title(),
-		Description: job.Description(),
-		Source:      job.Source(),
-		Location:    job.Location(),
-		Remote:      job.Remote(),
-		PostedAt:    job.PostedAt(),
-		CreatedAt:   job.CreatedAt(),
-		UpdatedAt:   job.UpdatedAt(),
+		ID:          j.ID(),
+		URL:         j.URL(),
+		Title:       j.Title(),
+		Description: j.Description(),
+		Source:      j.Source(),
+		Location:    j.Location(),
+		Remote:      j.Remote(),
+		PostedAt:    j.PostedAt(),
+		CreatedAt:   j.CreatedAt(),
+		UpdatedAt:   j.UpdatedAt(),
+		ChannelID:   j.ChannelID(),
 	}
 }

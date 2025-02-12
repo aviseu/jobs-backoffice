@@ -17,6 +17,7 @@ type Job struct {
 	location    string
 	id          uuid.UUID
 	remote      bool
+	channelID   uuid.UUID
 }
 
 type Optional func(*Job)
@@ -28,9 +29,10 @@ func WithTimestamps(c, u time.Time) Optional {
 	}
 }
 
-func New(id uuid.UUID, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
+func New(id, channelID uuid.UUID, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
 	j := &Job{
 		id:          id,
+		channelID:   channelID,
 		url:         url,
 		title:       title,
 		description: description,
@@ -51,6 +53,10 @@ func New(id uuid.UUID, url, title, description, source, location string, remote 
 
 func (j *Job) ID() uuid.UUID {
 	return j.id
+}
+
+func (j *Job) ChannelID() uuid.UUID {
+	return j.channelID
 }
 
 func (j *Job) URL() string {
