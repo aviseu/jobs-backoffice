@@ -33,7 +33,7 @@ func MigrateDB(db *sqlx.DB) error {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}
 
-	if err := m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
 
