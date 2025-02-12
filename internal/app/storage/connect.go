@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+
 	"github.com/golang-migrate/migrate/v4"
 	mpg "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -34,4 +35,6 @@ func MigrateDB(db *sqlx.DB) error {
 	if err := m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
+
+	return nil
 }
