@@ -28,7 +28,7 @@ func MigrateDB(db *sqlx.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
-	m, err := migrate.NewWithDatabaseInstance("file://../../config/migrations", "postgres", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://config/migrations", "postgres", driver)
 	if err != nil {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}

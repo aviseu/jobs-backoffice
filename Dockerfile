@@ -18,6 +18,7 @@ ARG APP
 WORKDIR /
 
 COPY --from=builder /app/dist/app /app
+COPY --from=builder /app/config/migrations/ ./config/migrations/
 
 EXPOSE 8080 9090 4000
 
