@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 
 	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/jmoiron/sqlx"
@@ -39,4 +40,19 @@ func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
 	}
 
 	return nil
+}
+
+func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*job.Job, error) {
+	var jobs []*Job
+	err := r.db.SelectContext(ctx, &jobs, "SELECT * FROM jobs WHERE channel_id = $1 ORDER BY posted_at DESC", chID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get jobs by channel id %s: %w", chID, err)
+	}
+
+	results := make([]*job.Job, 0, len(jobs))
+	for _, j := range jobs {
+		results = append(results, toDomainJob(j))
+	}
+
+	return results, nil
 }

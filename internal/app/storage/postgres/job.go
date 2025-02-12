@@ -36,3 +36,18 @@ func fromDomainJob(j *job.Job) *Job {
 		ChannelID:   j.ChannelID(),
 	}
 }
+
+func toDomainJob(j *Job) *job.Job {
+	return job.New(
+		j.ID,
+		j.ChannelID,
+		j.URL,
+		j.Title,
+		j.Description,
+		j.Source,
+		j.Location,
+		j.Remote,
+		j.PostedAt,
+		job.WithTimestamps(j.CreatedAt, j.UpdatedAt),
+	)
+}

@@ -149,3 +149,78 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	suite.ErrorContains(err, id.String())
 	suite.ErrorContains(err, "sql: database is closed")
 }
+
+func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
+	// Prepare
+	chID1 := uuid.New()
+	jID1 := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+		jID1,
+		chID1,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	jID2 := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+		jID2,
+		chID1,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	chID2 := uuid.New()
+	jID3 := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+		jID3,
+		chID2,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+
+	r := postgres.NewJobRepository(suite.DB)
+
+	// Execute
+	jobs, err := r.GetByChannelID(context.Background(), chID1)
+
+	// Assert return
+	suite.NoError(err)
+	suite.Len(jobs, 2)
+	suite.Equal(jID2, jobs[0].ID())
+	suite.Equal(jID1, jobs[1].ID())
+}
+
+func (suite *JobRepositorySuite) Test_GetByChannelID_Error() {
+	// Prepare
+	r := postgres.NewJobRepository(suite.BadDB)
+
+	// Execute
+	jobs, err := r.GetByChannelID(context.Background(), uuid.New())
+
+	// Assert return
+	suite.Nil(jobs)
+	suite.Error(err)
+	suite.ErrorContains(err, "sql: database is closed")
+}
