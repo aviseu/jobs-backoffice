@@ -60,6 +60,12 @@ func run(ctx context.Context) error {
 		}
 	}(db)
 
+	// migrate db
+	slog.Info("migrating database...")
+	if err := storage.MigrateDB(db); err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
+
 	// services
 	slog.Info("setting up services...")
 	r := postgres.NewChannelRepository(db)

@@ -53,5 +53,11 @@ func run() error {
 		}
 	}(db)
 
+	// migrate db
+	slog.Info("migrating database...")
+	if err := storage.MigrateDB(db); err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
+
 	return nil
 }
