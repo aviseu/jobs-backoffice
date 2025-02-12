@@ -23,15 +23,16 @@ func SetupDatabase(cfg Config) (*sqlx.DB, error) {
 }
 
 func MigrateDB(db *sqlx.DB) error {
-	// migrate db
 	driver, err := mpg.WithInstance(db.DB, &mpg.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
+
 	m, err := migrate.NewWithDatabaseInstance("file://config/migrations", "postgres", driver)
 	if err != nil {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}
+
 	if err := m.Up(); err != nil && errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}

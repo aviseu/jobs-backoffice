@@ -32,5 +32,6 @@ ARG APP
 WORKDIR /
 
 COPY --from=builder /app/dist/app /app
+COPY --from=builder /app/config/migrations/ ./config/migrations/
 
 ENTRYPOINT ["/app"]

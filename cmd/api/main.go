@@ -12,6 +12,7 @@ import (
 	"github.com/aviseu/jobs/internal/app/http"
 	"github.com/aviseu/jobs/internal/app/storage"
 	"github.com/aviseu/jobs/internal/app/storage/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"

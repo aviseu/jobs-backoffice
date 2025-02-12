@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/aviseu/jobs/internal/app/storage"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
