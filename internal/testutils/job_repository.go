@@ -4,11 +4,13 @@ import (
 	"context"
 	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/google/uuid"
+	"sync"
 )
 
 type JobRepository struct {
 	Jobs map[uuid.UUID]*job.Job
 	err  error
+	m    sync.Mutex
 }
 
 func NewJobRepository() *JobRepository {
@@ -38,7 +40,9 @@ func (r *JobRepository) Save(_ context.Context, j *job.Job) error {
 		return r.err
 	}
 
+	r.m.Lock()
 	r.Jobs[j.ID()] = j
+	r.m.Unlock()
 	return nil
 }
 
