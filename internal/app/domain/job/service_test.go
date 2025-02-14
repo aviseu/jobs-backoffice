@@ -22,7 +22,7 @@ type ServiceSuite struct {
 func (suite *ServiceSuite) Test_Sync_Success() {
 	// Prepare
 	r := testutils.NewJobRepository()
-	s := job.NewService(r)
+	s := job.NewService(r, 10, 10)
 
 	results := make(chan *job.Result, 10)
 	resultMap := make(map[uuid.UUID]*job.Result)
@@ -85,7 +85,7 @@ func (suite *ServiceSuite) Test_Sync_RepositoryFail() {
 	// Prepare
 	r := testutils.NewJobRepository()
 	r.FailWith(errors.New("boom!"))
-	s := job.NewService(r)
+	s := job.NewService(r, 10, 10)
 	results := make(chan *job.Result)
 
 	chID := uuid.New()

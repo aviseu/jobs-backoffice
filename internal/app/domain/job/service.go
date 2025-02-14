@@ -9,11 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	workerCount  = 10
-	workerBuffer = 10
-)
-
 type Repository interface {
 	Save(ctx context.Context, j *Job) error
 	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*Job, error)
@@ -21,11 +16,16 @@ type Repository interface {
 
 type Service struct {
 	r Repository
+
+	workerBuffer int
+	workerCount  int
 }
 
-func NewService(r Repository) *Service {
+func NewService(r Repository, workerBuffer, workerCount int) *Service {
 	return &Service{
-		r: r,
+		r:            r,
+		workerBuffer: workerBuffer,
+		workerCount:  workerCount,
 	}
 }
 
@@ -48,9 +48,9 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, res
 
 	// create job workers
 	var wgWorkers sync.WaitGroup
-	jobs := make(chan *Job, workerBuffer)
-	errs := make(chan error, workerBuffer)
-	for w := 1; w <= workerCount; w++ {
+	jobs := make(chan *Job, s.workerBuffer)
+	errs := make(chan error, s.workerBuffer)
+	for w := 1; w <= s.workerCount; w++ {
 		wgWorkers.Add(1)
 		go worker(ctx, &wgWorkers, s.r, jobs, results, errs)
 	}
