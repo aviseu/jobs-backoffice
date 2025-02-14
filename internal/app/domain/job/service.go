@@ -29,16 +29,17 @@ func NewService(r Repository) *Service {
 	}
 }
 
-func worker(ctx context.Context, wg *sync.WaitGroup, r Repository, jobs <-chan *Job, errs chan<- error) {
+func worker(ctx context.Context, wg *sync.WaitGroup, r Repository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
 	for j := range jobs {
 		if err := r.Save(ctx, j); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
+			results <- NewResult(j.ID(), ResultTypeFailed, WithError(err.Error()))
 		}
 	}
 	wg.Done()
 }
 
-func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job) error {
+func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, results chan<- *Result) error {
 	// get existing jobs
 	existing, err := s.r.GetByChannelID(ctx, chID)
 	if err != nil {
@@ -51,7 +52,7 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job) err
 	errs := make(chan error, workerBuffer)
 	for w := 1; w <= workerCount; w++ {
 		wgWorkers.Add(1)
-		go worker(ctx, &wgWorkers, s.r, jobs, errs)
+		go worker(ctx, &wgWorkers, s.r, jobs, results, errs)
 	}
 
 	// create error worker
@@ -67,9 +68,12 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job) err
 
 	// save if incoming does not exist or is different
 	for _, in := range incoming {
+		found := false
 		for _, ex := range existing {
 			if ex.ID() == in.ID() {
+				found = true
 				if in.IsEqual(ex) {
+					results <- NewResult(in.ID(), ResultTypeNoChange)
 					goto next
 				}
 			}
@@ -77,6 +81,11 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job) err
 
 		in.MarkAsChanged()
 		jobs <- in
+		if found {
+			results <- NewResult(in.ID(), ResultTypeUpdated)
+		} else {
+			results <- NewResult(in.ID(), ResultTypeNew)
+		}
 
 	next:
 	}
@@ -91,9 +100,11 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job) err
 
 		ex.MarkAsMissing()
 		jobs <- ex
+		results <- NewResult(ex.ID(), ResultTypeMissing)
 
 	skip:
 	}
+
 	close(jobs)
 	wgWorkers.Wait()
 	close(errs)

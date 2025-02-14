@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/domain/imports"
 	"github.com/aviseu/jobs/internal/app/domain/job"
 	"github.com/aviseu/jobs/internal/app/gateway"
 	"github.com/aviseu/jobs/internal/app/gateway/arbeitnow"
@@ -27,17 +28,22 @@ type GatewaySuite struct {
 func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
-	r := testutils.NewJobRepository()
-	s := job.NewService(r)
+	jr := testutils.NewJobRepository()
+	js := job.NewService(jr)
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
+	lbuf, log := testutils.NewLogger()
 	f := gateway.NewFactory(
-		s,
+		js,
+		is,
 		c,
 		gateway.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
 		},
+		log,
 	)
 	ch := channel.New(uuid.New(), "channel", channel.IntegrationArbeitnow, channel.StatusActive)
 	gw := f.Create(ch)
@@ -55,7 +61,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(job.PublishStatusPublished),
 	)
-	r.Add(j1)
+	jr.Add(j1)
 	j2 := job.New(
 		uuid.New(),
 		ch.ID(),
@@ -69,33 +75,63 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(job.PublishStatusPublished),
 	)
-	r.Add(j2)
+	jr.Add(j2)
 
 	// Execute
 	err := gw.ImportChannel(context.Background())
 
-	// Assert
+	// Assert Jobs
 	suite.NoError(err)
-	suite.Len(r.Jobs, 4)
-	suite.Equal(job.PublishStatusPublished, r.Jobs[j1.ID()].PublishStatus())
-	suite.Equal(job.PublishStatusUnpublished, r.Jobs[j2.ID()].PublishStatus())
+	suite.Len(jr.Jobs, 4)
+	suite.Equal(job.PublishStatusPublished, jr.Jobs[j1.ID()].PublishStatus())
+	suite.Equal(job.PublishStatusUnpublished, jr.Jobs[j2.ID()].PublishStatus())
+
+	// Assert imports
+	suite.Len(ir.Imports, 1)
+	var i *imports.Import
+	for _, v := range ir.Imports {
+		i = v
+	}
+	suite.Equal(ch.ID(), i.ChannelID())
+	suite.Equal(2, i.NewJobs())
+	suite.Equal(0, i.UpdatedJobs())
+	suite.Equal(1, i.NoChangeJobs())
+	suite.Equal(1, i.MissingJobs())
+	suite.Equal(0, i.FailedJobs())
+	suite.True(i.EndedAt().Time.After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(imports.StatusCompleted, i.Status())
+
+	// Assert import results
+	suite.Len(ir.JobResults, 4)
+	suite.Equal(imports.JobStatusNoChange, ir.JobResults[j1.ID()].Result())
+	suite.Equal(imports.JobStatusMissing, ir.JobResults[j2.ID()].Result())
+	suite.Equal(imports.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result())
+	suite.Equal(imports.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result())
+
+	// Assert Logs
+	suite.Empty(lbuf)
 }
 
-func (suite *GatewaySuite) Test_ImportChannel_RepositoryFail() {
+func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
-	r := testutils.NewJobRepository()
-	r.FailWith(errors.New("boom!"))
-	s := job.NewService(r)
+	jr := testutils.NewJobRepository()
+	jr.FailWith(errors.New("boom!"))
+	js := job.NewService(jr)
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
+	lbuf, log := testutils.NewLogger()
 	f := gateway.NewFactory(
-		s,
+		js,
+		is,
 		c,
 		gateway.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
 		},
+		log,
 	)
 	ch := channel.New(uuid.New(), "channel", channel.IntegrationArbeitnow, channel.StatusActive)
 	gw := f.Create(ch)
@@ -103,25 +139,36 @@ func (suite *GatewaySuite) Test_ImportChannel_RepositoryFail() {
 	// Execute
 	err := gw.ImportChannel(context.Background())
 
-	// Assert
+	// Assert Result
 	suite.Error(err)
 	suite.Equal("failed to sync jobs for channel "+ch.ID().String()+": failed to get existing jobs: boom!", err.Error())
+
+	// Assert Import
+	suite.Len(ir.Imports, 1)
+
+	// Assert Logs
+	suite.Empty(lbuf)
 }
 
 func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
-	r := testutils.NewJobRepository()
-	s := job.NewService(r)
+	jr := testutils.NewJobRepository()
+	js := job.NewService(jr)
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
+	lbuf, log := testutils.NewLogger()
 	f := gateway.NewFactory(
-		s,
+		js,
+		is,
 		c,
 		gateway.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
 		},
+		log,
 	)
 	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", channel.IntegrationArbeitnow, channel.StatusActive)
 	gw := f.Create(ch)
@@ -129,8 +176,11 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	// Execute
 	err := gw.ImportChannel(context.Background())
 
-	// Assert
+	// Assert Result
 	suite.Error(err)
 	suite.ErrorContains(err, "failed to import channel "+ch.ID().String())
 	suite.ErrorContains(err, `<h2>The server returned a "405 Method Not Allowed".</h2>`)
+
+	// Assert Logs
+	suite.Empty(lbuf)
 }

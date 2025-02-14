@@ -8,7 +8,7 @@ create table if not exists imports (
     missing_jobs int not null,
     failed_jobs int not null,
     error text null,
-    created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now(),
+    started_at timestamptz not null,
+    ended_at timestamptz null,
     foreign key (channel_id) references channels (id)
 )
