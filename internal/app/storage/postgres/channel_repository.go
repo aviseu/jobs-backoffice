@@ -54,6 +54,21 @@ func (r *ChannelRepository) All(ctx context.Context) ([]*channel.Channel, error)
 	return result, nil
 }
 
+func (r *ChannelRepository) GetActive(ctx context.Context) ([]*channel.Channel, error) {
+	var cc []*Channel
+	err := r.db.SelectContext(ctx, &cc, "SELECT * FROM channels WHERE status = $1 ORDER BY name", channel.StatusActive)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active channels: %w", err)
+	}
+
+	result := make([]*channel.Channel, 0, len(cc))
+	for _, c := range cc {
+		result = append(result, toDomainChannel(c))
+	}
+
+	return result, nil
+}
+
 func (r *ChannelRepository) Find(ctx context.Context, id uuid.UUID) (*channel.Channel, error) {
 	var c Channel
 	err := r.db.GetContext(ctx, &c, "SELECT * FROM channels WHERE id = $1", id)

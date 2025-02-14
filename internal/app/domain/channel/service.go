@@ -10,6 +10,7 @@ import (
 
 type Repository interface {
 	All(ctx context.Context) ([]*Channel, error)
+	GetActive(ctx context.Context) ([]*Channel, error)
 	Find(ctx context.Context, id uuid.UUID) (*Channel, error)
 	Save(context.Context, *Channel) error
 }
@@ -54,6 +55,10 @@ func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, err
 
 func (s *Service) All(ctx context.Context) ([]*Channel, error) {
 	return s.r.All(ctx)
+}
+
+func (s *Service) GetActive(ctx context.Context) ([]*Channel, error) {
+	return s.r.GetActive(ctx)
 }
 
 func (s *Service) Find(ctx context.Context, id uuid.UUID) (*Channel, error) {

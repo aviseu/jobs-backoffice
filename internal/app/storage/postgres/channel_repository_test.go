@@ -147,8 +147,6 @@ func (suite *ChannelRepositorySuite) Test_All_Success() {
 	suite.NoError(err)
 	suite.Len(chs, 2)
 
-	// Assert state change
-
 	suite.Equal(id1, chs[0].ID())
 	suite.Equal("Channel Name 1", chs[0].Name())
 	suite.Equal(channel.IntegrationArbeitnow, chs[0].Integration())
@@ -170,6 +168,54 @@ func (suite *ChannelRepositorySuite) Test_All_Error() {
 
 	// Execute
 	chs, err := r.All(context.Background())
+
+	// Assert
+	suite.Nil(chs)
+	suite.Error(err)
+	suite.ErrorContains(err, "sql: database is closed")
+}
+
+func (suite *ChannelRepositorySuite) Test_GetActive_Success() {
+	// Prepare
+	id1 := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		id1,
+		"Channel Name 1",
+		channel.IntegrationArbeitnow,
+		channel.StatusActive,
+		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	)
+	suite.NoError(err)
+
+	id2 := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		id2,
+		"Channel Name 2",
+		channel.IntegrationArbeitnow,
+		channel.StatusInactive,
+		time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
+		time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC),
+	)
+	suite.NoError(err)
+
+	r := postgres.NewChannelRepository(suite.DB)
+
+	// Execute
+	chs, err := r.GetActive(context.Background())
+
+	// Assert result
+	suite.NoError(err)
+	suite.Len(chs, 1)
+	suite.Equal(id1, chs[0].ID())
+}
+
+func (suite *ChannelRepositorySuite) Test_GetActive_Error() {
+	// Prepare
+	r := postgres.NewChannelRepository(suite.BadDB)
+
+	// Execute
+	chs, err := r.GetActive(context.Background())
 
 	// Assert
 	suite.Nil(chs)

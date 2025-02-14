@@ -52,6 +52,26 @@ func (r *ChannelRepository) All(_ context.Context) ([]*channel.Channel, error) {
 	return channels, nil
 }
 
+func (r *ChannelRepository) GetActive(_ context.Context) ([]*channel.Channel, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+
+	channels := make([]*channel.Channel, 0, len(r.Channels))
+	for _, ch := range r.Channels {
+		if ch.Status() == channel.StatusActive {
+			channels = append(channels, ch)
+		}
+	}
+
+	slices.SortFunc(channels, func(a, b *channel.Channel) int {
+		return cmp.Compare(a.Name(), b.Name())
+	})
+
+	return channels, nil
+
+}
+
 func (r *ChannelRepository) Find(_ context.Context, id uuid.UUID) (*channel.Channel, error) {
 	if r.err != nil {
 		return nil, r.err
