@@ -7,6 +7,7 @@ import (
 	"github.com/aviseu/jobs/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+	"sync"
 	"testing"
 	"time"
 )
@@ -26,10 +27,12 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 
 	results := make(chan *job.Result, 10)
 	resultMap := make(map[uuid.UUID]*job.Result)
+	var wg sync.WaitGroup
 	go func(results <-chan *job.Result) {
 		for r := range results {
 			resultMap[r.JobID()] = r
 		}
+		wg.Done()
 	}(results)
 
 	chID := uuid.New()
@@ -48,6 +51,7 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	// Execute
 	err := s.Sync(context.Background(), chID, incoming, results)
 	close(results)
+	wg.Wait()
 
 	// Assert
 	suite.NoError(err)
