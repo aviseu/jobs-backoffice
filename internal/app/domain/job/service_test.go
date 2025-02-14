@@ -28,6 +28,7 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	results := make(chan *job.Result, 10)
 	resultMap := make(map[uuid.UUID]*job.Result)
 	var wg sync.WaitGroup
+	wg.Add(1)
 	go func(results <-chan *job.Result) {
 		for r := range results {
 			resultMap[r.JobID()] = r
