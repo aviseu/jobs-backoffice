@@ -42,6 +42,13 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
+			Import: struct {
+				ResultBufferSize int `split_words:"true" default:"10"`
+				ResultWorkers    int `split_words:"true" default:"10"`
+			}{
+				ResultBufferSize: 10,
+				ResultWorkers:    10,
+			},
 		},
 		log,
 	)
@@ -130,6 +137,13 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
+			Import: struct {
+				ResultBufferSize int `split_words:"true" default:"10"`
+				ResultWorkers    int `split_words:"true" default:"10"`
+			}{
+				ResultBufferSize: 10,
+				ResultWorkers:    10,
+			},
 		},
 		log,
 	)
@@ -166,6 +180,13 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 		gateway.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
+			},
+			Import: struct {
+				ResultBufferSize int `split_words:"true" default:"10"`
+				ResultWorkers    int `split_words:"true" default:"10"`
+			}{
+				ResultBufferSize: 10,
+				ResultWorkers:    10,
 			},
 		},
 		log,

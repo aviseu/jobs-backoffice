@@ -12,6 +12,11 @@ import (
 
 type Config struct {
 	Arbeitnow arbeitnow.Config
+
+	Import struct {
+		ResultBufferSize int `split_words:"true" default:"10"`
+		ResultWorkers    int `split_words:"true" default:"10"`
+	}
 }
 
 type HTTPClient interface {
@@ -42,5 +47,5 @@ func (f *Factory) Create(ch *channel.Channel) *Gateway {
 		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)
 	}
 
-	return NewGateway(p, f.js, f.is, f.log)
+	return NewGateway(p, f.js, f.is, f.log, f.cfg.Import.ResultBufferSize, f.cfg.Import.ResultWorkers)
 }

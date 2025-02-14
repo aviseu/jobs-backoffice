@@ -11,11 +11,6 @@ import (
 	"github.com/aviseu/jobs/internal/app/domain/job"
 )
 
-const (
-	workerCount  = 10
-	workerBuffer = 10
-)
-
 type Provider interface {
 	Channel() *channel.Channel
 	GetJobs() ([]*job.Job, error)
@@ -26,14 +21,20 @@ type Gateway struct {
 	js  *job.Service
 	is  *imports.Service
 	log *slog.Logger
+
+	resultBufferSize int
+	resultWorkers    int
 }
 
-func NewGateway(p Provider, js *job.Service, is *imports.Service, log *slog.Logger) *Gateway {
+func NewGateway(p Provider, js *job.Service, is *imports.Service, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
 	return &Gateway{
 		p:   p,
 		js:  js,
 		is:  is,
 		log: log,
+
+		resultBufferSize: resultBufferSize,
+		resultWorkers:    resultWorkers,
 	}
 }
 
@@ -73,8 +74,8 @@ func (g *Gateway) ImportChannel(ctx context.Context) error {
 
 	// create workers
 	var wg sync.WaitGroup
-	results := make(chan *job.Result, workerBuffer)
-	for w := 1; w <= workerCount; w++ {
+	results := make(chan *job.Result, g.resultBufferSize)
+	for w := 1; w <= g.resultWorkers; w++ {
 		wg.Add(1)
 		go g.worker(ctx, &wg, i, results)
 	}
