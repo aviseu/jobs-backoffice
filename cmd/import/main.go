@@ -1,11 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 
+	"github.com/aviseu/jobs/internal/app/domain"
+	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs/internal/app/domain/imports"
+	"github.com/aviseu/jobs/internal/app/domain/job"
+	"github.com/aviseu/jobs/internal/app/gateway"
 	"github.com/aviseu/jobs/internal/app/storage"
+	"github.com/aviseu/jobs/internal/app/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
@@ -13,22 +21,27 @@ import (
 )
 
 type config struct {
-	DB  storage.Config
-	Log struct {
+	DB      storage.Config
+	Gateway gateway.Config
+	Log     struct {
 		Level slog.Level `default:"info"`
+	}
+	Job struct {
+		Workers int `default:"10"`
+		Buffer  int `default:"10"`
 	}
 }
 
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{})))
 
-	if err := run(); err != nil {
+	if err := run(context.Background()); err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(ctx context.Context) error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
@@ -59,6 +72,28 @@ func run() error {
 	if err := storage.MigrateDB(db); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
+
+	// services
+	slog.Info("setting up services...")
+	ir := postgres.NewImportRepository(db)
+	is := imports.NewService(ir)
+
+	chr := postgres.NewChannelRepository(db)
+	chs := channel.NewService(chr)
+
+	jr := postgres.NewJobRepository(db)
+	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
+
+	f := gateway.NewFactory(js, is, http.DefaultClient, cfg.Gateway, log)
+
+	importActive := domain.NewImportActiveAction(chs, f, log)
+
+	slog.Info("starting imports...")
+	if err := importActive.Execute(ctx); err != nil {
+		return fmt.Errorf("failed to import active channels: %w", err)
+	}
+
+	slog.Info("all done.")
 
 	return nil
 }

@@ -27,5 +27,4 @@ func (suite *JobResultSuite) Test_Success() {
 	suite.Equal(id, j.ID())
 	suite.Equal(importID, j.ImportID())
 	suite.Equal(imports.JobStatusNew, j.Result())
-
 }

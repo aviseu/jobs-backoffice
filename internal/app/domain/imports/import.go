@@ -62,6 +62,16 @@ func WithEndAt(e time.Time) ImportOptional {
 	}
 }
 
+func WithMetadata(newJobs, updated, noChange, missing, failed int) ImportOptional {
+	return func(i *Import) {
+		i.newJobs = newJobs
+		i.updatedJobs = updated
+		i.noChangeJobs = noChange
+		i.missingJobs = missing
+		i.failedJobs = failed
+	}
+}
+
 func New(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
 	i := &Import{
 		id:        id,

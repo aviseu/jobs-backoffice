@@ -57,7 +57,7 @@ func (r *ChannelRepository) GetActive(_ context.Context) ([]*channel.Channel, er
 		return nil, r.err
 	}
 
-	channels := make([]*channel.Channel, 0, len(r.Channels))
+	channels := make([]*channel.Channel, 0)
 	for _, ch := range r.Channels {
 		if ch.Status() == channel.StatusActive {
 			channels = append(channels, ch)
