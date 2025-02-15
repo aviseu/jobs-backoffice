@@ -14,15 +14,15 @@ import (
 	"time"
 )
 
-func TestHandler(t *testing.T) {
-	suite.Run(t, new(HandlerSuite))
+func TestChannelHandler(t *testing.T) {
+	suite.Run(t, new(ChannelHandlerSuite))
 }
 
-type HandlerSuite struct {
+type ChannelHandlerSuite struct {
 	suite.Suite
 }
 
-func (suite *HandlerSuite) Test_Create_Success() {
+func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -57,7 +57,7 @@ func (suite *HandlerSuite) Test_Create_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_Create_Validation_Fail() {
+func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -83,7 +83,7 @@ func (suite *HandlerSuite) Test_Create_Validation_Fail() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_Create_RepositoryFail_Fail() {
+func (suite *ChannelHandlerSuite) Test_Create_RepositoryFail_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -113,7 +113,7 @@ func (suite *HandlerSuite) Test_Create_RepositoryFail_Fail() {
 	suite.Contains(lines[0], "failed to create channel: boom!")
 }
 
-func (suite *HandlerSuite) Test_GetChannels_Success() {
+func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -141,7 +141,7 @@ func (suite *HandlerSuite) Test_GetChannels_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_GetChannels_WithCors_Success() {
+func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 	// Prepare
 	_, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -164,7 +164,7 @@ func (suite *HandlerSuite) Test_GetChannels_WithCors_Success() {
 	suite.Equal("Origin", rr.Header().Get("Vary"))
 }
 
-func (suite *HandlerSuite) Test_GetChannels_WithoutCors_Success() {
+func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	// Prepare
 	_, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -187,7 +187,7 @@ func (suite *HandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	suite.Empty(rr.Header().Get("Vary"))
 }
 
-func (suite *HandlerSuite) Test_FindChannel_Success() {
+func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -222,7 +222,7 @@ func (suite *HandlerSuite) Test_FindChannel_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_FindChannel_NotFound() {
+func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -245,7 +245,7 @@ func (suite *HandlerSuite) Test_FindChannel_NotFound() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_FindChannel_InvalidID() {
+func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -268,7 +268,7 @@ func (suite *HandlerSuite) Test_FindChannel_InvalidID() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_FindChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_FindChannel_Error_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -295,7 +295,7 @@ func (suite *HandlerSuite) Test_FindChannel_Error_Fail() {
 	suite.Contains(lines[0], "boom!")
 }
 
-func (suite *HandlerSuite) Test_UpdateChannel_Success() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -339,7 +339,7 @@ func (suite *HandlerSuite) Test_UpdateChannel_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_UpdateChannel_NotFound() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -362,7 +362,7 @@ func (suite *HandlerSuite) Test_UpdateChannel_NotFound() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_UpdateChannel_InvalidID() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -385,7 +385,7 @@ func (suite *HandlerSuite) Test_UpdateChannel_InvalidID() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_UpdateChannel_Validation_Fail() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -425,7 +425,7 @@ func (suite *HandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_UpdateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -469,7 +469,7 @@ func (suite *HandlerSuite) Test_UpdateChannel_Error_Fail() {
 	suite.Contains(lines[0], "boom!")
 }
 
-func (suite *HandlerSuite) Test_ActivateChannel_Success() {
+func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -510,7 +510,7 @@ func (suite *HandlerSuite) Test_ActivateChannel_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_ActivateChannel_NotFound() {
+func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -533,7 +533,7 @@ func (suite *HandlerSuite) Test_ActivateChannel_NotFound() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_ActivateChannel_InvalidID() {
+func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -556,7 +556,7 @@ func (suite *HandlerSuite) Test_ActivateChannel_InvalidID() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_ActivateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -600,7 +600,7 @@ func (suite *HandlerSuite) Test_ActivateChannel_Error_Fail() {
 	suite.Contains(lines[0], "boom!")
 }
 
-func (suite *HandlerSuite) Test_DeactivateChannel_Success() {
+func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -641,7 +641,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_Success() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_DeactivateChannel_NotFound() {
+func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -664,7 +664,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_NotFound() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_DeactivateChannel_InvalidID() {
+func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -687,7 +687,7 @@ func (suite *HandlerSuite) Test_DeactivateChannel_InvalidID() {
 	suite.Empty(lbuf.String())
 }
 
-func (suite *HandlerSuite) Test_DeactivateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
@@ -729,27 +729,4 @@ func (suite *HandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "boom!")
-}
-
-func (suite *HandlerSuite) Test_ListIntegrations_Success() {
-	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
-
-	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)
-	suite.NoError(err)
-	rr := httptest.NewRecorder()
-
-	// Execute
-	h.ServeHTTP(rr, req)
-
-	// Assert response
-	suite.Equal(oghttp.StatusOK, rr.Code)
-	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"integrations":["arbeitnow"]}`+"\n", rr.Body.String())
-
-	// Assert log
-	suite.Empty(lbuf.String())
 }

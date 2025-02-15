@@ -43,8 +43,11 @@ func APIRootHandler(s *channel.Service, cfg Config, log *slog.Logger) http.Handl
 		}))
 	}
 
-	h := api.NewHandler(s, log)
-	r.Mount("/api", h.Routes())
+	channels := api.NewChannelHandler(s, log)
+	r.Mount("/api/channels", channels.Routes())
+
+	integrations := api.NewIntegrationHandler(s, log)
+	r.Mount("/api/integrations", integrations.Routes())
 
 	return r
 }

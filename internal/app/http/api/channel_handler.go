@@ -13,34 +13,34 @@ import (
 	"github.com/google/uuid"
 )
 
-type Handler struct {
+type ChannelHandler struct {
 	s   *channel.Service
 	log *slog.Logger
 }
 
-func NewHandler(s *channel.Service, log *slog.Logger) *Handler {
-	return &Handler{
+func NewChannelHandler(s *channel.Service, log *slog.Logger) *ChannelHandler {
+	return &ChannelHandler{
 		s:   s,
 		log: log,
 	}
 }
 
-func (h *Handler) Routes() http.Handler {
+func (h *ChannelHandler) Routes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/channels", h.ListChannels)
-	r.Get("/channels/{id}", h.FindChannel)
-	r.Post("/channels", h.CreateChannel)
-	r.Patch("/channels/{id}", h.UpdateChannel)
-	r.Put("/channels/{id}/activate", h.ActivateChannel)
-	r.Put("/channels/{id}/deactivate", h.DeactivateChannel)
+	r.Get("/", h.ListChannels)
+	r.Get("/{id}", h.FindChannel)
+	r.Post("/", h.CreateChannel)
+	r.Patch("/{id}", h.UpdateChannel)
+	r.Put("/{id}/activate", h.ActivateChannel)
+	r.Put("/{id}/deactivate", h.DeactivateChannel)
 
 	r.Get("/integrations", h.ListIntegrations)
 
 	return r
 }
 
-func (h *Handler) CreateChannel(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	var req CreateChannelRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
@@ -68,7 +68,7 @@ func (h *Handler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) ListChannels(w http.ResponseWriter, r *http.Request) {
 	channels, err := h.s.All(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
@@ -84,7 +84,7 @@ func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) FindChannel(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 
 	id, err := uuid.Parse(idStr)
@@ -112,7 +112,7 @@ func (h *Handler) FindChannel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 
 	id, err := uuid.Parse(idStr)
@@ -152,7 +152,7 @@ func (h *Handler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) ActivateChannel(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) ActivateChannel(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 
 	id, err := uuid.Parse(idStr)
@@ -174,7 +174,7 @@ func (h *Handler) ActivateChannel(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) DeactivateChannel(w http.ResponseWriter, r *http.Request) {
+func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 
 	id, err := uuid.Parse(idStr)
@@ -196,7 +196,7 @@ func (h *Handler) DeactivateChannel(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
+func (h *ChannelHandler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
@@ -206,7 +206,7 @@ func (h *Handler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func (h *Handler) handleFail(w http.ResponseWriter, err error, code int) {
+func (h *ChannelHandler) handleFail(w http.ResponseWriter, err error, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
@@ -218,7 +218,7 @@ func (h *Handler) handleFail(w http.ResponseWriter, err error, code int) {
 	}
 }
 
-func (h *Handler) handleError(w http.ResponseWriter, err error) {
+func (h *ChannelHandler) handleError(w http.ResponseWriter, err error) {
 	h.log.Error(err.Error(), slog.Any("error", err))
 
 	h.handleFail(w, errors.New(http.StatusText(http.StatusInternalServerError)), http.StatusInternalServerError)
