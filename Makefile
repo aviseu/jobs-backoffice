@@ -13,7 +13,7 @@ stop:
 build-import:
 	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs-backoffice/cmd/import
 
-build-api:
+build-backoffice-api:
 	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs-backoffice/cmd/api
 
 migrate-create:
