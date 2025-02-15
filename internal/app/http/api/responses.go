@@ -79,6 +79,8 @@ func NewListIntegrationsResponse(integrations []channel.Integration) *Integratio
 type ImportEntry struct {
 	ID           string      `json:"id"`
 	ChannelID    string      `json:"channel_id"`
+	ChannelName  string      `json:"channel_name"`
+	Integration  string      `json:"integration"`
 	Status       string      `json:"status"`
 	StartedAt    string      `json:"started_at"`
 	EndedAt      null.String `json:"ended_at"`
@@ -95,30 +97,38 @@ type ImportsResponse struct {
 	Imports []*ImportEntry `json:"imports"`
 }
 
-func NewImportsResponse(imports []*imports.Import) *ImportsResponse {
+func NewImportsResponse(imports []*imports.Import, channels []*channel.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportEntry, 0, len(imports)),
 	}
 
 	for _, i := range imports {
-		ended := null.String{}
-		if i.EndedAt().Valid {
-			ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
+		for _, ch := range channels {
+			if ch.ID() == i.ChannelID() {
+				ended := null.String{}
+				if i.EndedAt().Valid {
+					ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
+				}
+
+				resp.Imports = append(resp.Imports, &ImportEntry{
+					ID:           i.ID().String(),
+					ChannelID:    i.ChannelID().String(),
+					ChannelName:  ch.Name(),
+					Integration:  ch.Integration().String(),
+					Status:       i.Status().String(),
+					StartedAt:    i.StartedAt().Format(time.RFC3339),
+					EndedAt:      ended,
+					Error:        i.Error(),
+					NewJobs:      i.NewJobs(),
+					UpdatedJobs:  i.UpdatedJobs(),
+					NoChangeJobs: i.NoChangeJobs(),
+					MissingJobs:  i.MissingJobs(),
+					FailedJobs:   i.FailedJobs(),
+					TotalJobs:    i.TotalJobs(),
+				})
+				break
+			}
 		}
-		resp.Imports = append(resp.Imports, &ImportEntry{
-			ID:           i.ID().String(),
-			ChannelID:    i.ChannelID().String(),
-			Status:       i.Status().String(),
-			StartedAt:    i.StartedAt().Format(time.RFC3339),
-			EndedAt:      ended,
-			Error:        i.Error(),
-			NewJobs:      i.NewJobs(),
-			UpdatedJobs:  i.UpdatedJobs(),
-			NoChangeJobs: i.NoChangeJobs(),
-			MissingJobs:  i.MissingJobs(),
-			FailedJobs:   i.FailedJobs(),
-			TotalJobs:    i.TotalJobs(),
-		})
 	}
 
 	return resp

@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"errors"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/http"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -24,35 +25,38 @@ type ImportHandlerSuite struct {
 func (suite *ImportHandlerSuite) Test_List_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
-	r := testutils.NewImportRepository()
-	s := imports.NewService(r)
-	h := http.APIRootHandler(nil, s, http.Config{}, log)
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
+	chr := testutils.NewChannelRepository()
+	chs := channel.NewService(chr)
+	h := http.APIRootHandler(chs, is, http.Config{}, log)
 
-	chID := uuid.New()
+	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
+	chr.Add(ch)
 
 	id1 := uuid.New()
 	sAt1 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
 	eAt1 := time.Date(2020, 1, 1, 0, 0, 4, 0, time.UTC)
 	i1 := imports.New(
 		id1,
-		chID,
+		ch.ID(),
 		imports.WithStatus(imports.StatusPublishing),
 		imports.WithMetadata(1, 2, 3, 4, 5),
 		imports.WithStartAt(sAt1),
 		imports.WithEndAt(eAt1),
 		imports.WithError("happened this error"),
 	)
-	r.Add(i1)
+	ir.Add(i1)
 
 	id2 := uuid.New()
 	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i2 := imports.New(id2, chID, imports.WithStartAt(sAt2))
-	r.Add(i2)
+	i2 := imports.New(id2, ch.ID(), imports.WithStartAt(sAt2))
+	ir.Add(i2)
 
 	id3 := uuid.New()
 	sAt3 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
-	i3 := imports.New(id3, chID, imports.WithStartAt(sAt3))
-	r.Add(i3)
+	i3 := imports.New(id3, ch.ID(), imports.WithStartAt(sAt3))
+	ir.Add(i3)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -64,7 +68,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"imports":[{"id":"`+id1.String()+`","channel_id":"`+chID.String()+`","status":"publishing","started_at":"2020-01-01T00:00:03Z","ended_at":"2020-01-01T00:00:04Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":15},{"id":"`+id2.String()+`","channel_id":"`+chID.String()+`","status":"pending","started_at":"2020-01-01T00:00:02Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0},{"id":"`+id3.String()+`","channel_id":"`+chID.String()+`","status":"pending","started_at":"2020-01-01T00:00:01Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0}]}`+"\n", rr.Body.String())
+	suite.Equal(`{"imports":[{"id":"`+id1.String()+`","channel_id":"`+ch.ID().String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"publishing","started_at":"2020-01-01T00:00:03Z","ended_at":"2020-01-01T00:00:04Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":15},{"id":"`+id2.String()+`","channel_id":"`+ch.ID().String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:02Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0},{"id":"`+id3.String()+`","channel_id":"`+ch.ID().String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:01Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0}]}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -73,10 +77,12 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
-	r := testutils.NewImportRepository()
-	r.FailWith(errors.New("boom!"))
-	s := imports.NewService(r)
-	h := http.APIRootHandler(nil, s, http.Config{}, log)
+	ir := testutils.NewImportRepository()
+	ir.FailWith(errors.New("boom!"))
+	is := imports.NewService(ir)
+	chr := testutils.NewChannelRepository()
+	chs := channel.NewService(chr)
+	h := http.APIRootHandler(chs, is, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)

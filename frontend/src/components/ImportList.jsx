@@ -65,8 +65,12 @@ const ImportList = () => {
                                     {importEntry.id}
                                 </Link>
                             </td>
-                            <td>-</td>
-                            <td>-</td>
+                            <td>
+                                <Link to={`/channels/${importEntry.channel_id}`} className="text-blue-400 hover:underline">
+                                    {importEntry.channel_name}
+                                </Link>
+                            </td>
+                            <td>{importEntry.integration}</td>
                             <td>{importEntry.total_jobs}</td>
                             <td>{importEntry.status}</td>
                             <td>{importEntry.started_at}</td>

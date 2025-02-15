@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"log/slog"
 	"net/http"
 
@@ -12,13 +13,15 @@ import (
 )
 
 type ImportHandler struct {
-	s   *imports.Service
+	is  *imports.Service
+	chs *channel.Service
 	log *slog.Logger
 }
 
-func NewImportHandler(s *imports.Service, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chs *channel.Service, is *imports.Service, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
-		s:   s,
+		chs: chs,
+		is:  is,
 		log: log,
 	}
 }
@@ -32,16 +35,22 @@ func (h *ImportHandler) Routes() http.Handler {
 }
 
 func (h *ImportHandler) ListImports(w http.ResponseWriter, r *http.Request) {
-	ii, err := h.s.GetImports(r.Context())
+	ii, err := h.is.GetImports(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get imports: %w", err))
+		return
+	}
+
+	cc, err := h.chs.All(r.Context())
+	if err != nil {
+		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := NewImportsResponse(ii)
+	resp := NewImportsResponse(ii, cc)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
 	}

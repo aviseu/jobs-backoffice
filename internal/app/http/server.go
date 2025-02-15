@@ -46,7 +46,7 @@ func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *
 
 	r.Mount("/api/channels", api.NewChannelHandler(chs, log).Routes())
 	r.Mount("/api/integrations", api.NewIntegrationHandler(chs, log).Routes())
-	r.Mount("/api/imports", api.NewImportHandler(is, log).Routes())
+	r.Mount("/api/imports", api.NewImportHandler(chs, is, log).Routes())
 
 	return r
 }
