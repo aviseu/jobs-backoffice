@@ -92,6 +92,9 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, res
 
 	// save if existing does not exist in incoming
 	for _, ex := range existing {
+		if ex.Status() == StatusInactive {
+			continue
+		}
 		for _, in := range incoming {
 			if ex.ID() == in.ID() {
 				goto skip

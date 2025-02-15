@@ -39,10 +39,12 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	chID := uuid.New()
 	existingNoChange := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
 	existingChange := job.New(uuid.New(), chID, job.StatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
-	existingMissing := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
+	existingActiveMissing := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
+	existingInactiveMissing := job.New(uuid.New(), chID, job.StatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
 	r.Add(existingNoChange)
 	r.Add(existingChange)
-	r.Add(existingMissing)
+	r.Add(existingActiveMissing)
+	r.Add(existingInactiveMissing)
 
 	incomingNoChange := job.New(existingNoChange.ID(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), job.WithPublishStatus(job.PublishStatusUnpublished))
 	incomingChange := job.New(existingChange.ID(), chID, job.StatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusUnpublished))
@@ -56,7 +58,7 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Len(r.Jobs, 4)
+	suite.Len(r.Jobs, 5)
 
 	suite.Equal(job.StatusActive, r.Jobs[existingNoChange.ID()].Status())
 	suite.Equal(job.PublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus())
@@ -64,8 +66,11 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	suite.Equal(job.StatusActive, r.Jobs[existingChange.ID()].Status())
 	suite.Equal(job.PublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus())
 
-	suite.Equal(job.StatusInactive, r.Jobs[existingMissing.ID()].Status())
-	suite.Equal(job.PublishStatusUnpublished, r.Jobs[existingMissing.ID()].PublishStatus())
+	suite.Equal(job.StatusInactive, r.Jobs[existingActiveMissing.ID()].Status())
+	suite.Equal(job.PublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus())
+
+	suite.Equal(job.StatusInactive, r.Jobs[existingInactiveMissing.ID()].Status())
+	suite.Equal(job.PublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus())
 
 	suite.Equal(job.StatusActive, r.Jobs[incomingNew.ID()].Status())
 	suite.Equal(job.PublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus())
@@ -79,8 +84,8 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	suite.Equal(existingChange.ID(), resultMap[existingChange.ID()].JobID())
 	suite.Equal(job.ResultTypeUpdated, resultMap[existingChange.ID()].Type())
 
-	suite.Equal(existingMissing.ID(), resultMap[existingMissing.ID()].JobID())
-	suite.Equal(job.ResultTypeMissing, resultMap[existingMissing.ID()].Type())
+	suite.Equal(existingActiveMissing.ID(), resultMap[existingActiveMissing.ID()].JobID())
+	suite.Equal(job.ResultTypeMissing, resultMap[existingActiveMissing.ID()].Type())
 
 	suite.Equal(incomingNew.ID(), resultMap[incomingNew.ID()].JobID())
 	suite.Equal(job.ResultTypeNew, resultMap[incomingNew.ID()].Type())
