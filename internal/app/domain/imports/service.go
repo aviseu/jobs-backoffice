@@ -25,8 +25,8 @@ func NewService(r Repository) *Service {
 	return &Service{r: r}
 }
 
-func (s *Service) Start(ctx context.Context, channelID uuid.UUID) (*Import, error) {
-	i := New(uuid.New(), channelID)
+func (s *Service) Start(ctx context.Context, id uuid.UUID, channelID uuid.UUID) (*Import, error) {
+	i := New(id, channelID)
 	if err := s.r.SaveImport(ctx, i); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", channelID, err)
 	}

@@ -27,7 +27,7 @@ func (suite *ServiceSuite) Test_Success() {
 	chID := uuid.New()
 
 	// Start
-	i, err := s.Start(ctx, chID)
+	i, err := s.Start(ctx, uuid.New(), chID)
 	suite.NoError(err)
 	suite.Len(r.Imports, 1)
 	suite.NotNil(r.Imports[i.ID()])
@@ -90,7 +90,7 @@ func (suite *ServiceSuite) Test_Fail() {
 	chID := uuid.New()
 
 	// Start
-	i, err := s.Start(ctx, chID)
+	i, err := s.Start(ctx, uuid.New(), chID)
 	suite.NoError(err)
 	suite.False(r.Imports[i.ID()].EndedAt().Valid)
 

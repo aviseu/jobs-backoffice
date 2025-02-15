@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"log/slog"
 	"sync"
 
@@ -50,7 +51,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Imp
 }
 
 func (g *Gateway) ImportChannel(ctx context.Context) error {
-	i, err := g.is.Start(ctx, g.p.Channel().ID())
+	i, err := g.is.Start(ctx, uuid.New(), g.p.Channel().ID())
 	if err != nil {
 		return fmt.Errorf("failed to create import for channel %s: %w", g.p.Channel().ID(), err)
 	}
