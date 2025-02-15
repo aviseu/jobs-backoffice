@@ -22,7 +22,7 @@ jobs:
       id-token: 'write'
     strategy:
       matrix:
-        app: [import, api]
+        app: [import, backoffice-api]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -97,11 +97,11 @@ jobs:
           driver-opts: |
             image=moby/buildkit:master
 
-      - name: Docker subscriber meta (api-frontend)
+      - name: Docker subscriber meta (backoffice-frontend)
         id: subscriber_meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api-frontend
+          images: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend
           flavor: |
             latest=auto
           tags: |
@@ -111,6 +111,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           target: frontend
-          context: api-frontend
+          context: frontend
           push: true
           tags: ${{ steps.subscriber_meta.outputs.tags }}
