@@ -58,6 +58,21 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*impor
 	return toDomainImport(&i), nil
 }
 
+func (r *ImportRepository) GetImports(ctx context.Context) ([]*imports.Import, error) {
+	var ii []*Import
+	err := r.db.SelectContext(ctx, &ii, "SELECT * FROM imports order by started_at desc")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get imports: %w", err)
+	}
+
+	result := make([]*imports.Import, 0, len(ii))
+	for _, i := range ii {
+		result = append(result, toDomainImport(i))
+	}
+
+	return result, nil
+}
+
 func (r *ImportRepository) SaveImportJob(ctx context.Context, jr *imports.JobResult) error {
 	_, err := r.db.NamedExecContext(
 		ctx,

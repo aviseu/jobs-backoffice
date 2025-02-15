@@ -7,41 +7,47 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/go-chi/chi/v5"
 )
 
-type IntegrationHandler struct {
-	s   *channel.Service
+type ImportHandler struct {
+	s   *imports.Service
 	log *slog.Logger
 }
 
-func NewIntegrationHandler(s *channel.Service, log *slog.Logger) *IntegrationHandler {
-	return &IntegrationHandler{
+func NewImportHandler(s *imports.Service, log *slog.Logger) *ImportHandler {
+	return &ImportHandler{
 		s:   s,
 		log: log,
 	}
 }
 
-func (h *IntegrationHandler) Routes() http.Handler {
+func (h *ImportHandler) Routes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", h.ListIntegrations)
+	r.Get("/", h.ListImports)
 
 	return r
 }
 
-func (h *IntegrationHandler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
+func (h *ImportHandler) ListImports(w http.ResponseWriter, r *http.Request) {
+	ii, err := h.s.GetImports(r.Context())
+	if err != nil {
+		h.handleError(w, fmt.Errorf("failed to get imports: %w", err))
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := NewListIntegrationsResponse(h.s.Integrations())
+	resp := NewImportsResponse(ii)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
 	}
 }
 
-func (h *IntegrationHandler) handleFail(w http.ResponseWriter, err error, code int) {
+func (h *ImportHandler) handleFail(w http.ResponseWriter, err error, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 
@@ -53,7 +59,7 @@ func (h *IntegrationHandler) handleFail(w http.ResponseWriter, err error, code i
 	}
 }
 
-func (h *IntegrationHandler) handleError(w http.ResponseWriter, err error) {
+func (h *ImportHandler) handleError(w http.ResponseWriter, err error) {
 	h.log.Error(err.Error(), slog.Any("Error", err))
 
 	h.handleFail(w, errors.New(http.StatusText(http.StatusInternalServerError)), http.StatusInternalServerError)

@@ -170,6 +170,74 @@ func (suite *ImportRepositorySuite) Test_FindImport_NotFound() {
 	suite.Nil(i)
 }
 
+func (suite *ImportRepositorySuite) Test_GetImports_Success() {
+	// Prepare
+	r := postgres.NewImportRepository(suite.DB)
+
+	chID := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
+		chID,
+		"Channel Name",
+		channel.IntegrationArbeitnow,
+		channel.StatusInactive,
+	)
+	suite.NoError(err)
+
+	id1 := uuid.New()
+	sAt1 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
+	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
+		id1,
+		chID,
+		imports.StatusProcessing,
+		sAt1,
+	)
+	suite.NoError(err)
+
+	id2 := uuid.New()
+	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
+	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
+		id2,
+		chID,
+		imports.StatusProcessing,
+		sAt2,
+	)
+	suite.NoError(err)
+
+	id3 := uuid.New()
+	sAt3 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
+	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
+		id3,
+		chID,
+		imports.StatusProcessing,
+		sAt3,
+	)
+	suite.NoError(err)
+
+	// Execute
+	ii, err := r.GetImports(context.Background())
+
+	// Assert
+	suite.NoError(err)
+	suite.Len(ii, 3)
+
+	suite.Equal(id3, ii[0].ID())
+	suite.Equal(id2, ii[1].ID())
+	suite.Equal(id1, ii[2].ID())
+}
+
+func (suite *ImportRepositorySuite) Test_GetImports_Fail() {
+	// Prepare
+	r := postgres.NewImportRepository(suite.BadDB)
+
+	// Execute
+	ii, err := r.GetImports(context.Background())
+
+	// Assert
+	suite.Error(err)
+	suite.Nil(ii)
+	suite.ErrorContains(err, "sql: database is closed")
+}
+
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	// Prepare
 	chID := uuid.New()

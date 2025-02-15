@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage/postgres"
@@ -69,11 +70,13 @@ func run(ctx context.Context) error {
 
 	// services
 	slog.Info("setting up services...")
-	r := postgres.NewChannelRepository(db)
-	s := channel.NewService(r)
+	chr := postgres.NewChannelRepository(db)
+	chs := channel.NewService(chr)
+	ir := postgres.NewImportRepository(db)
+	is := imports.NewService(ir)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(s, cfg.API, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, is, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

@@ -149,6 +149,46 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "integrations - list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/integrations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"integrations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "imports - list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/imports",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"imports"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

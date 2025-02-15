@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
+	"slices"
 	"sync"
 )
 
@@ -28,6 +29,10 @@ func (r *ImportRepository) First() *imports.Import {
 	}
 
 	return nil
+}
+
+func (r *ImportRepository) Add(i *imports.Import) {
+	r.Imports[i.ID()] = i
 }
 
 func (r *ImportRepository) FailWith(err error) {
@@ -55,6 +60,23 @@ func (r *ImportRepository) FindImport(_ context.Context, id uuid.UUID) (*imports
 	}
 
 	return i, nil
+}
+
+func (r *ImportRepository) GetImports(_ context.Context) ([]*imports.Import, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+
+	var ii []*imports.Import
+	for _, i := range r.Imports {
+		ii = append(ii, i)
+	}
+
+	slices.SortFunc(ii, func(a, b *imports.Import) int {
+		return b.StartedAt().Compare(a.StartedAt())
+	})
+
+	return ii, nil
 }
 
 func (r *ImportRepository) SaveImportJob(_ context.Context, jr *imports.JobResult) error {

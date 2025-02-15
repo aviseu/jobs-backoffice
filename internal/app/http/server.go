@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/http/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -29,7 +30,7 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler(s *channel.Service, cfg Config, log *slog.Logger) http.Handler {
+func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	if cfg.Cors {
@@ -43,11 +44,9 @@ func APIRootHandler(s *channel.Service, cfg Config, log *slog.Logger) http.Handl
 		}))
 	}
 
-	channels := api.NewChannelHandler(s, log)
-	r.Mount("/api/channels", channels.Routes())
-
-	integrations := api.NewIntegrationHandler(s, log)
-	r.Mount("/api/integrations", integrations.Routes())
+	r.Mount("/api/channels", api.NewChannelHandler(chs, log).Routes())
+	r.Mount("/api/integrations", api.NewIntegrationHandler(chs, log).Routes())
+	r.Mount("/api/imports", api.NewImportHandler(is, log).Routes())
 
 	return r
 }

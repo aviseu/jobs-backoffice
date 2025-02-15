@@ -19,7 +19,7 @@ const (
 )
 
 func (s Status) String() string {
-	return [...]string{"fetching", "processing", "publishing", "completed", "failed"}[s]
+	return [...]string{"pending", "fetching", "processing", "publishing", "completed", "failed"}[s]
 }
 
 type Import struct {

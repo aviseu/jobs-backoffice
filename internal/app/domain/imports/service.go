@@ -13,6 +13,7 @@ type Repository interface {
 	SaveImport(ctx context.Context, i *Import) error
 	SaveImportJob(ctx context.Context, j *JobResult) error
 
+	GetImports(ctx context.Context) ([]*Import, error)
 	FindImport(ctx context.Context, id uuid.UUID) (*Import, error)
 	GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*JobResult, error)
 }
@@ -25,7 +26,7 @@ func NewService(r Repository) *Service {
 	return &Service{r: r}
 }
 
-func (s *Service) Start(ctx context.Context, id uuid.UUID, channelID uuid.UUID) (*Import, error) {
+func (s *Service) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, error) {
 	i := New(id, channelID)
 	if err := s.r.SaveImport(ctx, i); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", channelID, err)
@@ -76,6 +77,10 @@ func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error 
 	}
 
 	return nil
+}
+
+func (s *Service) GetImports(ctx context.Context) ([]*Import, error) {
+	return s.r.GetImports(ctx)
 }
 
 func (s *Service) fillMetadataFromJobs(i *Import) error {

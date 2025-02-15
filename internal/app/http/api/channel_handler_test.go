@@ -27,7 +27,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
 	suite.NoError(err)
@@ -51,7 +51,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	// Assert response
 	suite.Equal(oghttp.StatusCreated, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"Channel Name","integration":"arbeitnow","status":"inactive","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"Channel Name","integration":"arbeitnow","Status":"inactive","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -62,7 +62,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"","integration":"bad_integration"}`))
 	suite.NoError(err)
@@ -89,7 +89,7 @@ func (suite *ChannelHandlerSuite) Test_Create_RepositoryFail_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
 	suite.NoError(err)
@@ -118,7 +118,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch1 := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
 	r.Add(ch1)
@@ -135,7 +135,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"channels":[{"id":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"id":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
+	suite.Equal(`{"channels":[{"ID":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","Status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"ID":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","Status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -146,7 +146,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 	_, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{Cors: true}, log)
+	h := http.APIRootHandler(s, nil, http.Config{Cors: true}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
@@ -169,7 +169,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	_, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{Cors: false}, log)
+	h := http.APIRootHandler(s, nil, http.Config{Cors: false}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
@@ -192,7 +192,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -216,7 +216,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"channel 1","integration":"arbeitnow","Status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -227,7 +227,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+uuid.New().String(), nil)
 	suite.NoError(err)
@@ -250,7 +250,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/invalid-uuid", nil)
 	suite.NoError(err)
@@ -274,7 +274,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Error_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+uuid.New().String(), nil)
 	suite.NoError(err)
@@ -300,7 +300,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -333,7 +333,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","Status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -344,7 +344,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+uuid.New().String(), strings.NewReader(`{"name":"New Name"}`))
 	suite.NoError(err)
@@ -367,7 +367,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/invalid-uuid", strings.NewReader(`{"name":"New Name"}`))
 	suite.NoError(err)
@@ -390,7 +390,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -431,7 +431,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -474,7 +474,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -515,7 +515,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/activate", nil)
 	suite.NoError(err)
@@ -538,7 +538,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/activate", nil)
 	suite.NoError(err)
@@ -562,7 +562,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -605,7 +605,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),
@@ -646,7 +646,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/deactivate", nil)
 	suite.NoError(err)
@@ -669,7 +669,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/deactivate", nil)
 	suite.NoError(err)
@@ -693,7 +693,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, http.Config{}, log)
 
 	ch := channel.New(
 		uuid.New(),

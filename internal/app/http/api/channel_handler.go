@@ -35,8 +35,6 @@ func (h *ChannelHandler) Routes() http.Handler {
 	r.Put("/{id}/activate", h.ActivateChannel)
 	r.Put("/{id}/deactivate", h.DeactivateChannel)
 
-	r.Get("/integrations", h.ListIntegrations)
-
 	return r
 }
 
@@ -212,14 +210,14 @@ func (h *ChannelHandler) handleFail(w http.ResponseWriter, err error, code int) 
 
 	resp := NewErrorResponse(err)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		h.log.Error(err.Error(), slog.Any("error", err))
+		h.log.Error(err.Error(), slog.Any("Error", err))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
 func (h *ChannelHandler) handleError(w http.ResponseWriter, err error) {
-	h.log.Error(err.Error(), slog.Any("error", err))
+	h.log.Error(err.Error(), slog.Any("Error", err))
 
 	h.handleFail(w, errors.New(http.StatusText(http.StatusInternalServerError)), http.StatusInternalServerError)
 }
