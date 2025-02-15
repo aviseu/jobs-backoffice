@@ -83,6 +83,10 @@ func (s *Service) GetImports(ctx context.Context) ([]*Import, error) {
 	return s.r.GetImports(ctx)
 }
 
+func (s *Service) FindImport(ctx context.Context, id uuid.UUID) (*Import, error) {
+	return s.r.FindImport(ctx, id)
+}
+
 func (s *Service) fillMetadataFromJobs(i *Import) error {
 	jobs, err := s.r.GetJobsByImportID(context.Background(), i.ID())
 	if err != nil {

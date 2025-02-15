@@ -76,7 +76,7 @@ func NewListIntegrationsResponse(integrations []channel.Integration) *Integratio
 	return resp
 }
 
-type ImportEntry struct {
+type ImportResponse struct {
 	ID           string      `json:"id"`
 	ChannelID    string      `json:"channel_id"`
 	ChannelName  string      `json:"channel_name"`
@@ -93,39 +93,43 @@ type ImportEntry struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
+func NewImportResponse(i *imports.Import, ch *channel.Channel) *ImportResponse {
+	ended := null.String{}
+	if i.EndedAt().Valid {
+		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
+	}
+
+	return &ImportResponse{
+		ID:           i.ID().String(),
+		ChannelID:    i.ChannelID().String(),
+		ChannelName:  ch.Name(),
+		Integration:  ch.Integration().String(),
+		Status:       i.Status().String(),
+		StartedAt:    i.StartedAt().Format(time.RFC3339),
+		EndedAt:      ended,
+		Error:        i.Error(),
+		NewJobs:      i.NewJobs(),
+		UpdatedJobs:  i.UpdatedJobs(),
+		NoChangeJobs: i.NoChangeJobs(),
+		MissingJobs:  i.MissingJobs(),
+		FailedJobs:   i.FailedJobs(),
+		TotalJobs:    i.TotalJobs(),
+	}
+}
+
 type ImportsResponse struct {
-	Imports []*ImportEntry `json:"imports"`
+	Imports []*ImportResponse `json:"imports"`
 }
 
 func NewImportsResponse(imports []*imports.Import, channels []*channel.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
-		Imports: make([]*ImportEntry, 0, len(imports)),
+		Imports: make([]*ImportResponse, 0, len(imports)),
 	}
 
 	for _, i := range imports {
 		for _, ch := range channels {
 			if ch.ID() == i.ChannelID() {
-				ended := null.String{}
-				if i.EndedAt().Valid {
-					ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
-				}
-
-				resp.Imports = append(resp.Imports, &ImportEntry{
-					ID:           i.ID().String(),
-					ChannelID:    i.ChannelID().String(),
-					ChannelName:  ch.Name(),
-					Integration:  ch.Integration().String(),
-					Status:       i.Status().String(),
-					StartedAt:    i.StartedAt().Format(time.RFC3339),
-					EndedAt:      ended,
-					Error:        i.Error(),
-					NewJobs:      i.NewJobs(),
-					UpdatedJobs:  i.UpdatedJobs(),
-					NoChangeJobs: i.NoChangeJobs(),
-					MissingJobs:  i.MissingJobs(),
-					FailedJobs:   i.FailedJobs(),
-					TotalJobs:    i.TotalJobs(),
-				})
+				resp.Imports = append(resp.Imports, NewImportResponse(i, ch))
 				break
 			}
 		}

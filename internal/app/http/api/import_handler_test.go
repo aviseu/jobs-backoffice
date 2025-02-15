@@ -102,3 +102,99 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "failed to get imports: boom!")
 }
+
+func (suite *ImportHandlerSuite) Test_Find_Success() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
+	chr := testutils.NewChannelRepository()
+	chs := channel.NewService(chr)
+	h := http.APIRootHandler(chs, is, http.Config{}, log)
+
+	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
+	chr.Add(ch)
+
+	id := uuid.New()
+	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
+	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
+	i := imports.New(
+		id,
+		ch.ID(),
+		imports.WithStatus(imports.StatusCompleted),
+		imports.WithMetadata(1, 2, 3, 4, 5),
+		imports.WithStartAt(sAt),
+		imports.WithEndAt(eAt),
+		imports.WithError("happened this error"),
+	)
+	ir.Add(i)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"id":"`+id.String()+`","channel_id":"`+ch.ID().String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:01Z","ended_at":"2020-01-01T00:00:02Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":15}`+"\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *ImportHandlerSuite) Test_Find_NotFound() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	ir := testutils.NewImportRepository()
+	is := imports.NewService(ir)
+	chr := testutils.NewChannelRepository()
+	chs := channel.NewService(chr)
+	h := http.APIRootHandler(chs, is, http.Config{}, log)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusNotFound, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"error":{"message":"import not found: import not found"}}`+"\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(lbuf.String())
+}
+
+func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
+	// Prepare
+	lbuf, log := testutils.NewLogger()
+	ir := testutils.NewImportRepository()
+	ir.FailWith(errors.New("boom!"))
+	is := imports.NewService(ir)
+	chr := testutils.NewChannelRepository()
+	chs := channel.NewService(chr)
+	h := http.APIRootHandler(chs, is, http.Config{}, log)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	h.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"error":{"message":"Internal Server Error"}}`+"\n", rr.Body.String())
+
+	// Assert log
+	lines := testutils.LogLines(lbuf)
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "failed to get import: boom!")
+}

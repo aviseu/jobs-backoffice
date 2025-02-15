@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/errs"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -101,4 +102,53 @@ func (suite *ServiceSuite) Test_Fail() {
 	suite.True(r.Imports[i.ID()].EndedAt().Valid)
 	suite.True(r.Imports[i.ID()].EndedAt().Time.After(time.Now().Add(-2 * time.Second)))
 	suite.Equal("boom!", r.Imports[i.ID()].Error().String)
+}
+
+func (suite *ServiceSuite) Test_FindImport_Success() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	s := imports.NewService(r)
+	ctx := context.Background()
+	id := uuid.New()
+	r.Add(imports.New(id, uuid.New()))
+
+	// Execute
+	i, err := s.FindImport(ctx, id)
+	suite.NoError(err)
+
+	// Success
+	suite.NoError(err)
+	suite.Equal(id, i.ID())
+}
+
+func (suite *ServiceSuite) Test_FindImport_Fail() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	r.FailWith(errors.New("boom!"))
+	s := imports.NewService(r)
+	ctx := context.Background()
+
+	// Execute
+	i, err := s.FindImport(ctx, uuid.New())
+
+	// Fail
+	suite.Nil(i)
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}
+
+func (suite *ServiceSuite) Test_FindImport_NotFound() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	s := imports.NewService(r)
+	ctx := context.Background()
+
+	// Execute
+	i, err := s.FindImport(ctx, uuid.New())
+
+	// Fail
+	suite.Nil(i)
+	suite.ErrorIs(err, imports.ErrImportNotFound)
+	suite.True(errs.IsValidationError(err))
 }

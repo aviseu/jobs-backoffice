@@ -6,6 +6,7 @@ import ChannelList from './components/ChannelList';
 import ChannelCreate from './components/ChannelCreate.jsx';
 import ChannelUpdate from './components/ChannelUpdate.jsx';
 import ChannelDetails from './components/ChannelDetails';
+import ImportDetails from './components/ImportDetails';
 import ImportList from './components/ImportList';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
@@ -25,6 +26,7 @@ function App() {
                       <Route path="/channels/:id" element={<ChannelDetails/>} />
 
                       <Route path="/imports" element={<ImportList/>} />
+                      <Route path="/imports/:id" element={<ImportDetails/>} />
                   </Routes>
               </div>
           </Router>
