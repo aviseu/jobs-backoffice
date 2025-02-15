@@ -40,32 +40,37 @@ const ChannelList = () => {
     if (loading) return <div className="text-center mt-5"><div className="spinner-border" role="status"></div></div>;
 
     return (
-        <div className="table-responsive mt-5">
-            {error && <div className="alert alert-danger" role="alert">
-                {error}
-            </div>}
-            <table className="table table-striped">
-                <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Integration</th>
-                    <th scope="col">Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                {channels.map((channel) => (
-                    <tr key={channel.id} >
-                        <td>
-                            <Link to={`/${channel.id}`} className="text-blue-400 hover:underline">
-                                {channel.name}
-                            </Link>
-                        </td>
-                        <td >{channel.integration}</td>
-                        <td>{channel.status}</td>
+        <div className="mt-5">
+            <div className="text-end">
+                <Link className="btn btn-primary" to="/create">Create</Link>
+            </div>
+            <div className="table-responsive">
+                {error && <div className="alert alert-danger" role="alert">
+                    {error}
+                </div>}
+                <table className="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Integration</th>
+                        <th scope="col">Status</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {channels.map((channel) => (
+                        <tr key={channel.id} >
+                            <td>
+                                <Link to={`/${channel.id}`} className="text-blue-400 hover:underline">
+                                    {channel.name}
+                                </Link>
+                            </td>
+                            <td >{channel.integration}</td>
+                            <td>{channel.status}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
