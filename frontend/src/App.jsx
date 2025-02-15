@@ -1,11 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css'
 import TopBar from './components/TopBar';
 import ChannelList from './components/ChannelList';
 import ChannelCreate from './components/ChannelCreate.jsx';
 import ChannelUpdate from './components/ChannelUpdate.jsx';
 import ChannelDetails from './components/ChannelDetails';
+import ImportList from './components/ImportList';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
@@ -16,10 +17,14 @@ function App() {
               <TopBar/>
               <div className="container">
                   <Routes>
-                      <Route exact path="/" element={<ChannelList/>} />
-                      <Route path="/create" element={<ChannelCreate/>} />
-                      <Route path="/:id/update" element={<ChannelUpdate/>} />
-                      <Route path="/:id" element={<ChannelDetails/>} />
+                      <Route path="/" element={<Navigate to="/channels" />} />
+
+                      <Route exact path="/channels" element={<ChannelList/>} />
+                      <Route path="/channels/create" element={<ChannelCreate/>} />
+                      <Route path="/channels/:id/update" element={<ChannelUpdate/>} />
+                      <Route path="/channels/:id" element={<ChannelDetails/>} />
+
+                      <Route path="/imports" element={<ImportList/>} />
                   </Routes>
               </div>
           </Router>

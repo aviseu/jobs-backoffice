@@ -46,7 +46,7 @@ const ChannelDetails = () => {
         setError(null);
         try {
             const response = await axios.patch(`${import.meta.env.VITE_BACKEND_URL}/api/channels/${id}`, {name: name});
-            setTimeout(() => navigate("/" + id), 1);
+            setTimeout(() => navigate("/channels/" + id), 1);
         } catch (err) {
             console.log(err)
             if (err.response) {

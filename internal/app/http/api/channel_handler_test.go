@@ -51,7 +51,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	// Assert response
 	suite.Equal(oghttp.StatusCreated, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"Channel Name","integration":"arbeitnow","Status":"inactive","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"Channel Name","integration":"arbeitnow","status":"inactive","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -135,7 +135,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"channels":[{"ID":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","Status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"ID":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","Status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
+	suite.Equal(`{"channels":[{"id":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"id":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -216,7 +216,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"channel 1","integration":"arbeitnow","Status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -333,7 +333,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"ID":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","Status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())

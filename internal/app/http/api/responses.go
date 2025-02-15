@@ -9,10 +9,10 @@ import (
 )
 
 type ChannelResponse struct {
-	ID          string `json:"ID"`
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Integration string `json:"integration"`
-	Status      string `json:"Status"`
+	Status      string `json:"status"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
@@ -88,6 +88,7 @@ type ImportEntry struct {
 	NoChangeJobs int         `json:"no_change_jobs"`
 	MissingJobs  int         `json:"missing_jobs"`
 	FailedJobs   int         `json:"failed_jobs"`
+	TotalJobs    int         `json:"total_jobs"`
 }
 
 type ImportsResponse struct {
@@ -116,6 +117,7 @@ func NewImportsResponse(imports []*imports.Import) *ImportsResponse {
 			NoChangeJobs: i.NoChangeJobs(),
 			MissingJobs:  i.MissingJobs(),
 			FailedJobs:   i.FailedJobs(),
+			TotalJobs:    i.TotalJobs(),
 		})
 	}
 

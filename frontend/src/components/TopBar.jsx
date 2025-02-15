@@ -14,7 +14,10 @@ const TopBar = () => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item">
-                            <Link className={`nav-link ${location.pathname === "/" ? "active-link" : ""}`} to="/" >Channels</Link>
+                            <Link className={`nav-link ${location.pathname === "/channels" ? "active-link" : ""}`} to="/channels" >Channels</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className={`nav-link ${location.pathname === "/imports" ? "active-link" : ""}`} to="/imports" >Imports</Link>
                         </li>
                     </ul>
                 </div>

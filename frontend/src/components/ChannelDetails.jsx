@@ -78,7 +78,7 @@ const ChannelDetails = () => {
                             </button>
                         )}
 
-                        <Link className="btn btn-sm btn-primary float-end me-2" role="button" to={"/"+id+"/update"}>Update</Link>
+                        <Link className="btn btn-sm btn-primary float-end me-2" role="button" to={"/channels/"+id+"/update"}>Update</Link>
                     </h2>
                     <h6 className="mb-3">Integration: {channel.integration}</h6>
                 </div>
