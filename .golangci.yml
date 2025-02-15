@@ -106,7 +106,6 @@ linters-settings:
         severity: error
       - name: flag-parameter
         disabled: true
-
-staticcheck:
-  checks: ["all", "-SA1019"]
+  staticcheck:
+    checks: ["all", "-SA1019"]
 
