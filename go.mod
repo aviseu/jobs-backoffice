@@ -1,4 +1,4 @@
-module github.com/aviseu/jobs
+module github.com/aviseu/jobs-backoffice
 
 go 1.23.1
 

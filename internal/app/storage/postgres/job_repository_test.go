@@ -2,9 +2,9 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs/internal/app/domain/job"
-	"github.com/aviseu/jobs/internal/app/storage/postgres"
-	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"

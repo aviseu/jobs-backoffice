@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aviseu/jobs/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )

@@ -4,10 +4,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/domain/imports"
-	"github.com/aviseu/jobs/internal/app/domain/job"
-	"github.com/aviseu/jobs/internal/app/gateway/arbeitnow"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/gateway/arbeitnow"
 )
 
 type Config struct {

@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/domain/imports"
-	"github.com/aviseu/jobs/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 )
 
 type Provider interface {

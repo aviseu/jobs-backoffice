@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/gateway"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/gateway"
 )
 
 type ImportActiveAction struct {

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 )
 

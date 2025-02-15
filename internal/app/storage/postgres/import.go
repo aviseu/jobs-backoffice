@@ -3,7 +3,7 @@ package postgres
 import (
 	"time"
 
-	"github.com/aviseu/jobs/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 	"gopkg.in/guregu/null.v3"
 )

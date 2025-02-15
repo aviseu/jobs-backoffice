@@ -1,15 +1,15 @@
 package arbeitnow_test
 
 import (
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/domain/job"
-	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/aviseu/jobs/internal/app/gateway/arbeitnow"
+	"github.com/aviseu/jobs-backoffice/internal/app/gateway/arbeitnow"
 	"github.com/stretchr/testify/suite"
 )
 

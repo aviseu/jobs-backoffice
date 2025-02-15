@@ -2,7 +2,7 @@ package testutils
 
 import (
 	"context"
-	"github.com/aviseu/jobs/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 	"sync"
 )

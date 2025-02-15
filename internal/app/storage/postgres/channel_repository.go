@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )

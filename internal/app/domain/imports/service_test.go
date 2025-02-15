@@ -3,8 +3,8 @@ package imports_test
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs/internal/app/domain/imports"
-	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"

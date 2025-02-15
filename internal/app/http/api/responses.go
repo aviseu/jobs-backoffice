@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 )
 
 type ChannelResponse struct {

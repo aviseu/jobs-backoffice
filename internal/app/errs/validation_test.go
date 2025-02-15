@@ -2,7 +2,7 @@ package errs_test
 
 import (
 	"errors"
-	"github.com/aviseu/jobs/internal/app/errs"
+	"github.com/aviseu/jobs-backoffice/internal/app/errs"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )

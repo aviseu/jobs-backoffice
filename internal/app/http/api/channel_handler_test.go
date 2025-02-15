@@ -2,9 +2,9 @@ package api_test
 
 import (
 	"errors"
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/http"
-	"github.com/aviseu/jobs/internal/testutils"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/http"
+	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"

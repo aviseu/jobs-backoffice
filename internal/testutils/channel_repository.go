@@ -3,7 +3,7 @@ package testutils
 import (
 	"cmp"
 	"context"
-	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/google/uuid"
 	"slices"
 )

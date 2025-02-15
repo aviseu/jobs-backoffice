@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 )
 
 const ChannelHeader = "X-Channel-Id"

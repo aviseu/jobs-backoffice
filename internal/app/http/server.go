@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aviseu/jobs/internal/app/domain/channel"
-	"github.com/aviseu/jobs/internal/app/http/api"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/http/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
