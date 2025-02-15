@@ -19,21 +19,21 @@ func (s JobStatus) String() string {
 }
 
 type JobResult struct {
-	id       uuid.UUID
+	jobID    uuid.UUID
 	importID uuid.UUID
 	result   JobStatus
 }
 
-func NewResult(id, importID uuid.UUID, result JobStatus) *JobResult {
+func NewResult(jobID, importID uuid.UUID, result JobStatus) *JobResult {
 	return &JobResult{
-		id:       id,
+		jobID:    jobID,
 		importID: importID,
 		result:   result,
 	}
 }
 
-func (j *JobResult) ID() uuid.UUID {
-	return j.id
+func (j *JobResult) JobID() uuid.UUID {
+	return j.jobID
 }
 
 func (j *JobResult) ImportID() uuid.UUID {

@@ -13,7 +13,7 @@ type ImportJobResult struct {
 
 func fromDomainImportJobResult(j *imports.JobResult) *ImportJobResult {
 	return &ImportJobResult{
-		ID:       j.ID(),
+		ID:       j.JobID(),
 		ImportID: j.ImportID(),
 		Result:   int(j.Result()),
 	}

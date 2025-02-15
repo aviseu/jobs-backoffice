@@ -198,6 +198,17 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 
 	// Assert
 	suite.NoError(err)
+
+	// Assert state change
+	var count int
+	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
+	suite.NoError(err)
+	suite.Equal(1, count)
+
+	var dbImportJobResult postgres.ImportJobResult
+	err = suite.DB.Get(&dbImportJobResult, "SELECT * FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
+	suite.NoError(err)
+	suite.Equal(imports.JobStatusUpdated, imports.JobStatus(dbImportJobResult.Result))
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
@@ -210,7 +221,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, jr.ID().String())
+	suite.ErrorContains(err, jr.JobID().String())
 	suite.ErrorContains(err, "sql: database is closed")
 }
 

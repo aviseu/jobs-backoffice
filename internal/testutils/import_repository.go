@@ -63,7 +63,7 @@ func (r *ImportRepository) SaveImportJob(_ context.Context, jr *imports.JobResul
 	}
 
 	r.jrm.Lock()
-	r.JobResults[jr.ID()] = jr
+	r.JobResults[jr.JobID()] = jr
 	r.jrm.Unlock()
 
 	return nil

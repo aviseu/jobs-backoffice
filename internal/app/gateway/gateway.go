@@ -42,7 +42,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Imp
 	for r := range results {
 		jr := imports.NewResult(r.JobID(), i.ID(), imports.JobStatus(r.Type()))
 		if err := g.is.SaveJobResult(ctx, jr); err != nil {
-			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", jr.ID(), jr.ImportID(), err).Error())
+			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", jr.JobID(), jr.ImportID(), err).Error())
 			continue
 		}
 	}

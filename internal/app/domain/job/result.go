@@ -15,7 +15,7 @@ const (
 type Result struct {
 	error string
 	t     ResultType
-	id    uuid.UUID
+	jobID uuid.UUID
 }
 
 type ResultOptional func(*Result)
@@ -26,10 +26,10 @@ func WithError(err string) ResultOptional {
 	}
 }
 
-func NewResult(id uuid.UUID, t ResultType, opts ...ResultOptional) *Result {
+func NewResult(jobID uuid.UUID, t ResultType, opts ...ResultOptional) *Result {
 	r := &Result{
-		id: id,
-		t:  t,
+		jobID: jobID,
+		t:     t,
 	}
 
 	for _, opt := range opts {
@@ -40,7 +40,7 @@ func NewResult(id uuid.UUID, t ResultType, opts ...ResultOptional) *Result {
 }
 
 func (r *Result) JobID() uuid.UUID {
-	return r.id
+	return r.jobID
 }
 
 func (r *Result) Type() ResultType {

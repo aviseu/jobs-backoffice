@@ -62,13 +62,13 @@ func (r *ImportRepository) SaveImportJob(ctx context.Context, jr *imports.JobRes
 	_, err := r.db.NamedExecContext(
 		ctx,
 		`INSERT INTO import_job_results (import_id, job_id, result)
-				VALUES (:import_id, :import_id, :result)
+				VALUES (:import_id, :job_id, :result)
 				ON CONFLICT (import_id, job_id) DO UPDATE SET
 					result = EXCLUDED.result`,
 		fromDomainImportJobResult(jr),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to save import job result %s: %w", jr.ID(), err)
+		return fmt.Errorf("failed to save import job result %s: %w", jr.JobID(), err)
 	}
 
 	return nil
