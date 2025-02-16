@@ -135,6 +135,14 @@ func (i *Import) EndedAt() null.Time {
 	return i.endedAt
 }
 
+func (i *Import) resetMetadata() {
+	i.newJobs = 0
+	i.updatedJobs = 0
+	i.noChangeJobs = 0
+	i.missingJobs = 0
+	i.failedJobs = 0
+}
+
 func (i *Import) addJobResult(r JobStatus) {
 	switch r {
 	case JobStatusNew:

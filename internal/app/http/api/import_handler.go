@@ -71,7 +71,7 @@ func (h *ImportHandler) FindImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := h.is.FindImport(r.Context(), id)
+	i, err := h.is.FindImportWithForcedMetadata(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, imports.ErrImportNotFound) {
 			h.handleFail(w, fmt.Errorf("import not found: %w", err), http.StatusNotFound)

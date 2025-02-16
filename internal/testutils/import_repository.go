@@ -35,6 +35,10 @@ func (r *ImportRepository) Add(i *imports.Import) {
 	r.Imports[i.ID()] = i
 }
 
+func (r *ImportRepository) AddResult(j *imports.JobResult) {
+	r.JobResults[j.JobID()] = j
+}
+
 func (r *ImportRepository) FailWith(err error) {
 	r.err = err
 }

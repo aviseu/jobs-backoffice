@@ -152,3 +152,77 @@ func (suite *ServiceSuite) Test_FindImport_NotFound() {
 	suite.ErrorIs(err, imports.ErrImportNotFound)
 	suite.True(errs.IsValidationError(err))
 }
+
+func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithoutMetadata_Success() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	s := imports.NewService(r)
+	ctx := context.Background()
+	id := uuid.New()
+	r.Add(imports.New(id, uuid.New()))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNew))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusUpdated))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusUpdated))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+
+	// Execute
+	i, err := s.FindImportWithForcedMetadata(ctx, id)
+
+	// Success
+	suite.NoError(err)
+	suite.Equal(id, i.ID())
+	suite.Equal(1, i.NewJobs())
+	suite.Equal(2, i.UpdatedJobs())
+	suite.Equal(3, i.NoChangeJobs())
+	suite.Equal(4, i.MissingJobs())
+	suite.Equal(5, i.FailedJobs())
+}
+
+func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithMetadata_Success() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	s := imports.NewService(r)
+	ctx := context.Background()
+	id := uuid.New()
+	r.Add(imports.New(id, uuid.New(), imports.WithMetadata(1, 2, 3, 4, 5)))
+
+	// Execute
+	i, err := s.FindImportWithForcedMetadata(ctx, id)
+
+	// Success
+	suite.NoError(err)
+	suite.Equal(id, i.ID())
+	suite.Equal(1, i.NewJobs())
+	suite.Equal(2, i.UpdatedJobs())
+	suite.Equal(3, i.NoChangeJobs())
+	suite.Equal(4, i.MissingJobs())
+	suite.Equal(5, i.FailedJobs())
+}
+
+func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_Fail() {
+	// Prepare
+	r := testutils.NewImportRepository()
+	r.FailWith(errors.New("boom!"))
+	s := imports.NewService(r)
+	ctx := context.Background()
+
+	// Execute
+	i, err := s.FindImportWithForcedMetadata(ctx, uuid.New())
+
+	// Fail
+	suite.Nil(i)
+	suite.Error(err)
+	suite.ErrorContains(err, "boom!")
+	suite.False(errs.IsValidationError(err))
+}

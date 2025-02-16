@@ -154,7 +154,8 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	chs := channel.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
+	id := uuid.New()
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -164,7 +165,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"error":{"message":"import not found: import not found"}}`+"\n", rr.Body.String())
+	suite.Equal(`{"error":{"message":"import not found: failed to find import `+id.String()+`: import not found"}}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -180,7 +181,8 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	chs := channel.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
+	id := uuid.New()
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -196,5 +198,5 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	lines := testutils.LogLines(lbuf)
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
-	suite.Contains(lines[0], "failed to get import: boom!")
+	suite.Contains(lines[0], `failed to get import: failed to find import `+id.String()+`: boom!`)
 }
