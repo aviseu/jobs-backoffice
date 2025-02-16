@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import {Link} from "react-router-dom";
+import {Link, useLocation } from "react-router-dom";
 import { faSquarePlus, faBan, faRetweet, faEquals, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
@@ -11,11 +11,15 @@ const ImportDetails = () => {
     const [importEntry, setImportEntry] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const location = useLocation();
 
     const fetchImport = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/imports/${id}`);
             setImportEntry(response.data);
+            if (response.data.status !== "completed" && response.data.status !== "failed" && window.location.pathname === "/imports/" + id && new Date() - Date.parse(response.data.started_at) < 5 * 60 * 1000) {
+                setTimeout(fetchImport, 500);
+            }
         } catch (err) {
             console.log(err)
             if (err.response) {
@@ -32,7 +36,7 @@ const ImportDetails = () => {
 
     useEffect(() => {
         fetchImport();
-    }, [id]);
+    }, [id, location.pathname]);
 
     if (loading) return <div className="text-center mt-5"><div className="spinner-border" role="status"></div></div>;
 

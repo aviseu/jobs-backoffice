@@ -51,7 +51,7 @@ const ChannelCreate = () => {
         setError(null);
         try {
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/channels`, {name, integration})
-            setTimeout(() => navigate("/channels/" + response.data.id), 1);
+            setTimeout(() => navigate("/channels/" + response.data.id), 0);
         } catch (err) {
             console.log(err)
             if (err.response) {
