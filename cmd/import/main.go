@@ -97,12 +97,6 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import, err)
 	}
-	defer func(listener net.Listener) {
-		err := listener.Close()
-		if err != nil {
-			slog.Error(fmt.Errorf("failed to close listener: %w", err).Error())
-		}
-	}(listener)
 
 	if cfg.Import.MaxConnections > 0 {
 		listener = netutil.LimitListener(listener, cfg.Import.MaxConnections)

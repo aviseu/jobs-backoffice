@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -10,16 +11,21 @@ import (
 )
 
 type Config struct {
-	DSN string `required:"true"`
+	DSN          string `required:"true"`
+	MaxOpenConns int    `default:"10"`
+	MaxIdleConns int    `default:"10"`
 }
 
 func SetupDatabase(cfg Config) (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", cfg.DSN)
+	db, err := sql.Open("postgres", cfg.DSN)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.MaxIdleConns)
+
+	return sqlx.NewDb(db, "postgres"), nil
 }
 
 func MigrateDB(db *sqlx.DB) error {
