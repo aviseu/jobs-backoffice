@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"log/slog"
 	ohttp "net/http"
 	"os"
@@ -86,9 +87,10 @@ func run(ctx context.Context) error {
 	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := gateway.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
+	ia := domain.NewImportAction(chs, is, f)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(chs, is, f, log))
+	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(ia, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

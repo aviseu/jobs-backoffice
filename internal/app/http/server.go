@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"log/slog"
 	"net"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
-	"github.com/aviseu/jobs-backoffice/internal/app/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/http/api"
 	"github.com/aviseu/jobs-backoffice/internal/app/http/importh"
 	"github.com/go-chi/chi/v5"
@@ -53,10 +53,10 @@ func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *
 	return r
 }
 
-func ImportRootHandler(chs *channel.Service, is *imports.Service, f *gateway.Factory, log *slog.Logger) http.Handler {
+func ImportRootHandler(ia *domain.ImportAction, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
-	r.Mount("/import", importh.NewHandler(chs, is, f, log).Routes())
+	r.Mount("/import", importh.NewHandler(ia, log).Routes())
 
 	return r
 }
