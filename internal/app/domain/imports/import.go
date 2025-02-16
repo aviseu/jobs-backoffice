@@ -78,6 +78,7 @@ func New(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
 		channelID: channelID,
 		status:    StatusPending,
 		startedAt: time.Now(),
+		endedAt:   null.NewTime(time.Now(), false),
 	}
 
 	for _, opt := range opts {
