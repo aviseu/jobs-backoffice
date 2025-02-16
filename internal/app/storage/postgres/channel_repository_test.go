@@ -17,7 +17,7 @@ func TestChannelRepository(t *testing.T) {
 }
 
 type ChannelRepositorySuite struct {
-	testutils.IntegrationSuite
+	testutils.PostgresSuite
 }
 
 func (suite *ChannelRepositorySuite) Test_Save_New_Success() {

@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type IntegrationSuite struct {
+type PostgresSuite struct {
 	suite.Suite
 
 	container testcontainers.Container
@@ -24,11 +24,11 @@ type IntegrationSuite struct {
 	BadDB *sqlx.DB
 }
 
-func (suite *IntegrationSuite) SetupSuite() {
+func (suite *PostgresSuite) SetupSuite() {
 	suite.container, suite.DB, suite.BadDB, suite.m = suite.createDependencies(context.Background())
 }
 
-func (suite *IntegrationSuite) createDependencies(ctx context.Context) (testcontainers.Container, *sqlx.DB, *sqlx.DB, *migrate.Migrate) {
+func (suite *PostgresSuite) createDependencies(ctx context.Context) (testcontainers.Container, *sqlx.DB, *sqlx.DB, *migrate.Migrate) {
 	c, err := postgres.Run(ctx, "postgres:17.0",
 		postgres.WithDatabase("jobs"),
 		postgres.WithUsername("usr"),
@@ -58,15 +58,15 @@ func (suite *IntegrationSuite) createDependencies(ctx context.Context) (testcont
 	return c, db, badDB, m
 }
 
-func (suite *IntegrationSuite) TearDownSuite() {
+func (suite *PostgresSuite) TearDownSuite() {
 	suite.NoError(suite.DB.Close())
 	suite.NoError(suite.container.Terminate(context.Background()))
 }
 
-func (suite *IntegrationSuite) SetupTest() {
+func (suite *PostgresSuite) SetupTest() {
 	suite.NoError(suite.m.Up())
 }
 
-func (suite *IntegrationSuite) TearDownTest() {
+func (suite *PostgresSuite) TearDownTest() {
 	suite.NoError(suite.m.Down())
 }

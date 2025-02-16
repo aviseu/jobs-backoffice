@@ -17,7 +17,7 @@ func TestImportRepository(t *testing.T) {
 }
 
 type ImportRepositorySuite struct {
-	testutils.IntegrationSuite
+	testutils.PostgresSuite
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImport_Success() {

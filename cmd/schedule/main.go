@@ -4,16 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	ohttp "net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
+	cpubsub "cloud.google.com/go/pubsub"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
-	"github.com/aviseu/jobs-backoffice/internal/app/gateway"
-	"github.com/aviseu/jobs-backoffice/internal/app/http"
+	"github.com/aviseu/jobs-backoffice/internal/app/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -23,13 +20,12 @@ import (
 )
 
 type config struct {
-	DB      storage.Config
-	Import  http.Config `split_words:"true"`
-	Gateway gateway.Config
-	Job     struct {
-		Workers int `default:"10"`
-		Buffer  int `default:"10"`
-	}
+	DB     storage.Config
+	PubSub struct {
+		ProjectID     string `split_words:"true" required:"true"`
+		ImportTopicID string `split_words:"true" required:"true"`
+		Client        pubsub.Config
+	} `split_words:"false"`
 	Log struct {
 		Level slog.Level `default:"info"`
 	}
@@ -76,43 +72,30 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
+	// pubsub
+	client, err := cpubsub.NewClient(ctx, cfg.PubSub.ProjectID)
+	if err != nil {
+		return fmt.Errorf("failed to build pubsub client for project %s: %w", cfg.PubSub.ProjectID, err)
+	}
+
+	ps := pubsub.NewService(client.Topic(cfg.PubSub.ImportTopicID), cfg.PubSub.Client)
+
 	// services
 	slog.Info("setting up services...")
-	chr := postgres.NewChannelRepository(db)
-	chs := channel.NewService(chr)
 	ir := postgres.NewImportRepository(db)
 	is := imports.NewService(ir)
-	jr := postgres.NewJobRepository(db)
-	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
-	f := gateway.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
+	chr := postgres.NewChannelRepository(db)
+	chs := channel.NewService(chr)
 
-	// start server
-	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(chs, is, f, log))
-	serverErrors := make(chan error, 1)
-	go func() {
-		slog.Info("starting server...")
-		serverErrors <- server.ListenAndServe()
-	}()
+	importActive := domain.NewScheduleImportsAction(chs, is, ps, log)
 
-	// shutdown
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
-
-	select {
-	case err := <-serverErrors:
-		return fmt.Errorf("server error: %w", err)
-
-	case <-done:
-		slog.Info("shutting down server...")
-
-		ctx, cancel := context.WithTimeout(ctx, cfg.Import.ShutdownTimeout)
-		defer cancel()
-
-		if err := server.Shutdown(ctx); err != nil {
-			return fmt.Errorf("failed to shutdown server: %w", err)
-		}
+	slog.Info("starting imports...")
+	if err := importActive.Execute(ctx); err != nil {
+		return fmt.Errorf("failed to import active channels: %w", err)
 	}
+
+	slog.Info("all done.")
 
 	return nil
 }

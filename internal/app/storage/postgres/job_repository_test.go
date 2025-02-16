@@ -16,7 +16,7 @@ func TestJobRepository(t *testing.T) {
 }
 
 type JobRepositorySuite struct {
-	testutils.IntegrationSuite
+	testutils.PostgresSuite
 }
 
 func (suite *JobRepositorySuite) Test_Save_New_Success() {

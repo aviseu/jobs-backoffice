@@ -84,8 +84,11 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	)
 	jr.Add(j2)
 
+	i := imports.New(uuid.New(), ch.ID())
+	ir.Add(i)
+
 	// Execute
-	err := gw.ImportChannel(context.Background())
+	err := gw.Import(context.Background(), i)
 
 	// Assert Jobs
 	suite.NoError(err)
@@ -95,7 +98,6 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 
 	// Assert imports
 	suite.Len(ir.Imports, 1)
-	var i *imports.Import
 	for _, v := range ir.Imports {
 		i = v
 	}
@@ -150,8 +152,11 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	ch := channel.New(uuid.New(), "channel", channel.IntegrationArbeitnow, channel.StatusActive)
 	gw := f.Create(ch)
 
+	i := imports.New(uuid.New(), ch.ID())
+	ir.Add(i)
+
 	// Execute
-	err := gw.ImportChannel(context.Background())
+	err := gw.Import(context.Background(), i)
 
 	// Assert Result
 	suite.Error(err)
@@ -194,8 +199,11 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", channel.IntegrationArbeitnow, channel.StatusActive)
 	gw := f.Create(ch)
 
+	i := imports.New(uuid.New(), ch.ID())
+	ir.Add(i)
+
 	// Execute
-	err := gw.ImportChannel(context.Background())
+	err := gw.Import(context.Background(), i)
 
 	// Assert Result
 	suite.Error(err)

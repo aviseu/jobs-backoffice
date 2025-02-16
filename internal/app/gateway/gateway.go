@@ -9,7 +9,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
-	"github.com/google/uuid"
 )
 
 type Provider interface {
@@ -50,12 +49,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Imp
 	wg.Done()
 }
 
-func (g *Gateway) ImportChannel(ctx context.Context) error {
-	i, err := g.is.Start(ctx, uuid.New(), g.p.Channel().ID())
-	if err != nil {
-		return fmt.Errorf("failed to create import for channel %s: %w", g.p.Channel().ID(), err)
-	}
-
+func (g *Gateway) Import(ctx context.Context, i *imports.Import) error {
 	if err := g.is.SetStatus(ctx, i, imports.StatusFetching); err != nil {
 		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
 	}

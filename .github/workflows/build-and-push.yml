@@ -22,7 +22,7 @@ jobs:
       id-token: 'write'
     strategy:
       matrix:
-        app: [import, api]
+        app: [import, api, schedule]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

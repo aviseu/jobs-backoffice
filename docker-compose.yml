@@ -12,3 +12,25 @@ services:
       POSTGRES_DB: jobs
     volumes:
       - C:\docker-data\postgres\jobs:/var/lib/postgresql/data
+  pubsub:
+    image: google/cloud-sdk:emulators
+    container_name: pubsub-jobs-backoffice
+    ports:
+      - "8086:8085"
+    command:
+      - /bin/bash
+      - -ceu
+      - |
+        set -m
+        gcloud beta emulators pubsub start --project="$$CLOUDSDK_CORE_PROJECT" --host-port=0.0.0.0:8085 --quiet &
+        while ! echo > /dev/tcp/localhost/8085; do sleep 1; done
+        gcloud pubsub topics create import-topic
+        gcloud pubsub topics create import-topic-dead-letter
+        gcloud pubsub subscriptions create import-topic-sub --topic=import-topic --dead-letter-topic=import-topic-dead-letter --max-delivery-attempts=5 --push-endpoint=http://host.docker.internal:8081/import
+        fg %1
+    environment:
+      CLOUDSDK_ACTIVE_CONFIG_NAME: default
+      CLOUDSDK_AUTH_DISABLE_CREDENTIALS: true
+      CLOUDSDK_CORE_ACCOUNT: emulator@example.com
+      CLOUDSDK_CORE_PROJECT: local-project
+      CLOUDSDK_API_ENDPOINT_OVERRIDES_PUBSUB: http://localhost:8085/

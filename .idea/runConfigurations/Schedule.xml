@@ -1,9 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="import" type="GoApplicationRunConfiguration" factoryName="Go Application">
+  <configuration default="false" name="Schedule" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="jobs" />
     <working_directory value="$PROJECT_DIR$" />
     <envs>
       <env name="DB_DSN" value="postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable" />
+      <env name="PUBSUB_CLIENT_TIMEOUT" value="3s" />
+      <env name="PUBSUB_EMULATOR_HOST" value="0.0.0.0:8086" />
+      <env name="PUBSUB_IMPORT_TOPIC_ID" value="import-topic" />
+      <env name="PUBSUB_PROJECT_ID" value="local-project" />
     </envs>
     <EXTENSION ID="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />
@@ -16,7 +20,7 @@
       </ENTRIES>
     </EXTENSION>
     <kind value="PACKAGE" />
-    <package value="github.com/aviseu/jobs-backoffice/cmd/import" />
+    <package value="github.com/aviseu/jobs-backoffice/cmd/schedule" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <method v="2" />

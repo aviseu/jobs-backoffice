@@ -9,7 +9,9 @@ import (
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/http/api"
+	"github.com/aviseu/jobs-backoffice/internal/app/http/importh"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
@@ -47,6 +49,14 @@ func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *
 	r.Mount("/api/channels", api.NewChannelHandler(chs, log).Routes())
 	r.Mount("/api/integrations", api.NewIntegrationHandler(chs, log).Routes())
 	r.Mount("/api/imports", api.NewImportHandler(chs, is, log).Routes())
+
+	return r
+}
+
+func ImportRootHandler(chs *channel.Service, is *imports.Service, f *gateway.Factory, log *slog.Logger) http.Handler {
+	r := chi.NewRouter()
+
+	r.Mount("/import", importh.NewHandler(chs, is, f, log).Routes())
 
 	return r
 }
