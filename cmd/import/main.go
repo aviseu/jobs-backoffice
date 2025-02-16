@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"log/slog"
 	ohttp "net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"

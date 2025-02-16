@@ -2,12 +2,12 @@ package http
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"log/slog"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/http/api"

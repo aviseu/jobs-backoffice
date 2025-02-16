@@ -3,15 +3,15 @@ package importh
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
-	"github.com/golang/protobuf/proto"
-	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"net/http"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
+	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -36,8 +36,8 @@ func (h *Handler) Routes() http.Handler {
 
 type pubSubMessage struct {
 	Message struct {
-		Data []byte `json:"data,omitempty"`
 		ID   string `json:"id"`
+		Data []byte `json:"data,omitempty"`
 	} `json:"message"`
 	Subscription string `json:"subscription"`
 }
