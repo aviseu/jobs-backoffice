@@ -94,7 +94,7 @@ type ImportResponse struct {
 }
 
 func NewImportResponse(i *imports.Import, ch *channel.Channel) *ImportResponse {
-	ended := null.String{}
+	ended := null.NewString("", false)
 	if i.EndedAt().Valid {
 		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
 	}
