@@ -28,7 +28,8 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	s := domain.NewScheduleImportsAction(chs, is, ps, log)
+	ia := domain.NewScheduleImportAction(is, ps, log)
+	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id1 := uuid.New()
 	chr.Add(channel.New(id1, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))
@@ -77,7 +78,8 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	s := domain.NewScheduleImportsAction(chs, is, ps, log)
+	ia := domain.NewScheduleImportAction(is, ps, log)
+	s := domain.NewScheduleImportsAction(chs, ia)
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -100,7 +102,8 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	s := domain.NewScheduleImportsAction(chs, is, ps, log)
+	ia := domain.NewScheduleImportAction(is, ps, log)
+	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
 	chr.Add(channel.New(id, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))
@@ -128,7 +131,8 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom!"))
 	lbuf, log := testutils.NewLogger()
-	s := domain.NewScheduleImportsAction(chs, is, ps, log)
+	ia := domain.NewScheduleImportAction(is, ps, log)
+	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
 	chr.Add(channel.New(id, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))

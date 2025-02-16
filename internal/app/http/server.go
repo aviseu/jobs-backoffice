@@ -33,7 +33,7 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *slog.Logger) http.Handler {
+func APIRootHandler(chs *channel.Service, is *imports.Service, ia *domain.ScheduleImportAction, cfg Config, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	if cfg.Cors {
@@ -47,7 +47,7 @@ func APIRootHandler(chs *channel.Service, is *imports.Service, cfg Config, log *
 		}))
 	}
 
-	r.Mount("/api/channels", api.NewChannelHandler(chs, log).Routes())
+	r.Mount("/api/channels", api.NewChannelHandler(chs, ia, log).Routes())
 	r.Mount("/api/integrations", api.NewIntegrationHandler(chs, log).Routes())
 	r.Mount("/api/imports", api.NewImportHandler(chs, is, log).Routes())
 

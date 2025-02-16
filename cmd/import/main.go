@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"golang.org/x/net/netutil"
 	"log/slog"
 	"net"
 	ohttp "net/http"
@@ -23,12 +22,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
+	"golang.org/x/net/netutil"
 )
 
 type config struct {
 	DB      storage.Config
-	Import  http.Config `split_words:"true"`
 	Gateway gateway.Config
+	Import  http.Config `split_words:"true"`
 	Job     struct {
 		Workers int `default:"10"`
 		Buffer  int `default:"10"`
@@ -95,7 +95,7 @@ func run(ctx context.Context) error {
 	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(ia, log))
 	listener, err := net.Listen("tcp", cfg.Import.Addr)
 	if err != nil {
-		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import, err)
+		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import.Addr, err)
 	}
 
 	if cfg.Import.MaxConnections > 0 {

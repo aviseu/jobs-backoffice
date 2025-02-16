@@ -8,9 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	cpubsub "cloud.google.com/go/pubsub"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/http"
+	"github.com/aviseu/jobs-backoffice/internal/app/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,6 +23,11 @@ import (
 )
 
 type config struct {
+	PubSub struct {
+		ProjectID     string `split_words:"true" required:"true"`
+		ImportTopicID string `split_words:"true" required:"true"`
+		Client        pubsub.Config
+	} `split_words:"false"`
 	DB  storage.Config
 	API http.Config
 	Log struct {
@@ -68,15 +76,24 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
+	// pubsub
+	client, err := cpubsub.NewClient(ctx, cfg.PubSub.ProjectID)
+	if err != nil {
+		return fmt.Errorf("failed to build pubsub client for project %s: %w", cfg.PubSub.ProjectID, err)
+	}
+
+	ps := pubsub.NewService(client.Topic(cfg.PubSub.ImportTopicID), cfg.PubSub.Client)
+
 	// services
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	chs := channel.NewService(chr)
 	ir := postgres.NewImportRepository(db)
 	is := imports.NewService(ir)
+	ia := domain.NewScheduleImportAction(is, ps, log)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, is, cfg.API, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, is, ia, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

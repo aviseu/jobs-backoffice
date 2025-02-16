@@ -20,12 +20,12 @@ import (
 )
 
 type config struct {
-	DB     storage.Config
 	PubSub struct {
 		ProjectID     string `split_words:"true" required:"true"`
 		ImportTopicID string `split_words:"true" required:"true"`
 		Client        pubsub.Config
 	} `split_words:"false"`
+	DB  storage.Config
 	Log struct {
 		Level slog.Level `default:"info"`
 	}
@@ -88,7 +88,8 @@ func run(ctx context.Context) error {
 	chr := postgres.NewChannelRepository(db)
 	chs := channel.NewService(chr)
 
-	importActive := domain.NewScheduleImportsAction(chs, is, ps, log)
+	importSingle := domain.NewScheduleImportAction(is, ps, log)
+	importActive := domain.NewScheduleImportsAction(chs, importSingle)
 
 	slog.Info("starting imports...")
 	if err := importActive.Execute(ctx); err != nil {

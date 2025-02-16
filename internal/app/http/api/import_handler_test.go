@@ -29,7 +29,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := channel.NewService(chr)
-	h := http.APIRootHandler(chs, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
 	chr.Add(ch)
@@ -82,7 +82,7 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := channel.NewService(chr)
-	h := http.APIRootHandler(chs, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -110,7 +110,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := channel.NewService(chr)
-	h := http.APIRootHandler(chs, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
 	chr.Add(ch)
@@ -152,7 +152,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := channel.NewService(chr)
-	h := http.APIRootHandler(chs, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
 	suite.NoError(err)
@@ -178,7 +178,7 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := channel.NewService(chr)
-	h := http.APIRootHandler(chs, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
 	suite.NoError(err)

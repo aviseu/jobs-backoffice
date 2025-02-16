@@ -23,7 +23,7 @@ func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	h := http.APIRootHandler(s, nil, http.Config{}, log)
+	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)
 	suite.NoError(err)

@@ -35,11 +35,11 @@ func (h *Handler) Routes() http.Handler {
 }
 
 type pubSubMessage struct {
-	Message struct {
+	Subscription string `json:"subscription"`
+	Message      struct {
 		ID   string `json:"id"`
 		Data []byte `json:"data,omitempty"`
 	} `json:"message"`
-	Subscription string `json:"subscription"`
 }
 
 func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
@@ -50,8 +50,8 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 		h.log.Error(fmt.Errorf("failed to json decode request body: %w", err).Error())
 		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
 		if err != nil {
 			h.log.Error(fmt.Errorf("failed to close body: %w", err).Error())
 		}
