@@ -39,13 +39,21 @@ func fromDomainImport(i *imports.Import) *Import {
 }
 
 func toDomainImport(i *Import) *imports.Import {
+	opts := []imports.ImportOptional{
+		imports.WithStartAt(i.StartedAt),
+		imports.WithStatus(imports.Status(i.Status)),
+		imports.WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
+	}
+	if i.Error.Valid {
+		opts = append(opts, imports.WithError(i.Error.String))
+	}
+	if i.EndedAt.Valid {
+		opts = append(opts, imports.WithEndAt(i.EndedAt.Time))
+	}
+
 	return imports.New(
 		i.ID,
 		i.ChannelID,
-		imports.WithError(i.Error.String),
-		imports.WithStartAt(i.StartedAt),
-		imports.WithEndAt(i.EndedAt.Time),
-		imports.WithStatus(imports.Status(i.Status)),
-		imports.WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
+		opts...,
 	)
 }
