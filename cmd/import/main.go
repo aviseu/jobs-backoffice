@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"golang.org/x/net/netutil"
 	"log/slog"
+	"net"
 	ohttp "net/http"
 	"os"
 	"os/signal"
@@ -91,10 +93,25 @@ func run(ctx context.Context) error {
 
 	// start server
 	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(ia, log))
+	listener, err := net.Listen("tcp", cfg.Import.Addr)
+	if err != nil {
+		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import, err)
+	}
+	defer func(listener net.Listener) {
+		err := listener.Close()
+		if err != nil {
+			slog.Error(fmt.Errorf("failed to close listener: %w", err).Error())
+		}
+	}(listener)
+
+	if cfg.Import.MaxConnections > 0 {
+		listener = netutil.LimitListener(listener, cfg.Import.MaxConnections)
+	}
+
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")
-		serverErrors <- server.ListenAndServe()
+		serverErrors <- server.Serve(listener)
 	}()
 
 	// shutdown
