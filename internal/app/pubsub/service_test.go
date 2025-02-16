@@ -31,7 +31,6 @@ func (suite *ServiceSuite) Test_PublishImport_Success() {
 
 	var resp jobs.ExecuteImportChannel
 	subCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
-	defer cancel()
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -39,8 +38,8 @@ func (suite *ServiceSuite) Test_PublishImport_Success() {
 			if err := proto.Unmarshal(msg.Data, &resp); err != nil {
 				suite.Fail(fmt.Errorf("failed to unmarshal message: %w", err).Error())
 			}
+			msg.Ack()
 			cancel()
-			wg.Done()
 		})
 		suite.NoError(err)
 		wg.Done()

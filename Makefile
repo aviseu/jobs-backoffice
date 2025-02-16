@@ -16,6 +16,9 @@ build-import:
 build-api:
 	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs-backoffice/cmd/api
 
+build-schedule:
+	go build -ldflags "-s -w" -ldflags "-X main.version=${VERSION}" -o "dist/app" github.com/aviseu/jobs-backoffice/cmd/schedule
+
 migrate-create:
 	sh -c "migrate create -ext sql -dir config/migrations -seq $(name)"
 
