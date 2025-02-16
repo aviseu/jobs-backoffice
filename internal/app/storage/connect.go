@@ -25,6 +25,10 @@ func SetupDatabase(cfg Config) (*sqlx.DB, error) {
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
 	return sqlx.NewDb(db, "postgres"), nil
 }
 
