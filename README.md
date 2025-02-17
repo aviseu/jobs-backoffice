@@ -4,6 +4,9 @@
 This web application integrates with multiple Job Board APIs to
 aggregate and import job offers into the organization's centralized job supply.
 
+## Live Demo
+The project is deployed on GCP and can be accessed here: [https://jobs-backoffice.viseu.me](https://jobs-backoffice.viseu.me).
+
 ## Dependencies
 The project has two dependencies:
 - postgres: The database.
