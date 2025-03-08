@@ -11,6 +11,7 @@ env:
   WORKLOAD_IDENTITY_PROVIDER: projects/911924781524/locations/global/workloadIdentityPools/github-actions/providers/github
   SERVICE_ACCOUNT: github@aviseu-jobs.iam.gserviceaccount.com
   REGION: europe-west4
+  TRIGGER_REGION: europe-west3
   GCLOUD_REPOSITORY: jobs
 
 jobs:
@@ -133,3 +134,23 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
+
+      - name: Terraform Apply
+        run: |-
+          terraform apply -auto-approve -no-color -var project_id=${{ env.PROJECT_ID }} \
+            -var region=${{ env.REGION }} \
+            -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
+            -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
+            -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
+            -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
+            -var image_tag=$GITHUB_SHA \
+            -var trigger_region=${{ env.TRIGGER_REGION }}
