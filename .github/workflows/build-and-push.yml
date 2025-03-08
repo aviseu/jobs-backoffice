@@ -154,7 +154,7 @@ jobs:
             -var project_id=${{ env.PROJECT_ID }} \
             -var region=${{ env.REGION }} \
             -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
-            -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
+            -var api_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
             -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
             -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
             -var image_tag=sha-${{ github.sha }} \
@@ -167,7 +167,7 @@ jobs:
             -var project_id=${{ env.PROJECT_ID }} \
             -var region=${{ env.REGION }} \
             -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
-            -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
+            -var api_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
             -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
             -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
             -var image_tag=sha-${{ github.sha }} \
