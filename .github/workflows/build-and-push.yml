@@ -157,7 +157,7 @@ jobs:
             -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
             -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
             -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
-            -var image_tag=${{ github.sha }} \
+            -var image_tag=sha-${{ github.sha }} \
             -var trigger_region=${{ env.TRIGGER_REGION }}
 
       - name: Terraform Apply
@@ -170,5 +170,5 @@ jobs:
             -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
             -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
             -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
-            -var image_tag=${{ github.sha }} \
+            -var image_tag=sha-${{ github.sha }} \
             -var trigger_region=${{ env.TRIGGER_REGION }}
