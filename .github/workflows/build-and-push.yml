@@ -163,7 +163,7 @@ jobs:
       - name: Terraform Apply
         run: |-
           cd terraform
-          terraform apply -auto-approve -no-color \
+          terraform apply -auto-approve -no-color -parallelism 5 \
             -var project_id=${{ env.PROJECT_ID }} \
             -var region=${{ env.REGION }} \
             -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
