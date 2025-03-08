@@ -150,12 +150,21 @@ jobs:
       - name: Terraform Plan
         run: |-
           cd terraform
-          terraform plan -no-color
+          terraform plan -no-color \
+            -var project_id=${{ env.PROJECT_ID }} \
+            -var region=${{ env.REGION }} \
+            -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
+            -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
+            -var schedule_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-schedule \
+            -var import_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-import \
+            -var image_tag=$GITHUB_SHA \
+            -var trigger_region=${{ env.TRIGGER_REGION }}
 
       - name: Terraform Apply
         run: |-
           cd terraform
-          terraform apply -auto-approve -no-color -var project_id=${{ env.PROJECT_ID }} \
+          terraform apply -auto-approve -no-color \
+            -var project_id=${{ env.PROJECT_ID }} \
             -var region=${{ env.REGION }} \
             -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
             -var api_container_image=$${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-api \
