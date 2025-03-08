@@ -135,6 +135,8 @@ jobs:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
+      - run: cd terraform
+
       - uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
