@@ -135,21 +135,26 @@ jobs:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - run: cd terraform
-
       - uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        run: terraform init
+        run: |-
+          cd terraform
+          terraform init
 
       - name: Terraform Validate
-        run: terraform validate -no-color
+        run: |-
+          cd terraform
+          terraform validate -no-color
 
       - name: Terraform Plan
-        run: terraform plan -no-color
+        run: |-
+          cd terraform
+          terraform plan -no-color
 
       - name: Terraform Apply
         run: |-
+          cd terraform
           terraform apply -auto-approve -no-color -var project_id=${{ env.PROJECT_ID }} \
             -var region=${{ env.REGION }} \
             -var frontend_container_image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GCLOUD_REPOSITORY }}/${{ github.event.repository.name }}-frontend \
