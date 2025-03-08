@@ -111,28 +111,12 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
   policy_data = data.google_iam_policy.noauth.policy_data
 }
 
-resource "google_service_account" "service_account_triggers" {
-  count = length(var.pubsub_triggers) > 0 ? 1 : 0
-
-  account_id   = "backoffice-${var.service_name}-triggers"
-  display_name = "Backoffice ${var.service_name} Triggers"
-}
-
-resource "google_project_iam_member" "service_account_triggers_iam" {
-  depends_on = [google_service_account.service_account_triggers]
-  count = length(var.pubsub_triggers) > 0 ? 1 : 0
-
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "serviceAccount:${google_service_account.service_account_triggers[0].email}"
-}
-
 resource "google_eventarc_trigger" "primary" {
   for_each = var.pubsub_triggers
 
   name     = "${var.service_name}-${each.value}-trigger"
   location = var.region
-  service_account = google_service_account.service_account_triggers[0].email
+  service_account = google_service_account.service_account.email
 
   matching_criteria {
     attribute = "type"

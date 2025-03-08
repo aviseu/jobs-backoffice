@@ -75,7 +75,8 @@ module "import" {
   }
   service_account_roles = [
     "roles/cloudsql.client",
-    "roles/secretmanager.secretAccessor"
+    "roles/secretmanager.secretAccessor",
+    "role/run.invoker"
   ]
   pubsub_triggers = {
     "imports" : "/import"
@@ -105,6 +106,7 @@ module "schedule" {
   service_account_roles = [
     "roles/cloudsql.client",
     "roles/pubsub.publisher",
-    "roles/secretmanager.secretAccessor"
+    "roles/secretmanager.secretAccessor",
+    "role/run.invoker"
   ]
 }

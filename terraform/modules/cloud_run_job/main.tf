@@ -75,19 +75,6 @@ resource "google_cloud_run_v2_job" "job" {
   deletion_protection = false
 }
 
-resource "google_service_account" "service_account_triggers" {
-  account_id   = "backoffice-${var.job_name}-triggers"
-  display_name = "Backoffice ${var.job_name} Triggers"
-}
-
-resource "google_project_iam_member" "service_account_triggers_iam" {
-  depends_on = [google_service_account.service_account_triggers]
-
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "serviceAccount:${google_service_account.service_account_triggers.email}"
-}
-
 resource "google_cloud_scheduler_job" "cron" {
   name             = "backoffice-${var.job_name}-cron"
   region           = var.trigger_region
@@ -99,7 +86,7 @@ resource "google_cloud_scheduler_job" "cron" {
     uri         = "https://${google_cloud_run_v2_job.job.location}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${google_cloud_run_v2_job.job.project}/jobs/${google_cloud_run_v2_job.job.name}:run"
 
     oauth_token {
-      service_account_email = google_service_account.service_account_triggers.email
+      service_account_email = google_service_account.service_account.email
     }
   }
 }
