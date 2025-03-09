@@ -20,6 +20,12 @@ module "dsn" {
   secret_data             = module.database.dsn
 }
 
+module "importsTopic" {
+  source                  = "./modules/pubsub"
+  project_id              = var.project_id
+  topic_name              = "imports"
+}
+
 module "frontend" {
   service_name            = "frontend"
   source                  = "./modules/cloud_run_service"
@@ -53,7 +59,7 @@ module "api" {
     "DB_MAXOPENCONNS"        = "5"
     "DB_MAXIDLECONNS"        = "5"
     "PUBSUB_PROJECT_ID"      = "aviseu-jobs"
-    "PUBSUB_IMPORT_TOPIC_ID" = "imports"
+    "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
 
   sql_instances = [
@@ -72,7 +78,7 @@ module "api" {
 }
 
 module "import" {
-  depends_on = [module.database, module.dsn]
+  depends_on = [module.database, module.dsn, module.importsTopic]
 
   service_name            = "import"
   source                  = "./modules/cloud_run_service"
@@ -112,12 +118,15 @@ module "import" {
   ]
 
   pubsub_triggers = {
-    "imports" : "/import"
+  "imports": {
+      topic : module.importsTopic.topic_name,
+      path : "/import"
+    }
   }
 }
 
 module "schedule" {
-  depends_on = [module.database, module.dsn]
+  depends_on = [module.database, module.dsn, module.importsTopic]
 
   job_name             = "schedule"
   source               = "./modules/cloud_run_job"
@@ -129,8 +138,8 @@ module "schedule" {
   task_timeout_seconds = "600s"
 
   environment_variables = {
-    "PUBSUB_PROJECT_ID"      = "aviseu-jobs"
-    "PUBSUB_IMPORT_TOPIC_ID" = "imports"
+    "PUBSUB_PROJECT_ID"      = var.project_id
+    "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
 
   sql_instances = [

@@ -151,13 +151,13 @@ resource "google_eventarc_trigger" "primary" {
     cloud_run_service {
       service = google_cloud_run_v2_service.service.name
       region  = var.region
-      path    = each.value
+      path    = each.value.path
     }
   }
 
   transport {
     pubsub {
-      topic = each.key
+      topic = each.value.topic
     }
   }
 }

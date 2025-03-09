@@ -51,8 +51,11 @@ variable "service_account_roles" {
 }
 
 variable "pubsub_triggers" {
-  type        = map(string)
-  default     = {}
+  type = map(object({
+    topic = string
+    path = string
+  }))
+  default = {}
 }
 
 variable "is_public" {
