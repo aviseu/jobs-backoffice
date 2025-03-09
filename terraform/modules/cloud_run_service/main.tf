@@ -19,6 +19,8 @@ resource "google_cloud_run_v2_service" "service" {
   name     = "backoffice-${var.service_name}"
   location = var.region
 
+  deletion_protection = false
+
   template {
     containers {
       image = "${var.container_image}:${var.container_image_tag}"
@@ -65,6 +67,14 @@ resource "google_cloud_run_v2_service" "service" {
         timeout_seconds       = 1
         failure_threshold     = 3
       }
+
+      dynamic "volume_mounts" {
+        for_each = length(var.sql_instances) > 0 ? [0] : []
+        content {
+          mount_path = "/cloudsql"
+          name       = "cloudsql"
+        }
+      }
     }
 
     dynamic "volumes" {
@@ -92,8 +102,6 @@ resource "google_cloud_run_v2_service" "service" {
     percent = 100
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
   }
-
-  deletion_protection = false
 }
 
 data "google_iam_policy" "noauth" {
@@ -130,7 +138,7 @@ resource "google_project_iam_member" "service_account_triggers_iam" {
 resource "google_eventarc_trigger" "primary" {
   for_each = var.pubsub_triggers
 
-  name     = "${var.service_name}-${each.value}-trigger"
+  name     = "${var.service_name}-${each.key}-trigger"
   location = var.region
   service_account = google_service_account.service_account_triggers[0].email
 

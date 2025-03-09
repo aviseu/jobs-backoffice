@@ -19,6 +19,8 @@ resource "google_cloud_run_v2_job" "job" {
   name     = "backoffice-${var.job_name}"
   location = var.region
 
+  deletion_protection = false
+
   template {
     parallelism = 1
     task_count  = 1
@@ -58,6 +60,14 @@ resource "google_cloud_run_v2_job" "job" {
             memory = "512Mi"
           }
         }
+
+        dynamic "volume_mounts" {
+          for_each = length(var.sql_instances) > 0 ? [0] : []
+          content {
+            mount_path = "/cloudsql"
+            name       = "cloudsql"
+          }
+        }
       }
 
       dynamic "volumes" {
@@ -71,8 +81,6 @@ resource "google_cloud_run_v2_job" "job" {
       }
     }
   }
-
-  deletion_protection = false
 }
 
 resource "google_service_account" "service_account_triggers" {
