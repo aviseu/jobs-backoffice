@@ -97,10 +97,11 @@ resource "google_project_iam_member" "service_account_triggers_iam" {
 }
 
 resource "google_cloud_scheduler_job" "cron" {
-  name             = "backoffice-${var.job_name}-cron"
-  region           = var.trigger_region
-  schedule         = "0 0 * * *"
-  attempt_deadline = "60s"
+  name              = "backoffice-${var.job_name}-cron"
+  region            = var.trigger_region
+  schedule          = "0 0 * * *"
+  attempt_deadline  = "60s"
+  time_zone         = "Europe/Amsterdam"
 
   http_target {
     http_method = "POST"
