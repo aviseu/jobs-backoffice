@@ -101,7 +101,7 @@ resource "google_cloud_scheduler_job" "cron" {
   region            = var.trigger_region
   schedule          = "0 0 * * *"
   attempt_deadline  = "60s"
-  time_zone         = "Europe/Amsterdam"
+  time_zone         = "CET"
 
   http_target {
     http_method = "POST"
