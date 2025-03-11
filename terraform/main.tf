@@ -156,27 +156,27 @@ module "schedule" {
     "roles/secretmanager.secretAccessor"
   ]
 }
-#
-# module "load_balancer" {
-#   source             = "./modules/load_balancer"
-#   project_id         = var.project_id
-#   region             = var.region
-#   load_balancer_name = "jobs-lb"
-#   address_name       = "public-ip"
-#   default_backend    = "frontend"
-#
-#   backends = {
-#     "frontend" : module.frontend.service_name,
-#     "api" : module.api.service_name
-#   }
-#
-#   routes = {
-#     jobs-backoffice-viseu-me : {
-#       domain : "jobs-backoffice.viseu.me"
-#       certificate : "viseu-me-cloudflare-origin"
-#       paths : {
-#         "/api/*" : "api"
-#       }
-#     }
-#   }
-# }
+
+module "load_balancer" {
+  source             = "./modules/load_balancer"
+  project_id         = var.project_id
+  region             = var.region
+  load_balancer_name = "jobs-lb"
+  address_name       = "public-ip"
+  default_backend    = "frontend"
+
+  backends = {
+    "frontend" : module.frontend.service_name,
+    "api" : module.api.service_name
+  }
+
+  routes = {
+    jobs-backoffice-viseu-me : {
+      domain : "jobs-backoffice.viseu.me"
+      certificate : "viseu-me-cloudflare-origin"
+      paths : {
+        "/api/*" : "api"
+      }
+    }
+  }
+}
