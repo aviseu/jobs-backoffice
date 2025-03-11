@@ -5,7 +5,7 @@ resource "google_service_account" "service_account" {
 
 resource "google_project_iam_member" "service_account_iam" {
   depends_on = [google_service_account.service_account]
-  for_each = toset(var.service_account_roles)
+  for_each   = toset(var.service_account_roles)
 
   project = var.project_id
   role    = each.value
@@ -39,10 +39,10 @@ resource "google_cloud_run_v2_service" "service" {
       dynamic "env" {
         for_each = var.secrets
         content {
-          name  = env.key
+          name = env.key
           value_source {
             secret_key_ref {
-              secret = env.value
+              secret  = env.value
               version = "latest"
             }
           }
@@ -54,7 +54,7 @@ resource "google_cloud_run_v2_service" "service" {
           cpu    = "1"
           memory = "128Mi"
         }
-        cpu_idle = true
+        cpu_idle          = true
         startup_cpu_boost = true
       }
 
@@ -88,7 +88,7 @@ resource "google_cloud_run_v2_service" "service" {
     }
 
     max_instance_request_concurrency = var.request_max_concurrency
-    timeout = var.request_timeout_seconds
+    timeout                          = var.request_timeout_seconds
 
     scaling {
       min_instance_count = 0
@@ -106,7 +106,7 @@ resource "google_cloud_run_v2_service" "service" {
 
 data "google_iam_policy" "noauth" {
   binding {
-    role = "roles/run.invoker"
+    role    = "roles/run.invoker"
     members = ["allUsers"]
   }
 }
@@ -128,7 +128,7 @@ resource "google_service_account" "service_account_triggers" {
 
 resource "google_project_iam_member" "service_account_triggers_iam" {
   depends_on = [google_service_account.service_account_triggers]
-  count = length(var.pubsub_triggers) > 0 ? 1 : 0
+  count      = length(var.pubsub_triggers) > 0 ? 1 : 0
 
   project = var.project_id
   role    = "roles/run.invoker"
@@ -138,8 +138,8 @@ resource "google_project_iam_member" "service_account_triggers_iam" {
 resource "google_eventarc_trigger" "primary" {
   for_each = var.pubsub_triggers
 
-  name     = "${var.service_name}-${each.key}-trigger"
-  location = var.region
+  name            = "${var.service_name}-${each.key}-trigger"
+  location        = var.region
   service_account = google_service_account.service_account_triggers[0].email
 
   matching_criteria {

@@ -1,11 +1,11 @@
 variable "project_id" {
-  type        = string
+  type = string
 }
 
 variable "secret_name" {
-  type        = string
+  type = string
 }
 
 variable "secret_data" {
-  type        = string
+  type = string
 }

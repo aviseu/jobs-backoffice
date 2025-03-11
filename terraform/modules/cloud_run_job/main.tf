@@ -5,7 +5,7 @@ resource "google_service_account" "service_account" {
 
 resource "google_project_iam_member" "service_account_iam" {
   depends_on = [google_service_account.service_account]
-  for_each = toset(var.service_account_roles)
+  for_each   = toset(var.service_account_roles)
 
   project = var.project_id
   role    = each.value
@@ -26,8 +26,8 @@ resource "google_cloud_run_v2_job" "job" {
     task_count  = 1
 
     template {
-      max_retries = 3
-      timeout = var.task_timeout_seconds
+      max_retries     = 3
+      timeout         = var.task_timeout_seconds
       service_account = google_service_account.service_account.email
 
       containers {
@@ -97,11 +97,11 @@ resource "google_project_iam_member" "service_account_triggers_iam" {
 }
 
 resource "google_cloud_scheduler_job" "cron" {
-  name              = "backoffice-${var.job_name}-cron"
-  region            = var.trigger_region
-  schedule          = "0 0 * * *"
-  attempt_deadline  = "60s"
-  time_zone         = "CET"
+  name             = "backoffice-${var.job_name}-cron"
+  region           = var.trigger_region
+  schedule         = "0 0 * * *"
+  attempt_deadline = "60s"
+  time_zone        = "CET"
 
   http_target {
     http_method = "POST"

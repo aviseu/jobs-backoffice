@@ -1,7 +1,7 @@
 variable "project_id" {
-  type        = string
+  type = string
 }
 
 variable "topic_name" {
-  type        = string
+  type = string
 }

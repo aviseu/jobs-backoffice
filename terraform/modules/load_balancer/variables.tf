@@ -1,29 +1,29 @@
 variable "project_id" {
-  type        = string
+  type = string
 }
 
 variable "region" {
-  type        = string
+  type = string
 }
 
 variable "load_balancer_name" {
-  type        = string
+  type = string
 }
 
 variable "address_name" {
-  type        = string
+  type = string
 }
 
 variable "backends" {
-  type        = map(string)
+  type = map(string)
 }
 
 variable "default_backend" {
-  type        = string
+  type = string
 }
 
 variable "routes" {
-  type        = map(object({
+  type = map(object({
     domain      = string
     certificate = string
     paths       = map(string)

@@ -1,5 +1,5 @@
 resource "google_compute_region_network_endpoint_group" "group" {
-  for_each              = var.backends
+  for_each = var.backends
 
   name                  = "${each.key}-neg"
   project               = var.project_id
@@ -12,8 +12,8 @@ resource "google_compute_region_network_endpoint_group" "group" {
 }
 
 resource "google_compute_region_backend_service" "backend" {
-  depends_on            = [google_compute_region_network_endpoint_group.group]
-  for_each              = var.backends
+  depends_on = [google_compute_region_network_endpoint_group.group]
+  for_each   = var.backends
 
   region                = var.region
   project               = var.project_id
@@ -24,9 +24,9 @@ resource "google_compute_region_backend_service" "backend" {
   timeout_sec           = 30
 
   backend {
-    group               = google_compute_region_network_endpoint_group.group[each.key].self_link
-    balancing_mode      = "UTILIZATION"
-    capacity_scaler     = 1.0
+    group           = google_compute_region_network_endpoint_group.group[each.key].self_link
+    balancing_mode  = "UTILIZATION"
+    capacity_scaler = 1.0
   }
 
   connection_draining_timeout_sec = 0
@@ -50,8 +50,8 @@ resource "google_compute_region_url_map" "load_balancer" {
     for_each = var.routes
 
     content {
-      hosts           = [host_rule.value.domain]
-      path_matcher    = "path-matcher-${host_rule.key}"
+      hosts        = [host_rule.value.domain]
+      path_matcher = "path-matcher-${host_rule.key}"
     }
   }
 
@@ -78,19 +78,19 @@ data "google_compute_region_ssl_certificate" "certificate" {
   for_each = var.routes
 
   project = var.project_id
-  region = var.region
-  name = each.value.certificate
+  region  = var.region
+  name    = each.value.certificate
 }
 
 resource "google_compute_region_target_https_proxy" "proxy" {
   depends_on = [google_compute_region_url_map.load_balancer, data.google_compute_region_ssl_certificate.certificate]
-  for_each = data.google_compute_region_ssl_certificate.certificate
+  for_each   = data.google_compute_region_ssl_certificate.certificate
 
-  project           = var.project_id
-  region            = var.region
-  name              = "${var.load_balancer_name}-${each.key}-proxy"
-  url_map           = google_compute_region_url_map.load_balancer.id
-  ssl_certificates  = [data.google_compute_region_ssl_certificate.certificate[each.key].id]
+  project          = var.project_id
+  region           = var.region
+  name             = "${var.load_balancer_name}-${each.key}-proxy"
+  url_map          = google_compute_region_url_map.load_balancer.id
+  ssl_certificates = [data.google_compute_region_ssl_certificate.certificate[each.key].id]
 }
 
 resource "google_compute_forwarding_rule" "google_compute_forwarding_rule" {

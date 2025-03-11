@@ -14,16 +14,16 @@ module "database" {
 module "dsn" {
   depends_on = [module.database]
 
-  source                  = "./modules/secret"
-  project_id              = var.project_id
-  secret_name             = "jobs-dsn"
-  secret_data             = module.database.dsn
+  source      = "./modules/secret"
+  project_id  = var.project_id
+  secret_name = "jobs-dsn"
+  secret_data = module.database.dsn
 }
 
 module "importsTopic" {
-  source                  = "./modules/pubsub"
-  project_id              = var.project_id
-  topic_name              = "imports"
+  source     = "./modules/pubsub"
+  project_id = var.project_id
+  topic_name = "imports"
 }
 
 module "frontend" {
@@ -118,7 +118,7 @@ module "import" {
   ]
 
   pubsub_triggers = {
-  "imports": {
+    "imports" : {
       topic : module.importsTopic.topic_name,
       path : "/import"
     }
@@ -158,24 +158,24 @@ module "schedule" {
 }
 
 module "load_balancer" {
-  source              = "./modules/load_balancer"
-  project_id          = var.project_id
-  region              = var.region
-  load_balancer_name  = "jobs-lb"
-  address_name        = "public-ip"
-  default_backend     = "frontend"
+  source             = "./modules/load_balancer"
+  project_id         = var.project_id
+  region             = var.region
+  load_balancer_name = "jobs-lb"
+  address_name       = "public-ip"
+  default_backend    = "frontend"
 
   backends = {
-    "frontend": module.frontend.service_name,
-    "api": module.api.service_name
+    "frontend" : module.frontend.service_name,
+    "api" : module.api.service_name
   }
 
   routes = {
-    jobs-backoffice-viseu-me: {
-      domain: "jobs-backoffice.viseu.me"
-      certificate: "viseu-me-cloudflare-origin"
-      paths: {
-        "/api/*": "api"
+    jobs-backoffice-viseu-me : {
+      domain : "jobs-backoffice.viseu.me"
+      certificate : "viseu-me-cloudflare-origin"
+      paths : {
+        "/api/*" : "api"
       }
     }
   }
