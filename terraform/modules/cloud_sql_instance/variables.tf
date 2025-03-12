@@ -10,14 +10,6 @@ variable "instance_name" {
   type = string
 }
 
-variable "database_name" {
-  type = string
-}
-
-variable "user" {
-  type = string
-}
-
 variable "disk_size" {
   type    = number
   default = 10

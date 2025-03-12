@@ -19,22 +19,3 @@ resource "google_sql_database_instance" "instance" {
     }
   }
 }
-
-resource "google_sql_user" "user" {
-  name        = var.user
-  instance    = google_sql_database_instance.instance.name
-  password_wo = random_password.password.result
-  deletion_policy = "ABANDON"
-}
-
-resource "google_sql_database" "database" {
-  depends_on = [google_sql_user.user]
-  name       = var.database_name
-  instance   = google_sql_database_instance.instance.name
-  deletion_policy = "ABANDON"
-}
-
-resource "random_password" "password" {
-  length  = 32
-  special = false
-}

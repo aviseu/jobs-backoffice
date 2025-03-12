@@ -1,14 +1,28 @@
-module "database" {
-  source              = "./modules/cloud_sql"
+module "database_instance" {
+  source              = "./modules/cloud_sql_instance"
   project_id          = var.project_id
   region              = var.region
   instance_name       = "jobs"
-  database_name       = "jobs"
   database_version    = "POSTGRES_17"
   tier                = "db-f1-micro"
   disk_size           = 10
-  user                = "jobs"
   deletion_protection = var.deletion_protection
+}
+
+module "database" {
+  source              = "./modules/cloud_sql_database"
+  instance_name       = module.database_instance.name
+  connection_name     = module.database_instance.connection_name
+  database_name       = "jobs"
+  user                = "jobs"
+}
+
+module "database" {
+  source              = "./modules/cloud_sql_database"
+  instance_name       = module.database_instance.name
+  connection_name     = module.database_instance.connection_name
+  database_name       = "jobs-extra"
+  user                = "jobs-extra"
 }
 
 module "dsn" {
