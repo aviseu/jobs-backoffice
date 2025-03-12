@@ -17,14 +17,6 @@ module "database" {
   user                = "jobs"
 }
 
-module "database2" {
-  source              = "./modules/cloud_sql_database"
-  instance_name       = module.database_instance.name
-  connection_name     = module.database_instance.connection_name
-  database_name       = "jobs-extra"
-  user                = "jobs-extra"
-}
-
 module "dsn" {
   depends_on = [module.database]
 
