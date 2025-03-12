@@ -161,3 +161,32 @@ resource "google_eventarc_trigger" "primary" {
     }
   }
 }
+
+resource "google_compute_region_network_endpoint_group" "group" {
+  name                  = "${google_cloud_run_v2_service.service.name}-neg"
+  project               = var.project_id
+  region                = var.region
+  network_endpoint_type = "SERVERLESS"
+
+  cloud_run {
+    service = google_cloud_run_v2_service.service.name
+  }
+}
+
+resource "google_compute_region_backend_service" "backend" {
+  region                = var.region
+  project               = var.project_id
+  name                  = "${google_cloud_run_v2_service.service.name}-backend"
+  protocol              = "HTTPS"
+  port_name             = "http"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  timeout_sec           = 30
+
+  backend {
+    group           = google_compute_region_network_endpoint_group.group.self_link
+    balancing_mode  = "UTILIZATION"
+    capacity_scaler = 1.0
+  }
+
+  connection_draining_timeout_sec = 0
+}

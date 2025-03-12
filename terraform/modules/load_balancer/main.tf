@@ -1,50 +1,14 @@
-resource "google_compute_region_network_endpoint_group" "group" {
-  for_each = var.backends
-
-  name                  = "${each.key}-neg"
-  project               = var.project_id
-  region                = var.region
-  network_endpoint_type = "SERVERLESS"
-
-  cloud_run {
-    service = each.value
-  }
-}
-
-resource "google_compute_region_backend_service" "backend" {
-  depends_on = [google_compute_region_network_endpoint_group.group]
-  for_each   = var.backends
-
-  region                = var.region
-  project               = var.project_id
-  name                  = "${each.key}-backend"
-  protocol              = "HTTPS"
-  port_name             = "http"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-  timeout_sec           = 30
-
-  backend {
-    group           = google_compute_region_network_endpoint_group.group[each.key].self_link
-    balancing_mode  = "UTILIZATION"
-    capacity_scaler = 1.0
-  }
-
-  connection_draining_timeout_sec = 0
-}
-
 data "google_compute_address" "static_ip" {
   name   = var.address_name
   region = var.region
 }
 
 resource "google_compute_region_url_map" "load_balancer" {
-  depends_on = [google_compute_region_backend_service.backend]
-
   name    = var.load_balancer_name
   project = var.project_id
   region  = var.region
 
-  default_service = google_compute_region_backend_service.backend[var.default_backend].self_link
+  default_service = var.backends[var.default_backend]
 
   dynamic "host_rule" {
     for_each = var.routes
@@ -60,14 +24,14 @@ resource "google_compute_region_url_map" "load_balancer" {
 
     content {
       name            = "path-matcher-${path_matcher.key}"
-      default_service = google_compute_region_backend_service.backend[var.default_backend].self_link
+      default_service = var.backends[var.default_backend]
 
       dynamic "path_rule" {
         for_each = path_matcher.value.paths
 
         content {
           paths   = [path_rule.key]
-          service = google_compute_region_backend_service.backend[path_rule.value].self_link
+          service = var.backends[var.default_backend]
         }
       }
     }

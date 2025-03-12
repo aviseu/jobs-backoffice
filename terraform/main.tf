@@ -172,8 +172,8 @@ module "load_balancer" {
   default_backend    = "frontend"
 
   backends = {
-    "frontend" : module.frontend.service_name,
-    "api" : module.api.service_name
+    "frontend" : module.frontend.backend,
+    "api" : module.api.backend
   }
 
   routes = {
