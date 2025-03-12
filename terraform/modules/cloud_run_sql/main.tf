@@ -7,6 +7,8 @@ resource "google_cloud_run_v2_service" "postgres" {
   name     = var.instance_name
   location = var.region
 
+  deletion_protection = var.deletion_protection
+
   template {
     containers {
       image = "postgres:17"
