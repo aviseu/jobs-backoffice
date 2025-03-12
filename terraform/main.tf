@@ -1,5 +1,5 @@
 module "database_instance" {
-  source              = "./modules/cloud_sql_instance"
+  source              = "github.com/aviseu/terraform/modules/cloud_sql_instance"
   project_id          = var.project_id
   region              = var.region
   instance_name       = "jobs"
@@ -10,7 +10,7 @@ module "database_instance" {
 }
 
 module "database" {
-  source          = "./modules/cloud_sql_database"
+  source          = "github.com/aviseu/terraform/modules/cloud_sql_database"
   instance_name   = module.database_instance.name
   connection_name = module.database_instance.connection_name
   database_name   = "jobs"
@@ -20,21 +20,21 @@ module "database" {
 module "dsn" {
   depends_on = [module.database]
 
-  source      = "./modules/secret"
+  source      = "github.com/aviseu/terraform/modules/secret"
   project_id  = var.project_id
   secret_name = "jobs-dsn"
   secret_data = module.database.dsn
 }
 
 module "importsTopic" {
-  source     = "./modules/pubsub"
+  source     = "github.com/aviseu/terraform/modules/pubsub"
   project_id = var.project_id
   topic_name = "imports"
 }
 
 module "frontend" {
   service_name            = "frontend"
-  source                  = "./modules/cloud_run_service"
+  source                  = "github.com/aviseu/terraform/modules/cloud_run_service"
   project_id              = var.project_id
   region                  = var.region
   container_image         = var.frontend_container_image
@@ -49,7 +49,7 @@ module "api" {
   depends_on = [module.database, module.dsn]
 
   service_name            = "api"
-  source                  = "./modules/cloud_run_service"
+  source                  = "github.com/aviseu/terraform/modules/cloud_run_service"
   project_id              = var.project_id
   region                  = var.region
   container_image         = var.api_container_image
@@ -87,7 +87,7 @@ module "import" {
   depends_on = [module.database, module.dsn, module.importsTopic]
 
   service_name            = "import"
-  source                  = "./modules/cloud_run_service"
+  source                  = "github.com/aviseu/terraform/modules/cloud_run_service"
   project_id              = var.project_id
   region                  = var.region
   container_image         = var.import_container_image
@@ -135,7 +135,7 @@ module "schedule" {
   depends_on = [module.database, module.dsn, module.importsTopic]
 
   job_name             = "schedule"
-  source               = "./modules/cloud_run_job"
+  source               = "github.com/aviseu/terraform/modules/cloud_run_job"
   project_id           = var.project_id
   region               = var.region
   trigger_region       = var.trigger_region
@@ -164,7 +164,7 @@ module "schedule" {
 }
 
 module "load_balancer" {
-  source             = "./modules/load_balancer"
+  source             = "github.com/aviseu/terraform/modules/load_balancer"
   project_id         = var.project_id
   region             = var.region
   load_balancer_name = "jobs-lb"

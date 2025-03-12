@@ -45,3 +45,9 @@ variable "deletion_protection" {
   type        = bool
   default     = false
 }
+
+variable "module_source" {
+  description = "Module source path (local or remote)"
+  type        = string
+  default     = "./"
+}

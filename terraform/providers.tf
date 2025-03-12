@@ -14,3 +14,4 @@ provider "google" {
   region          = "europe-west4"
   request_timeout = "60s"
 }
+
