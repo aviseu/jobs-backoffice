@@ -75,9 +75,9 @@ module "api" {
     "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
 
-  sql_instances = [
+  sql_instances = length(module.database.connection_name) > 0 ? [
     module.database.connection_name
-  ]
+  ] : []
 
   secrets = {
     "DB_DSN" : module.dsn.secret_id
@@ -117,9 +117,9 @@ module "import" {
     "GATEWAY_IMPORT_RESULT_WORKERS"     = "2"
   }
 
-  sql_instances = [
+  sql_instances = length(module.database.connection_name) > 0 ? [
     module.database.connection_name
-  ]
+  ] : []
 
   secrets = {
     "DB_DSN" : module.dsn.secret_id
@@ -155,9 +155,9 @@ module "schedule" {
     "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
 
-  sql_instances = [
+  sql_instances = length(module.database.connection_name) > 0 ? [
     module.database.connection_name
-  ]
+  ] : []
 
   secrets = {
     "DB_DSN" : module.dsn.secret_id

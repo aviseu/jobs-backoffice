@@ -69,7 +69,7 @@ resource "google_cloud_run_v2_service" "service" {
       }
 
       dynamic "volume_mounts" {
-        for_each = length(var.sql_instances) > 0 && length(var.sql_instances[0]) > 0 ? [0] : []
+        for_each = length(var.sql_instances) > 0 ? [0] : []
         content {
           mount_path = "/cloudsql"
           name       = "cloudsql"
@@ -78,7 +78,7 @@ resource "google_cloud_run_v2_service" "service" {
     }
 
     dynamic "volumes" {
-      for_each = length(var.sql_instances) > 0 && length(var.sql_instances[0]) > 0? [0] : []
+      for_each = length(var.sql_instances) > 0 ? [0] : []
       content {
         name = "cloudsql"
         cloud_sql_instance {
