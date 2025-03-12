@@ -17,7 +17,7 @@ module "database" {
   user                = "jobs"
 }
 
-module "database" {
+module "database2" {
   source              = "./modules/cloud_sql_database"
   instance_name       = module.database_instance.name
   connection_name     = module.database_instance.connection_name
