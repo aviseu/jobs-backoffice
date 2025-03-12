@@ -1,43 +1,32 @@
-module "database_instance" {
-  source              = "github.com/aviseu/terraform//modules/cloud_sql_instance?ref=v1.0.0"
-  project_id          = var.project_id
-  region              = var.region
-  instance_name       = "jobs"
-  database_version    = "POSTGRES_17"
-  tier                = "db-f1-micro"
-  disk_size           = 10
-  deletion_protection = var.deletion_protection
-}
-
 module "database" {
   source          = "github.com/aviseu/terraform//modules/cloud_sql_database?ref=v1.0.0"
-  instance_name   = module.database_instance.name
-  connection_name = module.database_instance.connection_name
-  database_name   = "jobs"
-  user            = "jobs"
+  instance_name   = "jobs"
+  connection_name = "aviseu-jobs:europe-west4:jobs-db"
+  database_name   = "backoffice"
+  user            = "backoffice"
 }
 
 module "dsn" {
   depends_on = [module.database]
 
   source      = "github.com/aviseu/terraform//modules/secret?ref=v1.0.0"
-  project_id  = var.project_id
-  secret_name = "jobs-dsn"
+  project_id  = "aviseu-jobs"
+  secret_name = "backoffice-dsn"
   secret_data = module.database.dsn
 }
 
 module "importsTopic" {
   source     = "github.com/aviseu/terraform//modules/pubsub?ref=v1.0.0"
-  project_id = var.project_id
+  project_id = "aviseu-jobs"
   topic_name = "imports"
 }
 
 module "frontend" {
   service_name            = "frontend"
   source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.0.0"
-  project_id              = var.project_id
-  region                  = var.region
-  container_image         = var.frontend_container_image
+  project_id              = "aviseu-jobs"
+  region                  = "europe-west4"
+  container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-frontend"
   container_image_tag     = var.image_tag
   container_port          = 80
   request_max_concurrency = 5
@@ -50,9 +39,9 @@ module "api" {
 
   service_name            = "api"
   source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.0.0"
-  project_id              = var.project_id
-  region                  = var.region
-  container_image         = var.api_container_image
+  project_id              = "aviseu-jobs"
+  region                  = "europe-west4"
+  container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-api"
   container_image_tag     = var.image_tag
   container_port          = 80
   request_max_concurrency = 5
@@ -88,9 +77,9 @@ module "import" {
 
   service_name            = "import"
   source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.0.0"
-  project_id              = var.project_id
-  region                  = var.region
-  container_image         = var.import_container_image
+  project_id              = "aviseu-jobs"
+  region                  = "europe-west4"
+  container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-import"
   container_image_tag     = var.image_tag
   container_port          = 80
   request_max_concurrency = 1
@@ -136,15 +125,15 @@ module "schedule" {
 
   job_name             = "schedule"
   source               = "github.com/aviseu/terraform//modules/cloud_run_job?ref=v1.0.0"
-  project_id           = var.project_id
-  region               = var.region
-  trigger_region       = var.trigger_region
-  container_image      = var.schedule_container_image
+  project_id           = "aviseu-jobs"
+  region               = "europe-west4"
+  trigger_region       = "europe-west3"
+  container_image      = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-schedule"
   container_image_tag  = var.image_tag
   task_timeout_seconds = "600s"
 
   environment_variables = {
-    "PUBSUB_PROJECT_ID"      = var.project_id
+    "PUBSUB_PROJECT_ID"      = "aviseu-jobs"
     "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
 
@@ -161,29 +150,4 @@ module "schedule" {
     "roles/pubsub.publisher",
     "roles/secretmanager.secretAccessor"
   ]
-}
-
-module "load_balancer" {
-  source             = "github.com/aviseu/terraform//modules/load_balancer?ref=v1.0.0"
-  project_id         = var.project_id
-  region             = var.region
-  load_balancer_name = "jobs-lb"
-  address_name       = "public-ip"
-  default_backend    = "frontend"
-
-  backends = {
-    "frontend" : module.frontend.backend,
-    "api" : module.api.backend
-  }
-
-  routes = {
-    jobs-backoffice-viseu-me : {
-      domain : "jobs-backoffice.viseu.me"
-      certificate : "viseu-me-cloudflare-origin"
-      paths : {
-        "/" : "frontend",
-        "/api/*" : "api"
-      }
-    }
-  }
 }
