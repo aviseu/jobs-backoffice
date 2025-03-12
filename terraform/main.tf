@@ -15,7 +15,7 @@ module "database" {
     source              = "./modules/cloud_run_sql"
     project_id          = var.project_id
     region              = var.region
-    instance_name       = "jobs"
+    instance_name       = "jobs-db"
     database_name       = "jobs"
     database_version    = "POSTGRES_17"
     tier                = "db-f1-micro"
@@ -29,7 +29,7 @@ module "dsn" {
 
   source      = "./modules/secret"
   project_id  = var.project_id
-  secret_name = "jobs-dsn"
+  secret_name = "jobs-db-dsn"
   secret_data = module.database.dsn
 }
 
