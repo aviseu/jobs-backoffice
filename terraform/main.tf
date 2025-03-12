@@ -1,15 +1,28 @@
+# module "database" {
+#   source              = "./modules/cloud_sql"
+#   project_id          = var.project_id
+#   region              = var.region
+#   instance_name       = "jobs"
+#   database_name       = "jobs"
+#   database_version    = "POSTGRES_17"
+#   tier                = "db-f1-micro"
+#   disk_size           = 10
+#   user                = "jobs"
+#   deletion_protection = var.deletion_protection
+# }
+
 module "database" {
-  source              = "./modules/cloud_sql"
-  project_id          = var.project_id
-  region              = var.region
-  instance_name       = "jobs"
-  database_name       = "jobs"
-  database_version    = "POSTGRES_17"
-  tier                = "db-f1-micro"
-  disk_size           = 10
-  user                = "jobs"
-  deletion_protection = var.deletion_protection
-}
+    source              = "./modules/cloud_run_sql"
+    project_id          = var.project_id
+    region              = var.region
+    instance_name       = "jobs"
+    database_name       = "jobs"
+    database_version    = "POSTGRES_17"
+    tier                = "db-f1-micro"
+    disk_size           = 10
+    user                = "jobs"
+    deletion_protection = var.deletion_protection
+  }
 
 module "dsn" {
   depends_on = [module.database]
