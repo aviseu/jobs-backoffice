@@ -10,11 +10,11 @@ module "database_instance" {
 }
 
 module "database" {
-  source              = "./modules/cloud_sql_database"
-  instance_name       = module.database_instance.name
-  connection_name     = module.database_instance.connection_name
-  database_name       = "jobs"
-  user                = "jobs"
+  source          = "./modules/cloud_sql_database"
+  instance_name   = module.database_instance.name
+  connection_name = module.database_instance.connection_name
+  database_name   = "jobs"
+  user            = "jobs"
 }
 
 module "dsn" {
@@ -181,6 +181,7 @@ module "load_balancer" {
       domain : "jobs-backoffice.viseu.me"
       certificate : "viseu-me-cloudflare-origin"
       paths : {
+        "/" : "frontend",
         "/api/*" : "api"
       }
     }

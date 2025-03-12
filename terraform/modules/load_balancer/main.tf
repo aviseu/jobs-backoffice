@@ -31,7 +31,7 @@ resource "google_compute_region_url_map" "load_balancer" {
 
         content {
           paths   = [path_rule.key]
-          service = var.backends[var.default_backend]
+          service = var.backends[path_rule.value]
         }
       }
     }
