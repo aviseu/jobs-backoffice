@@ -1,6 +1,6 @@
 module "database" {
   source          = "github.com/aviseu/terraform//modules/cloud_sql_database?ref=v1.0.0"
-  instance_name   = "jobs"
+  instance_name   = "jobs-db"
   connection_name = "aviseu-jobs:europe-west4:jobs-db"
   database_name   = "backoffice"
   user            = "backoffice"
