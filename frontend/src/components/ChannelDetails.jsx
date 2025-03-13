@@ -80,7 +80,7 @@ const ChannelDetails = () => {
 
     return (
         <div className="container mt-5">
-            <div className={`card shadow ${ channel.status === "active" ? "border-success" : "" }`}>
+            <div className={`card border-2 shadow ${ channel.status === "active" ? "border-success" : "" }`}>
                 <div className="card-body">
                     <h2 className="card-title mb-5">
                         {channel.name}

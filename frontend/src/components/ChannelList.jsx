@@ -44,7 +44,7 @@ const ChannelList = () => {
             <div className="text-end">
                 <Link className="btn btn-primary" to="/channels/create">Create</Link>
             </div>
-            <div className="table-responsive">
+            <div className="table-responsive mt-3">
                 {error && <div className="alert alert-danger" role="alert">
                     {error}
                 </div>}
