@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/gateway/arbeitnow"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/stretchr/testify/suite"
 )
 

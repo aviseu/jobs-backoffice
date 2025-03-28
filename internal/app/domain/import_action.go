@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
-	"github.com/aviseu/jobs-backoffice/internal/app/gateway"
 	"github.com/google/uuid"
 )
 

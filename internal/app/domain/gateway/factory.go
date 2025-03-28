@@ -7,7 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
-	"github.com/aviseu/jobs-backoffice/internal/app/gateway/arbeitnow"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )
 
 type Config struct {
