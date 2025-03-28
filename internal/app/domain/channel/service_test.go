@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
-	"github.com/aviseu/jobs-backoffice/internal/app/errs"
+	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"

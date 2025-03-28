@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="API" type="GoApplicationRunConfiguration" factoryName="Go Application">
-    <module name="jobs" />
+    <module name="jobs-backoffice" />
     <working_directory value="$PROJECT_DIR$" />
     <envs>
       <env name="API_CORS" value="1" />

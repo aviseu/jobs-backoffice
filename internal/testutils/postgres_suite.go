@@ -52,7 +52,7 @@ func (suite *PostgresSuite) createDependencies(ctx context.Context) (testcontain
 	driver, err := mpg.WithInstance(db.DB, &mpg.Config{})
 	suite.NoError(err)
 
-	m, err := migrate.NewWithDatabaseInstance("file://../../../../config/migrations", "postgres", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://../../../../../config/migrations", "postgres", driver)
 	suite.NoError(err)
 
 	return c, db, badDB, m

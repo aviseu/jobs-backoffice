@@ -4,7 +4,7 @@ import (
 	gpubsub "cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/pubsub"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/golang/protobuf/proto"

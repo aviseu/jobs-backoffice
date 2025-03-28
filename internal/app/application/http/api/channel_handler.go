@@ -9,7 +9,7 @@ import (
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
-	"github.com/aviseu/jobs-backoffice/internal/app/errs"
+	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )

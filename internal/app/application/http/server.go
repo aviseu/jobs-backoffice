@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
+	"github.com/aviseu/jobs-backoffice/internal/app/application/http/importh"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
-	"github.com/aviseu/jobs-backoffice/internal/app/http/api"
-	"github.com/aviseu/jobs-backoffice/internal/app/http/importh"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )

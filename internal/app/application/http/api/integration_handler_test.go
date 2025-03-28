@@ -1,8 +1,8 @@
 package api_test
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
-	"github.com/aviseu/jobs-backoffice/internal/app/http"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"
