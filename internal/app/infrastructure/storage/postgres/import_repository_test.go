@@ -259,7 +259,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	suite.NoError(err)
 
 	r := postgres.NewImportRepository(suite.DB)
-	jr := imports.NewResult(uuid.New(), iID, imports.JobStatusUpdated)
+	jr := imports.NewResult(uuid.New(), iID, base.JobStatusUpdated)
 
 	// Execute
 	err = r.SaveImportJob(context.Background(), jr)
@@ -276,13 +276,13 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	var dbImportJobResult postgres.ImportJobResult
 	err = suite.DB.Get(&dbImportJobResult, "SELECT * FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
 	suite.NoError(err)
-	suite.Equal(imports.JobStatusUpdated, imports.JobStatus(dbImportJobResult.Result))
+	suite.Equal(base.JobStatusUpdated, base.JobStatus(dbImportJobResult.Result))
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 	// Prepare
 	r := postgres.NewImportRepository(suite.BadDB)
-	jr := imports.NewResult(uuid.New(), uuid.New(), imports.JobStatusUpdated)
+	jr := imports.NewResult(uuid.New(), uuid.New(), base.JobStatusUpdated)
 
 	// Execute
 	err := r.SaveImportJob(context.Background(), jr)
@@ -325,25 +325,25 @@ func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Success() {
 	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
 		iID1,
 		uuid.New(),
-		imports.JobStatusUpdated,
+		base.JobStatusUpdated,
 	)
 	suite.NoError(err)
 	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
 		iID1,
 		uuid.New(),
-		imports.JobStatusUpdated,
+		base.JobStatusUpdated,
 	)
 	suite.NoError(err)
 	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
 		iID1,
 		uuid.New(),
-		imports.JobStatusUpdated,
+		base.JobStatusUpdated,
 	)
 	suite.NoError(err)
 	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
 		iID2,
 		uuid.New(),
-		imports.JobStatusUpdated,
+		base.JobStatusUpdated,
 	)
 	suite.NoError(err)
 

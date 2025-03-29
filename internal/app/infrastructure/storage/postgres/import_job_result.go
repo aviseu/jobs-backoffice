@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 )
@@ -23,6 +24,6 @@ func toDomainImportJobResult(j *ImportJobResult) *imports.JobResult {
 	return imports.NewResult(
 		j.ID,
 		j.ImportID,
-		imports.JobStatus(j.Result),
+		base.JobStatus(j.Result),
 	)
 }

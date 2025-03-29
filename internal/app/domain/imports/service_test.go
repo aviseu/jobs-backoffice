@@ -3,6 +3,7 @@ package imports_test
 import (
 	"context"
 	"errors"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -48,21 +49,21 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(imports.StatusProcessing, r.Imports[i.ID()].Status())
 
 	// Add JobResults
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusNew)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusMissing)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusMissing)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusUpdated)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusUpdated)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusUpdated)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusNoChange)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusNoChange)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusNoChange)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusNoChange)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusFailed)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusFailed)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusFailed)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusFailed)))
-	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), imports.JobStatusFailed)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNew)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusMissing)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusMissing)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusUpdated)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusUpdated)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusUpdated)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNoChange)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNoChange)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNoChange)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNoChange)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusFailed)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusFailed)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusFailed)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusFailed)))
+	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusFailed)))
 	suite.Len(r.JobResults, 15)
 
 	// Publishing
@@ -160,21 +161,21 @@ func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithoutMetadata_Suc
 	ctx := context.Background()
 	id := uuid.New()
 	r.Add(imports.New(id, uuid.New()))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNew))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusUpdated))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusUpdated))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusNoChange))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusMissing))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
-	r.AddResult(imports.NewResult(uuid.New(), id, imports.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusNew))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusUpdated))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusUpdated))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusNoChange))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusMissing))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusFailed))
+	r.AddResult(imports.NewResult(uuid.New(), id, base.JobStatusFailed))
 
 	// Execute
 	i, err := s.FindImportWithForcedMetadata(ctx, id)

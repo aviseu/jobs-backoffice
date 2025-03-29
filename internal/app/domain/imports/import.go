@@ -1,6 +1,7 @@
 package imports
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"time"
 
 	"github.com/google/uuid"
@@ -144,17 +145,17 @@ func (i *Import) resetMetadata() {
 	i.failedJobs = 0
 }
 
-func (i *Import) addJobResult(r JobStatus) {
+func (i *Import) addJobResult(r base.JobStatus) {
 	switch r {
-	case JobStatusNew:
+	case base.JobStatusNew:
 		i.newJobs++
-	case JobStatusUpdated:
+	case base.JobStatusUpdated:
 		i.updatedJobs++
-	case JobStatusNoChange:
+	case base.JobStatusNoChange:
 		i.noChangeJobs++
-	case JobStatusMissing:
+	case base.JobStatusMissing:
 		i.missingJobs++
-	case JobStatusFailed:
+	case base.JobStatusFailed:
 		i.failedJobs++
 	}
 }
