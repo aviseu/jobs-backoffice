@@ -22,10 +22,10 @@ func (suite *JobResultSuite) Test_Success() {
 	importID := uuid.New()
 
 	// Execute
-	j := imports.NewResult(id, importID, base.JobStatusNew)
+	j := imports.NewResult(id, importID, base.ImportJobResultNew)
 
 	// Assert
 	suite.Equal(id, j.JobID())
 	suite.Equal(importID, j.ImportID())
-	suite.Equal(base.JobStatusNew, j.Result())
+	suite.Equal(base.ImportJobResultNew, j.Result())
 }

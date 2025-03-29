@@ -131,17 +131,17 @@ func (i *Import) resetMetadata() {
 	i.failedJobs = 0
 }
 
-func (i *Import) addJobResult(r base.JobStatus) {
+func (i *Import) addJobResult(r base.ImportJobResult) {
 	switch r {
-	case base.JobStatusNew:
+	case base.ImportJobResultNew:
 		i.newJobs++
-	case base.JobStatusUpdated:
+	case base.ImportJobResultUpdated:
 		i.updatedJobs++
-	case base.JobStatusNoChange:
+	case base.ImportJobResultNoChange:
 		i.noChangeJobs++
-	case base.JobStatusMissing:
+	case base.ImportJobResultMissing:
 		i.missingJobs++
-	case base.JobStatusFailed:
+	case base.ImportJobResultFailed:
 		i.failedJobs++
 	}
 }

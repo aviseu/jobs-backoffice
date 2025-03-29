@@ -9,10 +9,10 @@ import (
 type JobResult struct {
 	jobID    uuid.UUID
 	importID uuid.UUID
-	result   base.JobStatus
+	result   base.ImportJobResult
 }
 
-func NewResult(jobID, importID uuid.UUID, result base.JobStatus) *JobResult {
+func NewResult(jobID, importID uuid.UUID, result base.ImportJobResult) *JobResult {
 	return &JobResult{
 		jobID:    jobID,
 		importID: importID,
@@ -28,7 +28,7 @@ func (j *JobResult) ImportID() uuid.UUID {
 	return j.importID
 }
 
-func (j *JobResult) Result() base.JobStatus {
+func (j *JobResult) Result() base.ImportJobResult {
 	return j.result
 }
 
