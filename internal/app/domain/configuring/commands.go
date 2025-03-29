@@ -7,7 +7,7 @@ type CreateChannelCommand struct {
 	Integration string
 }
 
-func NewCreateCommand(name, integration string) *CreateChannelCommand {
+func NewCreateChannelCommand(name, integration string) *CreateChannelCommand {
 	return &CreateChannelCommand{
 		Name:        name,
 		Integration: integration,
@@ -19,7 +19,7 @@ type UpdateChannelCommand struct {
 	ID   uuid.UUID
 }
 
-func NewUpdateCommand(id uuid.UUID, name string) *UpdateChannelCommand {
+func NewUpdateChannelCommand(id uuid.UUID, name string) *UpdateChannelCommand {
 	return &UpdateChannelCommand{
 		ID:   id,
 		Name: name,

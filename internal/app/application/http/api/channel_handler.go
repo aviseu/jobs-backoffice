@@ -59,7 +59,7 @@ func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := configuring.NewCreateCommand(req.Name, req.Integration)
+	cmd := configuring.NewCreateChannelCommand(req.Name, req.Integration)
 	ch, err := h.chs.Create(r.Context(), cmd)
 	if err != nil {
 		if errs.IsValidationError(err) {
@@ -139,7 +139,7 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := configuring.NewUpdateCommand(id, req.Name)
+	cmd := configuring.NewUpdateChannelCommand(id, req.Name)
 	ch, err := h.chs.Update(r.Context(), cmd)
 	if err != nil {
 		if errors.Is(err, configuring.ErrChannelNotFound) {

@@ -25,7 +25,7 @@ func (suite *ServiceSuite) Test_Create_Success() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	cmd := configuring.NewCreateCommand(
+	cmd := configuring.NewCreateChannelCommand(
 		"Channel Name",
 		"arbeitnow",
 	)
@@ -49,7 +49,7 @@ func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	cmd := configuring.NewCreateCommand(
+	cmd := configuring.NewCreateChannelCommand(
 		"",
 		"bad_integration",
 	)
@@ -70,7 +70,7 @@ func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
-	cmd := configuring.NewCreateCommand(
+	cmd := configuring.NewCreateChannelCommand(
 		"Channel Name",
 		"arbeitnow",
 	)
@@ -93,7 +93,7 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
 	ch := configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
 	r.Add(ch.ToDTO())
-	cmd := configuring.NewUpdateCommand(ch.ID(), "channel 2")
+	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
 	// Execute
 	res, err := s.Update(context.Background(), cmd)
@@ -121,7 +121,7 @@ func (suite *ServiceSuite) Test_Update_NotFound() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	cmd := configuring.NewUpdateCommand(uuid.New(), "channel 2")
+	cmd := configuring.NewUpdateChannelCommand(uuid.New(), "channel 2")
 
 	// Execute
 	_, err := s.Update(context.Background(), cmd)
@@ -139,7 +139,7 @@ func (suite *ServiceSuite) Test_Update_Error() {
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	r.Add(ch.ToDTO())
-	cmd := configuring.NewUpdateCommand(ch.ID(), "channel 2")
+	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
 	// Execute
 	_, err := s.Update(context.Background(), cmd)
@@ -156,7 +156,7 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	r.Add(ch.ToDTO())
-	cmd := configuring.NewUpdateCommand(ch.ID(), "")
+	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "")
 
 	// Execute
 	_, err := s.Update(context.Background(), cmd)
