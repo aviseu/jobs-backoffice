@@ -43,7 +43,6 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
@@ -64,7 +63,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		},
 		log,
 	)
-	ia := domain.NewImportAction(chs, is, f)
+	ia := domain.NewImportAction(chr, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
@@ -127,7 +126,6 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
@@ -148,7 +146,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		},
 		log,
 	)
-	ia := domain.NewImportAction(chs, is, f)
+	ia := domain.NewImportAction(chr, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)

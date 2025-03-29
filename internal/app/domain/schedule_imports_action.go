@@ -14,23 +14,24 @@ type PubSubService interface {
 
 type ScheduleImportsAction struct {
 	ia  *ScheduleImportAction
-	chs *configuring.Service
+	chr ChannelRepository
 }
 
-func NewScheduleImportsAction(chs *configuring.Service, ia *ScheduleImportAction) *ScheduleImportsAction {
+func NewScheduleImportsAction(chr ChannelRepository, ia *ScheduleImportAction) *ScheduleImportsAction {
 	return &ScheduleImportsAction{
-		chs: chs,
+		chr: chr,
 		ia:  ia,
 	}
 }
 
 func (s *ScheduleImportsAction) Execute(ctx context.Context) error {
-	channels, err := s.chs.GetActive(ctx)
+	channels, err := s.chr.GetActive(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to fetch active channels: %w", err)
 	}
 
-	for _, ch := range channels {
+	for _, dto := range channels {
+		ch := configuring.NewChannelFromDTO(dto)
 		if _, err := s.ia.Execute(ctx, ch); err != nil {
 			return fmt.Errorf("failed to schedule import for channel %s: %w", ch.ID(), err)
 		}

@@ -3,22 +3,28 @@ package domain
 import (
 	"context"
 	"fmt"
-
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 )
 
+type ChannelRepository interface {
+	GetActive(ctx context.Context) ([]*postgres.Channel, error)
+	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
+}
+
 type ImportAction struct {
-	chs *configuring.Service
+	chr ChannelRepository
 	is  *imports.Service
 	f   *gateway.Factory
 }
 
-func NewImportAction(chs *configuring.Service, is *imports.Service, f *gateway.Factory) *ImportAction {
+func NewImportAction(chr ChannelRepository, is *imports.Service, f *gateway.Factory) *ImportAction {
 	return &ImportAction{
-		chs: chs,
+		chr: chr,
 		is:  is,
 		f:   f,
 	}
@@ -30,10 +36,12 @@ func (s *ImportAction) Execute(ctx context.Context, iID uuid.UUID) error {
 		return fmt.Errorf("failed to find import %s: %w", iID, err)
 	}
 
-	ch, err := s.chs.Find(ctx, i.ChannelID())
+	dto, err := s.chr.Find(ctx, i.ChannelID())
 	if err != nil {
 		return fmt.Errorf("failed to find channel %s: %w", i.ChannelID(), err)
 	}
+
+	ch := configuring.NewChannelFromDTO(dto)
 
 	g := s.f.Create(ch)
 	if err := g.Import(ctx, i); err != nil {

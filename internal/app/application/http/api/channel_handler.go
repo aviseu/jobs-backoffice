@@ -223,7 +223,7 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 
 	ch, err := h.chr.Find(r.Context(), channelID)
 	if err != nil {
-		if errors.Is(err, configuring.ErrChannelNotFound) {
+		if errors.Is(err, postgres.ErrChannelNotFound) {
 			h.handleFail(w, fmt.Errorf("channel not found: %w", err), http.StatusNotFound)
 			return
 		}

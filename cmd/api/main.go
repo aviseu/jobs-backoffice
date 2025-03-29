@@ -93,7 +93,7 @@ func run(ctx context.Context) error {
 	ia := domain.NewScheduleImportAction(is, ps, log)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, is, ia, cfg.API, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, is, ia, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

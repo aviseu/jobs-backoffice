@@ -25,13 +25,12 @@ type ScheduleImportsActionSuite struct {
 func (suite *ScheduleImportsActionSuite) Test_Success() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
 	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chs, ia)
+	s := domain.NewScheduleImportsAction(chr, ia)
 
 	id1 := uuid.New()
 	chr.Add(configuring.NewChannel(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
@@ -75,13 +74,12 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
 	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chs, ia)
+	s := domain.NewScheduleImportsAction(chr, ia)
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -98,14 +96,13 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
 	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chs, ia)
+	s := domain.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
@@ -127,14 +124,13 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom!"))
 	lbuf, log := testutils.NewLogger()
 	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chs, ia)
+	s := domain.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())

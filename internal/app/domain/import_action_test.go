@@ -56,7 +56,6 @@ func (suite *ImportActionSuite) Test_Success() {
 	chr := testutils.NewChannelRepository()
 	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
-	chs := configuring.NewService(chr)
 
 	j1 := job.New(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
@@ -90,7 +89,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	i := imports.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
-	action := domain.NewImportAction(chs, is, f)
+	action := domain.NewImportAction(chr, is, f)
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -125,14 +124,13 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
-	action := domain.NewImportAction(chs, is, f)
+	action := domain.NewImportAction(chr, is, f)
 	id := uuid.New()
 
 	// Execute
@@ -152,13 +150,12 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
-	action := domain.NewImportAction(chs, is, f)
+	action := domain.NewImportAction(chr, is, f)
 	i := imports.New(uuid.New(), uuid.New())
 	ir.Add(i.ToDTO())
 
@@ -181,13 +178,12 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	chr := testutils.NewChannelRepository()
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
-	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, http.DefaultClient, gateway.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
-	action := domain.NewImportAction(chs, is, f)
+	action := domain.NewImportAction(chr, is, f)
 	i := imports.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 

@@ -30,7 +30,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
@@ -83,7 +83,7 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -111,7 +111,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
@@ -153,7 +153,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	id := uuid.New()
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
@@ -180,7 +180,7 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	id := uuid.New()
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
