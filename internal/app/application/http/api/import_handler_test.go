@@ -3,6 +3,7 @@ package api_test
 import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -31,8 +32,8 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	chs := channel.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 
 	id1 := uuid.New()
 	sAt1 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
@@ -112,8 +113,8 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	chs := channel.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := channel.New(uuid.New(), "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)

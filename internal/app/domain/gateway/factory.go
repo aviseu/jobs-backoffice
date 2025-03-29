@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"log/slog"
 	"net/http"
 
@@ -43,7 +44,7 @@ func NewFactory(js *job.Service, is *imports.Service, c HTTPClient, cfg Config, 
 
 func (f *Factory) Create(ch *channel.Channel) *Gateway {
 	var p Provider
-	if ch.Integration() == channel.IntegrationArbeitnow {
+	if ch.Integration() == base.IntegrationArbeitnow {
 		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)
 	}
 

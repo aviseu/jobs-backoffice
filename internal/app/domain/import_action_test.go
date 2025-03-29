@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
@@ -53,8 +54,8 @@ func (suite *ImportActionSuite) Test_Success() {
 		log,
 	)
 	chr := testutils.NewChannelRepository()
-	ch := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 	chs := channel.NewService(chr)
 
 	j1 := job.New(
@@ -178,8 +179,8 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 	chs := channel.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)

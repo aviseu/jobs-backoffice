@@ -1,6 +1,7 @@
 package channel_test
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -24,8 +25,8 @@ func (suite *ChannelSuite) Test_Success() {
 	ch := channel.New(
 		id,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 	)
 
 	// Assert
@@ -47,8 +48,8 @@ func (suite *ChannelSuite) Test_WithTimestamps_Success() {
 	ch := channel.New(
 		id,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(cAt, uAt),
 	)
 
@@ -59,21 +60,4 @@ func (suite *ChannelSuite) Test_WithTimestamps_Success() {
 	suite.Equal("active", ch.Status().String())
 	suite.True(ch.CreatedAt().Equal(cAt))
 	suite.True(ch.UpdatedAt().Equal(uAt))
-}
-
-func (suite *ChannelSuite) Test_ParseIntegration_Success() {
-	// Execute
-	i, ok := channel.ParseIntegration("arbeitnow")
-
-	// Assert
-	suite.True(ok)
-	suite.Equal(channel.IntegrationArbeitnow, i)
-}
-
-func (suite *ChannelSuite) Test_ParseIntegration_Error() {
-	// Execute
-	_, ok := channel.ParseIntegration("invalid")
-
-	// Assert
-	suite.False(ok)
 }

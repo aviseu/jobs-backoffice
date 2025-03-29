@@ -1,52 +1,19 @@
 package channel
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Status int
-
-const (
-	StatusInactive Status = iota
-	StatusActive
-)
-
-func (s Status) String() string {
-	return [...]string{"inactive", "active"}[s]
-}
-
-type Integration int
-
-const (
-	IntegrationArbeitnow Integration = iota
-)
-
-var integrations = map[Integration]string{
-	IntegrationArbeitnow: "arbeitnow",
-}
-
-func (i Integration) String() string {
-	return integrations[i]
-}
-
-func ParseIntegration(s string) (Integration, bool) {
-	for _, i := range integrations {
-		if i == s {
-			return IntegrationArbeitnow, true
-		}
-	}
-
-	return -1, false
-}
-
 type Channel struct {
 	createdAt   time.Time
 	updatedAt   time.Time
 	name        string
-	integration Integration
-	status      Status
+	integration base.Integration
+	status      base.ChannelStatus
 	id          uuid.UUID
 }
 
@@ -59,7 +26,7 @@ func WithTimestamps(c, u time.Time) Optional {
 	}
 }
 
-func New(id uuid.UUID, name string, i Integration, s Status, opts ...Optional) *Channel {
+func New(id uuid.UUID, name string, i base.Integration, s base.ChannelStatus, opts ...Optional) *Channel {
 	ch := &Channel{
 		id:          id,
 		name:        name,
@@ -84,11 +51,11 @@ func (ch *Channel) Name() string {
 	return ch.name
 }
 
-func (ch *Channel) Integration() Integration {
+func (ch *Channel) Integration() base.Integration {
 	return ch.integration
 }
 
-func (ch *Channel) Status() Status {
+func (ch *Channel) Status() base.ChannelStatus {
 	return ch.status
 }
 
@@ -112,11 +79,32 @@ func (ch *Channel) Update(name string) error {
 }
 
 func (ch *Channel) Activate() {
-	ch.status = StatusActive
+	ch.status = base.ChannelStatusActive
 	ch.updatedAt = time.Now()
 }
 
 func (ch *Channel) Deactivate() {
-	ch.status = StatusInactive
+	ch.status = base.ChannelStatusInactive
 	ch.updatedAt = time.Now()
+}
+
+func (ch *Channel) DTO() *postgres.Channel {
+	return &postgres.Channel{
+		ID:          ch.id,
+		Name:        ch.name,
+		Integration: int(ch.integration),
+		Status:      int(ch.status),
+		CreatedAt:   ch.createdAt,
+		UpdatedAt:   ch.updatedAt,
+	}
+}
+
+func fromDTO(dto *postgres.Channel) *Channel {
+	return New(
+		dto.ID,
+		dto.Name,
+		base.Integration(dto.Integration),
+		base.ChannelStatus(dto.Status),
+		WithTimestamps(dto.CreatedAt, dto.UpdatedAt),
+	)
 }

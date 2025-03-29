@@ -6,8 +6,10 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -42,20 +44,20 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 
 	// Assert state change
 	suite.Len(r.Channels, 1)
-	var ch *channel.Channel
+	var ch *postgres.Channel
 	for _, c := range r.Channels {
 		ch = c
 	}
-	suite.Equal("Channel Name", ch.Name())
-	suite.Equal(channel.IntegrationArbeitnow, ch.Integration())
-	suite.Equal(channel.StatusInactive, ch.Status())
-	suite.True(ch.CreatedAt().After(time.Now().Add(-2 * time.Second)))
-	suite.True(ch.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal("Channel Name", ch.Name)
+	suite.Equal(int(base.IntegrationArbeitnow), ch.Integration)
+	suite.Equal(int(base.ChannelStatusInactive), ch.Status)
+	suite.True(ch.CreatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert response
 	suite.Equal(oghttp.StatusCreated, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"Channel Name","integration":"arbeitnow","status":"inactive","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID.String()+`","name":"Channel Name","integration":"arbeitnow","status":"inactive","created_at":"`+ch.CreatedAt.Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -124,10 +126,10 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	s := channel.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch1 := channel.New(uuid.New(), "channel 1", channel.IntegrationArbeitnow, channel.StatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
-	r.Add(ch1)
-	ch2 := channel.New(uuid.New(), "channel 2", channel.IntegrationArbeitnow, channel.StatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
-	r.Add(ch2)
+	ch1 := channel.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
+	r.Add(ch1.DTO())
+	ch2 := channel.New(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive, channel.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
+	r.Add(ch2.DTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
@@ -201,14 +203,14 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+ch.ID().String(), nil)
 	suite.NoError(err)
@@ -309,14 +311,14 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"New Name"}`))
 	suite.NoError(err)
@@ -328,16 +330,16 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal("New Name", c.Name())
-	suite.Equal(channel.IntegrationArbeitnow, c.Integration())
-	suite.Equal(channel.StatusActive, c.Status())
-	suite.True(c.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
-	suite.True(c.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal("New Name", c.Name)
+	suite.Equal(int(base.IntegrationArbeitnow), c.Integration)
+	suite.Equal(int(base.ChannelStatusActive), c.Status)
+	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+c.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -360,7 +362,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -399,14 +401,14 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":""}`))
 	suite.NoError(err)
@@ -423,7 +425,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal("channel 1", c.Name())
+	suite.Equal("channel 1", c.Name)
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -440,14 +442,14 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"New Name"}`))
 	suite.NoError(err)
@@ -464,7 +466,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal("channel 1", c.Name())
+	suite.Equal("channel 1", c.Name)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -483,14 +485,14 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
 	suite.NoError(err)
@@ -502,9 +504,9 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(channel.StatusActive, c.Status())
-	suite.True(c.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
-	suite.True(c.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(int(base.ChannelStatusActive), c.Status)
+	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert response
 	suite.Equal(oghttp.StatusNoContent, rr.Code)
@@ -531,7 +533,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -571,14 +573,14 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
 	suite.NoError(err)
@@ -595,7 +597,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(channel.StatusInactive, c.Status())
+	suite.Equal(int(base.ChannelStatusInactive), c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -614,14 +616,14 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
 	suite.NoError(err)
@@ -633,9 +635,9 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(channel.StatusInactive, c.Status())
-	suite.True(c.CreatedAt().Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
-	suite.True(c.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(int(base.ChannelStatusInactive), c.Status)
+	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert response
 	suite.Equal(oghttp.StatusNoContent, rr.Code)
@@ -662,7 +664,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	// Assert response
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to find channel: channel not found\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -702,14 +704,14 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	ch := channel.New(
 		uuid.New(),
 		"channel 1",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 		channel.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 		),
 	)
-	r.Add(ch)
+	r.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
 	suite.NoError(err)
@@ -726,7 +728,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(channel.StatusActive, c.Status())
+	suite.Equal(int(base.ChannelStatusActive), c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -747,8 +749,8 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	h := http.APIRootHandler(chs, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := channel.New(chID, "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
 	suite.NoError(err)
@@ -827,8 +829,8 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	h := http.APIRootHandler(chs, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := channel.New(chID, "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive)
-	chr.Add(ch)
+	ch := channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	chr.Add(ch.DTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
 	suite.NoError(err)

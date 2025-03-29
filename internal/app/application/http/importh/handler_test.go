@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
@@ -66,7 +67,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
-	chr.Add(channel.New(chID, "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive))
+	chr.Add(channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID))
@@ -150,7 +151,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
-	chr.Add(channel.New(chID, "Channel Name", channel.IntegrationArbeitnow, channel.StatusActive))
+	chr.Add(channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID))

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -32,10 +33,10 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id1 := uuid.New()
-	chr.Add(channel.New(id1, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))
+	chr.Add(channel.New(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 	id2 := uuid.New()
-	chr.Add(channel.New(id2, "channel 2", channel.IntegrationArbeitnow, channel.StatusActive))
-	chr.Add(channel.New(uuid.New(), "channel 3", channel.IntegrationArbeitnow, channel.StatusInactive))
+	chr.Add(channel.New(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(channel.New(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -106,7 +107,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(channel.New(id, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))
+	chr.Add(channel.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -135,7 +136,7 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(channel.New(id, "channel 1", channel.IntegrationArbeitnow, channel.StatusActive))
+	chr.Add(channel.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())

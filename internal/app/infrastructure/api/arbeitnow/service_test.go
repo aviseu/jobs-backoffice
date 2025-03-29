@@ -1,6 +1,7 @@
 package arbeitnow_test
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -29,8 +30,8 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"arbeitnow integration",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch)
@@ -71,8 +72,8 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	ch := channel.New(
 		uuid.MustParse(testutils.ArbeitnowMethodNotFound),
 		"arbeitnow integration",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch)
@@ -93,8 +94,8 @@ func (suite *ServiceSuite) Test_Channel_Success() {
 	ch := channel.New(
 		uuid.New(),
 		"arbeitnow integration",
-		channel.IntegrationArbeitnow,
-		channel.StatusActive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	s := arbeitnow.NewService(c, arbeitnow.Config{URL: "https://google.com"}, ch)

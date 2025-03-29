@@ -2,7 +2,7 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -26,8 +26,8 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
 		chID,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 	)
 	suite.NoError(err)
 
@@ -103,8 +103,8 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
 		chID,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 	)
 	suite.NoError(err)
 
@@ -178,8 +178,8 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
 		chID,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 	)
 	suite.NoError(err)
 
@@ -244,8 +244,8 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
 		chID,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 	)
 	suite.NoError(err)
 
@@ -299,8 +299,8 @@ func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
 		chID,
 		"Channel Name",
-		channel.IntegrationArbeitnow,
-		channel.StatusInactive,
+		base.IntegrationArbeitnow,
+		base.ChannelStatusInactive,
 	)
 	suite.NoError(err)
 
