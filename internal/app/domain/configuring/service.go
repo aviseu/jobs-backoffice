@@ -11,8 +11,6 @@ import (
 )
 
 type Repository interface {
-	All(ctx context.Context) ([]*postgres.Channel, error)
-	GetActive(ctx context.Context) ([]*postgres.Channel, error)
 	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
 	Save(context.Context, *postgres.Channel) error
 }
@@ -25,7 +23,7 @@ func NewService(r Repository) *Service {
 	return &Service{r: r}
 }
 
-func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, error) {
+func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Channel, error) {
 	var errs error
 
 	i, ok := base.ParseIntegration(cmd.Integration)
@@ -41,7 +39,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, err
 		return nil, errs
 	}
 
-	ch := New(
+	ch := NewChannel(
 		uuid.New(),
 		cmd.Name,
 		i,
@@ -55,49 +53,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateCommand) (*Channel, err
 	return ch, nil
 }
 
-func (s *Service) All(ctx context.Context) ([]*Channel, error) {
-	dtos, err := s.r.All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get channels: %w", err)
-	}
-
-	channels := make([]*Channel, 0, len(dtos))
-	for _, dto := range dtos {
-		ch := fromDTO(dto)
-		channels = append(channels, ch)
-	}
-
-	return channels, nil
-}
-
-func (s *Service) GetActive(ctx context.Context) ([]*Channel, error) {
-	dtos, err := s.r.GetActive(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get active channels: %w", err)
-	}
-
-	channels := make([]*Channel, 0, len(dtos))
-	for _, dto := range dtos {
-		ch := fromDTO(dto)
-		channels = append(channels, ch)
-	}
-
-	return channels, nil
-}
-
-func (s *Service) Find(ctx context.Context, id uuid.UUID) (*Channel, error) {
-	dto, err := s.r.Find(ctx, id)
-	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
-			return nil, ErrChannelNotFound
-		}
-		return nil, fmt.Errorf("failed to find channel: %w", err)
-	}
-
-	return fromDTO(dto), nil
-}
-
-func (s *Service) Update(ctx context.Context, cmd *UpdateCommand) (*Channel, error) {
+func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Channel, error) {
 	dto, err := s.r.Find(ctx, cmd.ID)
 	if err != nil {
 		if errors.Is(err, postgres.ErrChannelNotFound) {
@@ -106,7 +62,7 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateCommand) (*Channel, err
 		return nil, fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := fromDTO(dto)
+	ch := NewChannelFromDTO(dto)
 
 	if err := ch.Update(cmd.Name); err != nil {
 		return nil, fmt.Errorf("failed to update channel: %w", err)
@@ -128,7 +84,7 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := fromDTO(dto)
+	ch := NewChannelFromDTO(dto)
 
 	ch.Activate()
 
@@ -148,7 +104,7 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := fromDTO(dto)
+	ch := NewChannelFromDTO(dto)
 
 	ch.Deactivate()
 
@@ -157,13 +113,4 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
-}
-
-func (*Service) Integrations() []base.Integration {
-	ii := make([]base.Integration, 0, len(base.Integrations))
-	for i := range base.Integrations {
-		ii = append(ii, i)
-	}
-
-	return ii
 }

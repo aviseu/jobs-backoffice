@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"log/slog"
 	"net/http"
 
@@ -35,7 +36,7 @@ func (h *IntegrationHandler) ListIntegrations(w http.ResponseWriter, _ *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	resp := NewListIntegrationsResponse(h.s.Integrations())
+	resp := NewListIntegrationsResponse(base.ListIntegrations())
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
 	}

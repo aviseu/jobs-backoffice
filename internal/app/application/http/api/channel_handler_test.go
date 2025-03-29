@@ -126,9 +126,9 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch1 := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
+	ch1 := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
 	r.Add(ch1.ToDTO())
-	ch2 := configuring.New(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
+	ch2 := configuring.NewChannel(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
 	r.Add(ch2.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
@@ -200,7 +200,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -308,7 +308,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -320,7 +320,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	)
 	r.Add(ch.ToDTO())
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"New Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -330,7 +330,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal("New Name", c.Name)
+	suite.Equal("NewChannel Name", c.Name)
 	suite.Equal(base.IntegrationArbeitnow, c.Integration)
 	suite.Equal(base.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
@@ -339,7 +339,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"New Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+c.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"NewChannel Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+c.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())
@@ -352,7 +352,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+uuid.New().String(), strings.NewReader(`{"name":"New Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+uuid.New().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -375,7 +375,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/invalid-uuid", strings.NewReader(`{"name":"New Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/invalid-uuid", strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -398,7 +398,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -439,7 +439,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -451,7 +451,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	)
 	r.Add(ch.ToDTO())
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"New Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
@@ -482,7 +482,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -570,7 +570,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -613,7 +613,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -701,7 +701,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
 		base.IntegrationArbeitnow,
@@ -749,7 +749,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	h := http.APIRootHandler(chs, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
@@ -829,7 +829,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	h := http.APIRootHandler(chs, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)

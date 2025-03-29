@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"gopkg.in/guregu/null.v3"
 )
@@ -18,14 +18,14 @@ type ChannelResponse struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-func NewChannelResponse(ch *configuring.Channel) *ChannelResponse {
+func NewChannelResponse(ch *postgres.Channel) *ChannelResponse {
 	return &ChannelResponse{
-		ID:          ch.ID().String(),
-		Name:        ch.Name(),
-		Integration: ch.Integration().String(),
-		Status:      ch.Status().String(),
-		CreatedAt:   ch.CreatedAt().Format(time.RFC3339),
-		UpdatedAt:   ch.UpdatedAt().Format(time.RFC3339),
+		ID:          ch.ID.String(),
+		Name:        ch.Name,
+		Integration: ch.Integration.String(),
+		Status:      ch.Status.String(),
+		CreatedAt:   ch.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   ch.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
@@ -49,7 +49,7 @@ type ListChannelsResponse struct {
 	Channels []*ChannelResponse `json:"channels"`
 }
 
-func NewListChannelsResponse(channels []*configuring.Channel) *ListChannelsResponse {
+func NewListChannelsResponse(channels []*postgres.Channel) *ListChannelsResponse {
 	resp := &ListChannelsResponse{
 		Channels: make([]*ChannelResponse, 0, len(channels)),
 	}
@@ -94,7 +94,7 @@ type ImportResponse struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
-func NewImportResponse(i *imports.Import, ch *configuring.Channel) *ImportResponse {
+func NewImportResponse(i *imports.Import, ch *postgres.Channel) *ImportResponse {
 	ended := null.NewString("", false)
 	if i.EndedAt().Valid {
 		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
@@ -103,8 +103,8 @@ func NewImportResponse(i *imports.Import, ch *configuring.Channel) *ImportRespon
 	return &ImportResponse{
 		ID:           i.ID().String(),
 		ChannelID:    i.ChannelID().String(),
-		ChannelName:  ch.Name(),
-		Integration:  ch.Integration().String(),
+		ChannelName:  ch.Name,
+		Integration:  ch.Integration.String(),
 		Status:       i.Status().String(),
 		StartedAt:    i.StartedAt().Format(time.RFC3339),
 		EndedAt:      ended,
@@ -122,14 +122,14 @@ type ImportsResponse struct {
 	Imports []*ImportResponse `json:"imports"`
 }
 
-func NewImportsResponse(imports []*imports.Import, channels []*configuring.Channel) *ImportsResponse {
+func NewImportsResponse(imports []*imports.Import, channels []*postgres.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportResponse, 0, len(imports)),
 	}
 
 	for _, i := range imports {
 		for _, ch := range channels {
-			if ch.ID() == i.ChannelID() {
+			if ch.ID == i.ChannelID() {
 				resp.Imports = append(resp.Imports, NewImportResponse(i, ch))
 				break
 			}

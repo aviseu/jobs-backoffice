@@ -26,7 +26,7 @@ func WithTimestamps(c, u time.Time) Optional {
 	}
 }
 
-func New(id uuid.UUID, name string, i base.Integration, s base.ChannelStatus, opts ...Optional) *Channel {
+func NewChannel(id uuid.UUID, name string, i base.Integration, s base.ChannelStatus, opts ...Optional) *Channel {
 	ch := &Channel{
 		id:          id,
 		name:        name,
@@ -99,8 +99,8 @@ func (ch *Channel) ToDTO() *postgres.Channel {
 	}
 }
 
-func fromDTO(dto *postgres.Channel) *Channel {
-	return New(
+func NewChannelFromDTO(dto *postgres.Channel) *Channel {
+	return NewChannel(
 		dto.ID,
 		dto.Name,
 		dto.Integration,

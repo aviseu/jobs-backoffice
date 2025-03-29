@@ -54,7 +54,7 @@ func (suite *ImportActionSuite) Test_Success() {
 		log,
 	)
 	chr := testutils.NewChannelRepository()
-	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 	chs := configuring.NewService(chr)
 
@@ -179,7 +179,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	ch := configuring.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()

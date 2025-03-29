@@ -53,7 +53,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		},
 		log,
 	)
-	ch := configuring.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	j1 := job.New(
@@ -150,7 +150,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 		},
 		log,
 	)
-	ch := configuring.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())
@@ -197,7 +197,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 		},
 		log,
 	)
-	ch := configuring.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())

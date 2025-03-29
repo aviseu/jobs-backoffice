@@ -23,3 +23,12 @@ func ParseIntegration(s string) (Integration, bool) {
 
 	return -1, false
 }
+
+func ListIntegrations() []Integration {
+	ii := make([]Integration, 0, len(Integrations))
+	for i := range Integrations {
+		ii = append(ii, i)
+	}
+
+	return ii
+}

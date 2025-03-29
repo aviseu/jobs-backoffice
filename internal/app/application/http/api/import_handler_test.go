@@ -32,7 +32,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := configuring.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	id1 := uuid.New()
@@ -113,7 +113,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := configuring.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	id := uuid.New()

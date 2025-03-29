@@ -26,7 +26,7 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,
@@ -68,7 +68,7 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.MustParse(testutils.ArbeitnowMethodNotFound),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,
@@ -90,7 +90,7 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 
 func (suite *ServiceSuite) Test_Channel_Success() {
 	// Prepare
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		uuid.New(),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,

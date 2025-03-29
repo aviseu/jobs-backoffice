@@ -1,10 +1,12 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
 	"net/http"
 
@@ -14,15 +16,22 @@ import (
 	"github.com/google/uuid"
 )
 
+type ChannelRepository interface {
+	All(ctx context.Context) ([]*postgres.Channel, error)
+	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
+}
+
 type ChannelHandler struct {
 	chs *configuring.Service
+	chr ChannelRepository
 	ia  *domain.ScheduleImportAction
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, ia *domain.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ia *domain.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
+		chr: chr,
 		log: log,
 		ia:  ia,
 	}
@@ -65,14 +74,14 @@ func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	resp := NewChannelResponse(ch)
+	resp := NewChannelResponse(ch.ToDTO())
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
 	}
 }
 
 func (h *ChannelHandler) ListChannels(w http.ResponseWriter, r *http.Request) {
-	channels, err := h.chs.All(r.Context())
+	channels, err := h.chr.All(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
 		return
@@ -96,9 +105,9 @@ func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := h.chs.Find(r.Context(), id)
+	p, err := h.chr.Find(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, configuring.ErrChannelNotFound) {
+		if errors.Is(err, postgres.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -148,7 +157,7 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	resp := NewChannelResponse(ch)
+	resp := NewChannelResponse(ch.ToDTO())
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
 		return
@@ -199,16 +208,6 @@ func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *ChannelHandler) ListIntegrations(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	resp := NewListIntegrationsResponse(h.chs.Integrations())
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		h.handleError(w, fmt.Errorf("failed to encode response: %w", err))
-	}
-}
-
 func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) {
 	channelIDStr := chi.URLParam(r, "id")
 	if channelIDStr == "" {
@@ -222,7 +221,7 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ch, err := h.chs.Find(r.Context(), channelID)
+	ch, err := h.chr.Find(r.Context(), channelID)
 	if err != nil {
 		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, fmt.Errorf("channel not found: %w", err), http.StatusNotFound)
@@ -233,7 +232,8 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	i, err := h.ia.Execute(r.Context(), ch)
+	// temporary
+	i, err := h.ia.Execute(r.Context(), configuring.NewChannelFromDTO(ch))
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to schedule import: %w", err))
 		return

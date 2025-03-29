@@ -22,7 +22,7 @@ func (suite *ChannelSuite) Test_Success() {
 	id := uuid.New()
 
 	// Execute
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		id,
 		"Channel Name",
 		base.IntegrationArbeitnow,
@@ -45,7 +45,7 @@ func (suite *ChannelSuite) Test_WithTimestamps_Success() {
 	uAt := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
 
 	// Execute
-	ch := configuring.New(
+	ch := configuring.NewChannel(
 		id,
 		"Channel Name",
 		base.IntegrationArbeitnow,

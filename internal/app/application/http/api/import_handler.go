@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -15,13 +14,13 @@ import (
 
 type ImportHandler struct {
 	is  *imports.Service
-	chs *configuring.Service
+	chr ChannelRepository
 	log *slog.Logger
 }
 
-func NewImportHandler(chs *configuring.Service, is *imports.Service, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chr ChannelRepository, is *imports.Service, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
-		chs: chs,
+		chr: chr,
 		is:  is,
 		log: log,
 	}
@@ -43,7 +42,7 @@ func (h *ImportHandler) ListImports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cc, err := h.chs.All(r.Context())
+	cc, err := h.chr.All(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
 		return
@@ -82,7 +81,7 @@ func (h *ImportHandler) FindImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ch, err := h.chs.Find(r.Context(), i.ChannelID())
+	ch, err := h.chr.Find(r.Context(), i.ChannelID())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
 		return

@@ -6,15 +6,15 @@ import (
 	"testing"
 )
 
-func TestChannel(t *testing.T) {
-	suite.Run(t, new(ChannelSuite))
+func TestIntegration(t *testing.T) {
+	suite.Run(t, new(IntegrationSuite))
 }
 
-type ChannelSuite struct {
+type IntegrationSuite struct {
 	suite.Suite
 }
 
-func (suite *ChannelSuite) Test_ParseIntegration_Success() {
+func (suite *IntegrationSuite) Test_ParseIntegration_Success() {
 	// Execute
 	i, ok := base.ParseIntegration("arbeitnow")
 
@@ -23,10 +23,19 @@ func (suite *ChannelSuite) Test_ParseIntegration_Success() {
 	suite.Equal(base.IntegrationArbeitnow, i)
 }
 
-func (suite *ChannelSuite) Test_ParseIntegration_Error() {
+func (suite *IntegrationSuite) Test_ParseIntegration_Error() {
 	// Execute
 	_, ok := base.ParseIntegration("invalid")
 
 	// Assert
 	suite.False(ok)
+}
+
+func (suite *IntegrationSuite) Test_ListIntegrations_Success() {
+	// Execute
+	list := base.ListIntegrations()
+
+	// Assert
+	suite.Len(list, 1)
+	suite.Equal(base.IntegrationArbeitnow, list[0])
 }
