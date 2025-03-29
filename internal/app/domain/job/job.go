@@ -2,6 +2,7 @@ package job
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
 	"github.com/google/uuid"
@@ -138,4 +139,39 @@ func (j *Job) IsEqual(other *Job) bool {
 		j.location == other.location &&
 		j.remote == other.remote &&
 		j.postedAt.Equal(other.postedAt)
+}
+
+func (j *Job) ToDTO() *postgres.Job {
+	return &postgres.Job{
+		ID:            j.ID(),
+		ChannelID:     j.ChannelID(),
+		URL:           j.URL(),
+		Title:         j.Title(),
+		Description:   j.Description(),
+		Source:        j.Source(),
+		Location:      j.Location(),
+		Remote:        j.Remote(),
+		PostedAt:      j.PostedAt(),
+		CreatedAt:     j.CreatedAt(),
+		UpdatedAt:     j.UpdatedAt(),
+		Status:        j.Status(),
+		PublishStatus: j.PublishStatus(),
+	}
+}
+
+func NewJobFromDTO(j *postgres.Job) *Job {
+	return New(
+		j.ID,
+		j.ChannelID,
+		j.Status,
+		j.URL,
+		j.Title,
+		j.Description,
+		j.Source,
+		j.Location,
+		j.Remote,
+		j.PostedAt,
+		WithTimestamps(j.CreatedAt, j.UpdatedAt),
+		WithPublishStatus(j.PublishStatus),
+	)
 }

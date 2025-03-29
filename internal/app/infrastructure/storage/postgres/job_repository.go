@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -17,8 +16,7 @@ func NewJobRepository(db *sqlx.DB) *JobRepository {
 	return &JobRepository{db: db}
 }
 
-func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
-	j := fromDomainJob(job)
+func (r *JobRepository) Save(ctx context.Context, j *Job) error {
 	_, err := r.db.NamedExecContext(
 		ctx,
 		`INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at)
@@ -38,22 +36,17 @@ func (r *JobRepository) Save(ctx context.Context, job *job.Job) error {
 		j,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to save job %s: %w", job.ID(), err)
+		return fmt.Errorf("failed to save job %s: %w", j.ID, err)
 	}
 
 	return nil
 }
 
-func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*job.Job, error) {
-	var jobs []*Job
-	err := r.db.SelectContext(ctx, &jobs, "SELECT * FROM jobs WHERE channel_id = $1 ORDER BY posted_at DESC", chID)
+func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*Job, error) {
+	var results []*Job
+	err := r.db.SelectContext(ctx, &results, "SELECT * FROM jobs WHERE channel_id = $1 ORDER BY posted_at DESC", chID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get jobs by channel id %s: %w", chID, err)
-	}
-
-	results := make([]*job.Job, 0, len(jobs))
-	for _, j := range jobs {
-		results = append(results, toDomainJob(j))
 	}
 
 	return results, nil

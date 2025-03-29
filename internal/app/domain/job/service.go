@@ -5,14 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"sync"
 
 	"github.com/google/uuid"
 )
 
 type Repository interface {
-	Save(ctx context.Context, j *Job) error
-	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*Job, error)
+	Save(ctx context.Context, j *postgres.Job) error
+	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*postgres.Job, error)
 }
 
 type Service struct {
@@ -32,7 +33,7 @@ func NewService(r Repository, workerBuffer, workerCount int) *Service {
 
 func worker(ctx context.Context, wg *sync.WaitGroup, r Repository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
 	for j := range jobs {
-		if err := r.Save(ctx, j); err != nil {
+		if err := r.Save(ctx, j.ToDTO()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
 			results <- NewResult(j.ID(), ResultTypeFailed, WithError(err.Error()))
 		}
@@ -71,9 +72,9 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, res
 	for _, in := range incoming {
 		found := false
 		for _, ex := range existing {
-			if ex.ID() == in.ID() {
+			if ex.ID == in.ID() {
 				found = true
-				if in.IsEqual(ex) {
+				if in.IsEqual(NewJobFromDTO(ex)) {
 					results <- NewResult(in.ID(), ResultTypeNoChange)
 					goto next
 				}
@@ -93,18 +94,19 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, res
 
 	// save if existing does not exist in incoming
 	for _, ex := range existing {
-		if ex.Status() == base.JobStatusInactive {
+		exj := NewJobFromDTO(ex)
+		if ex.Status == base.JobStatusInactive {
 			continue
 		}
 		for _, in := range incoming {
-			if ex.ID() == in.ID() {
+			if exj.ID() == in.ID() {
 				goto skip
 			}
 		}
 
-		ex.MarkAsMissing()
-		jobs <- ex
-		results <- NewResult(ex.ID(), ResultTypeMissing)
+		exj.MarkAsMissing()
+		jobs <- exj
+		results <- NewResult(exj.ID(), ResultTypeMissing)
 
 	skip:
 	}

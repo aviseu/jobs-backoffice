@@ -71,7 +71,7 @@ func (suite *ImportActionSuite) Test_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(base.JobPublishStatusPublished),
 	)
-	jr.Add(j1)
+	jr.Add(j1.ToDTO())
 	j2 := job.New(
 		uuid.New(),
 		ch.ID(),
@@ -85,7 +85,7 @@ func (suite *ImportActionSuite) Test_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(base.JobPublishStatusPublished),
 	)
-	jr.Add(j2)
+	jr.Add(j2.ToDTO())
 
 	i := imports.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())

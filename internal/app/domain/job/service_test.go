@@ -42,10 +42,10 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	existingChange := job.New(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
 	existingActiveMissing := job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
 	existingInactiveMissing := job.New(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
-	r.Add(existingNoChange)
-	r.Add(existingChange)
-	r.Add(existingActiveMissing)
-	r.Add(existingInactiveMissing)
+	r.Add(existingNoChange.ToDTO())
+	r.Add(existingChange.ToDTO())
+	r.Add(existingActiveMissing.ToDTO())
+	r.Add(existingInactiveMissing.ToDTO())
 
 	incomingNoChange := job.New(existingNoChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), job.WithPublishStatus(base.JobPublishStatusUnpublished))
 	incomingChange := job.New(existingChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusUnpublished))
@@ -61,20 +61,20 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	suite.NoError(err)
 	suite.Len(r.Jobs, 5)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[existingNoChange.ID()].Status())
-	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[existingNoChange.ID()].Status)
+	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[existingChange.ID()].Status())
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[existingChange.ID()].Status)
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusInactive, r.Jobs[existingActiveMissing.ID()].Status())
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus())
+	suite.Equal(base.JobStatusInactive, r.Jobs[existingActiveMissing.ID()].Status)
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusInactive, r.Jobs[existingInactiveMissing.ID()].Status())
-	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus())
+	suite.Equal(base.JobStatusInactive, r.Jobs[existingInactiveMissing.ID()].Status)
+	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[incomingNew.ID()].Status())
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[incomingNew.ID()].Status)
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus)
 
 	// Assert results
 	suite.Len(resultMap, 4)

@@ -69,7 +69,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(base.JobPublishStatusPublished),
 	)
-	jr.Add(j1)
+	jr.Add(j1.ToDTO())
 	j2 := job.New(
 		uuid.New(),
 		ch.ID(),
@@ -83,7 +83,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		time.Unix(1739357344, 0),
 		job.WithPublishStatus(base.JobPublishStatusPublished),
 	)
-	jr.Add(j2)
+	jr.Add(j2.ToDTO())
 
 	i := imports.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
@@ -94,8 +94,8 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	// Assert Jobs
 	suite.NoError(err)
 	suite.Len(jr.Jobs, 4)
-	suite.Equal(base.JobPublishStatusPublished, jr.Jobs[j1.ID()].PublishStatus())
-	suite.Equal(base.JobPublishStatusUnpublished, jr.Jobs[j2.ID()].PublishStatus())
+	suite.Equal(base.JobPublishStatusPublished, jr.Jobs[j1.ID()].PublishStatus)
+	suite.Equal(base.JobPublishStatusUnpublished, jr.Jobs[j2.ID()].PublishStatus)
 
 	// Assert imports
 	suite.Len(ir.Imports, 1)

@@ -41,7 +41,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err := r.Save(context.Background(), j)
+	err := r.Save(context.Background(), j.ToDTO())
 
 	// Assert return
 	suite.NoError(err)
@@ -106,7 +106,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err = r.Save(context.Background(), j)
+	err = r.Save(context.Background(), j.ToDTO())
 
 	// Assert return
 	suite.NoError(err)
@@ -155,7 +155,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	r := postgres.NewJobRepository(suite.BadDB)
 
 	// Execute
-	err := r.Save(context.Background(), j)
+	err := r.Save(context.Background(), j.ToDTO())
 
 	// Assert return
 	suite.Error(err)
@@ -227,8 +227,8 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	// Assert return
 	suite.NoError(err)
 	suite.Len(jobs, 2)
-	suite.Equal(jID2, jobs[0].ID())
-	suite.Equal(jID1, jobs[1].ID())
+	suite.Equal(jID2, jobs[0].ID)
+	suite.Equal(jID1, jobs[1].ID)
 }
 
 func (suite *JobRepositorySuite) Test_GetByChannelID_Error() {
