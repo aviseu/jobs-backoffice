@@ -8,7 +8,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -45,7 +44,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
-	js := job.NewJobService(jr, 10, 10)
+	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(
 		js,
 		is,
@@ -128,7 +127,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
-	js := job.NewJobService(jr, 10, 10)
+	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(
 		js,
 		is,

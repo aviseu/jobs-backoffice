@@ -3,10 +3,9 @@ package arbeitnow
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"io"
 	"net/http"
-
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 )
 
 const ChannelHeader = "X-Channel-Id"
@@ -21,12 +20,12 @@ func newClient(c HTTPClient) *client {
 	}
 }
 
-func (c *client) JobBoard(endpoint string, ch *configuring.Channel) (*jobBoardResponse, error) {
+func (c *client) JobBoard(endpoint string, ch *postgres.Channel) (*jobBoardResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request for jobBoard: %w", err)
 	}
-	req.Header.Set(ChannelHeader, ch.ID().String())
+	req.Header.Set(ChannelHeader, ch.ID.String())
 
 	resp, err := c.c.Do(req)
 	if err != nil {

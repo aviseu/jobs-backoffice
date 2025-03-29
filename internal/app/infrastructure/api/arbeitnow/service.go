@@ -3,11 +3,10 @@ package arbeitnow
 import (
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"net/http"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 )
 
@@ -19,11 +18,11 @@ type HTTPClient interface {
 
 type Service struct {
 	c       *client
-	ch      *configuring.Channel
+	ch      *postgres.Channel
 	baseURL string
 }
 
-func NewService(c HTTPClient, cfg Config, ch *configuring.Channel) *Service {
+func NewService(c HTTPClient, cfg Config, ch *postgres.Channel) *Service {
 	return &Service{
 		c:       newClient(c),
 		baseURL: cfg.URL,
@@ -31,14 +30,14 @@ func NewService(c HTTPClient, cfg Config, ch *configuring.Channel) *Service {
 	}
 }
 
-func (s *Service) GetJobs() ([]*job.Job, error) {
+func (s *Service) GetJobs() ([]*postgres.Job, error) {
 	jobs := make([]*jobEntry, 0)
 	page := 1
 	endpoint := s.baseURL + endpointJobBoard
 	for {
 		resp, err := s.c.JobBoard(endpoint, s.ch)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get jobs page %d on channel %s: %w", page, s.ch.ID(), err)
+			return nil, fmt.Errorf("failed to get jobs page %d on channel %s: %w", page, s.ch.ID, err)
 		}
 
 		jobs = append(jobs, resp.Jobs...)
@@ -51,25 +50,27 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 		page++
 	}
 
-	result := make([]*job.Job, 0, len(jobs))
+	result := make([]*postgres.Job, 0, len(jobs))
 	for _, j := range jobs {
-		result = append(result, job.NewJob(
-			uuid.NewSHA1(s.ch.ID(), []byte(j.Slug)), // UUID V5
-			s.ch.ID(),
-			base.JobStatusActive,
-			j.URL,
-			j.Title,
-			j.Description,
-			s.ch.Integration().String(),
-			j.Location,
-			j.Remote,
-			time.Unix(j.CreatedAt, 0),
-		))
+		result = append(result, &postgres.Job{
+			ID:          uuid.NewSHA1(s.ch.ID, []byte(j.Slug)), // UUID V5
+			ChannelID:   s.ch.ID,
+			Status:      base.JobStatusActive,
+			URL:         j.URL,
+			Title:       j.Title,
+			Description: j.Description,
+			Location:    j.Location,
+			Remote:      j.Remote,
+			PostedAt:    time.Unix(j.CreatedAt, 0),
+			Source:      base.IntegrationArbeitnow.String(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		})
 	}
 
 	return result, nil
 }
 
-func (s *Service) Channel() *configuring.Channel {
+func (s *Service) Channel() *postgres.Channel {
 	return s.ch
 }

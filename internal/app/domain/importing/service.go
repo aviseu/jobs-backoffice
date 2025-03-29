@@ -1,4 +1,4 @@
-package job
+package importing
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func worker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-cha
 	wg.Done()
 }
 
-func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, results chan<- *Result) error {
+func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*postgres.Job, results chan<- *Result) error {
 	// get existing jobs
 	existing, err := s.r.GetByChannelID(ctx, chID)
 	if err != nil {
@@ -68,8 +68,14 @@ func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, 
 		wgError.Done()
 	}(errs)
 
+	incomingJobs := make([]*Job, len(incoming))
+	for i, in := range incoming {
+		inj := NewJobFromDTO(in)
+		incomingJobs[i] = inj
+	}
+
 	// save if incoming does not exist or is different
-	for _, in := range incoming {
+	for _, in := range incomingJobs {
 		found := false
 		for _, ex := range existing {
 			if ex.ID == in.ID() {
@@ -99,7 +105,7 @@ func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, 
 			continue
 		}
 		for _, in := range incoming {
-			if exj.ID() == in.ID() {
+			if exj.ID() == in.ID {
 				goto skip
 			}
 		}

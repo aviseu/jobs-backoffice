@@ -4,21 +4,19 @@ import (
 	"context"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
 	"sync"
-
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 )
 
 type Provider interface {
-	Channel() *configuring.Channel
-	GetJobs() ([]*job.Job, error)
+	Channel() *postgres.Channel
+	GetJobs() ([]*postgres.Job, error)
 }
 
 type Gateway struct {
 	p   Provider
-	js  *job.JobService
+	js  *JobService
 	is  *ImportService
 	log *slog.Logger
 
@@ -26,7 +24,7 @@ type Gateway struct {
 	resultWorkers    int
 }
 
-func NewGateway(p Provider, js *job.JobService, is *ImportService, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
+func NewGateway(p Provider, js *JobService, is *ImportService, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
 	return &Gateway{
 		p:   p,
 		js:  js,
@@ -38,7 +36,7 @@ func NewGateway(p Provider, js *job.JobService, is *ImportService, log *slog.Log
 	}
 }
 
-func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *job.Result) {
+func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *Result) {
 	for r := range results {
 		jr := NewImportJobResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
 		if err := g.is.SaveJobResult(ctx, jr); err != nil {
@@ -56,7 +54,7 @@ func (g *Gateway) Import(ctx context.Context, i *Import) error {
 
 	jobs, err := g.p.GetJobs()
 	if err != nil {
-		err := fmt.Errorf("failed to import channel %s: %w", g.p.Channel().ID(), err)
+		err := fmt.Errorf("failed to import channel %s: %w", g.p.Channel().ID, err)
 		if err2 := g.is.MarkAsFailed(ctx, i, err); err2 != nil {
 			return fmt.Errorf("failed to mark import %s as failed: %w: %w", i.ID(), err2, err)
 		}
@@ -69,14 +67,14 @@ func (g *Gateway) Import(ctx context.Context, i *Import) error {
 
 	// create workers
 	var wg sync.WaitGroup
-	results := make(chan *job.Result, g.resultBufferSize)
+	results := make(chan *Result, g.resultBufferSize)
 	for w := 1; w <= g.resultWorkers; w++ {
 		wg.Add(1)
 		go g.worker(ctx, &wg, i, results)
 	}
 
-	if err := g.js.Sync(ctx, g.p.Channel().ID(), jobs, results); err != nil {
-		return fmt.Errorf("failed to sync jobs for channel %s: %w", g.p.Channel().ID(), err)
+	if err := g.js.Sync(ctx, g.p.Channel().ID, jobs, results); err != nil {
+		return fmt.Errorf("failed to sync jobs for channel %s: %w", g.p.Channel().ID, err)
 	}
 
 	close(results)

@@ -1,4 +1,4 @@
-package job
+package importing
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"

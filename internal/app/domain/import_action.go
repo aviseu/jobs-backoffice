@@ -42,7 +42,7 @@ func (s *ImportAction) Execute(ctx context.Context, iID uuid.UUID) error {
 
 	ch := configuring.NewChannelFromDTO(dto)
 
-	g := s.f.Create(ch)
+	g := s.f.Create(ch.ToDTO())
 	if err := g.Import(ctx, i); err != nil {
 		return fmt.Errorf("failed to import channel %s: %w", ch.ID(), err)
 	}

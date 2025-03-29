@@ -13,7 +13,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -83,7 +82,7 @@ func run(ctx context.Context) error {
 	ir := postgres.NewImportRepository(db)
 	is := importing.NewImportService(ir)
 	jr := postgres.NewJobRepository(db)
-	js := job.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
+	js := importing.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := importing.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
 	ia := domain.NewImportAction(chr, is, f)

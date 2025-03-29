@@ -2,11 +2,10 @@ package importing
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )
 
@@ -25,13 +24,13 @@ type HTTPClient interface {
 
 type Factory struct {
 	c   HTTPClient
-	js  *job.JobService
+	js  *JobService
 	is  *ImportService
 	log *slog.Logger
 	cfg Config
 }
 
-func NewFactory(js *job.JobService, is *ImportService, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
+func NewFactory(js *JobService, is *ImportService, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
 	return &Factory{
 		cfg: cfg,
 		js:  js,
@@ -41,9 +40,9 @@ func NewFactory(js *job.JobService, is *ImportService, c HTTPClient, cfg Config,
 	}
 }
 
-func (f *Factory) Create(ch *configuring.Channel) *Gateway {
+func (f *Factory) Create(ch *postgres.Channel) *Gateway {
 	var p Provider
-	if ch.Integration() == base.IntegrationArbeitnow {
+	if ch.Integration == base.IntegrationArbeitnow {
 		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)
 	}
 

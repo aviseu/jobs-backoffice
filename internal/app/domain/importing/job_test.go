@@ -1,8 +1,8 @@
-package job_test
+package importing_test
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -23,7 +23,7 @@ func (suite *JobSuite) Test_Success() {
 	chID := uuid.New()
 
 	// Execute
-	j := job.NewJob(
+	j := importing.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -58,7 +58,7 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 	chID := uuid.New()
 
 	// Execute
-	j := job.NewJob(
+	j := importing.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -69,11 +69,11 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 		"Amsterdam",
 		true,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-		job.JobWithTimestamps(
+		importing.JobWithTimestamps(
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		),
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 
 	// Assert

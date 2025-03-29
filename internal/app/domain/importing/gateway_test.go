@@ -6,7 +6,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -29,7 +28,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
-	js := job.NewJobService(jr, 10, 10)
+	js := importing.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
@@ -53,9 +52,9 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	gw := f.Create(ch)
+	gw := f.Create(ch.ToDTO())
 
-	j1 := job.NewJob(
+	j1 := importing.NewJob(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
 		ch.ID(),
 		base.JobStatusActive,
@@ -66,10 +65,10 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		"Munich",
 		true,
 		time.Unix(1739357344, 0),
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	jr.Add(j1.ToDTO())
-	j2 := job.NewJob(
+	j2 := importing.NewJob(
 		uuid.New(),
 		ch.ID(),
 		base.JobStatusActive,
@@ -80,7 +79,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		"Munich",
 		true,
 		time.Unix(1739357344, 0),
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	jr.Add(j2.ToDTO())
 
@@ -126,7 +125,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
 	jr.FailWith(errors.New("boom!"))
-	js := job.NewJobService(jr, 10, 10)
+	js := importing.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
@@ -150,7 +149,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	gw := f.Create(ch)
+	gw := f.Create(ch.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
@@ -173,7 +172,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
-	js := job.NewJobService(jr, 10, 10)
+	js := importing.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
@@ -197,7 +196,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	gw := f.Create(ch)
+	gw := f.Create(ch.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())

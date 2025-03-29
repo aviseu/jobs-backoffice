@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"context"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -25,7 +25,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	id := uuid.New()
 	chID := uuid.New()
 	pAt := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
-	j := job.NewJob(
+	j := importing.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -36,7 +36,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 		"Amsterdam",
 		true,
 		pAt,
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.DB)
 
@@ -89,7 +89,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 
 	pAt := time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)
 	chID2 := uuid.New()
-	j := job.NewJob(
+	j := importing.NewJob(
 		id,
 		chID2,
 		base.JobStatusActive,
@@ -100,7 +100,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 		"Amsterdam new",
 		false,
 		pAt,
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 
 	r := postgres.NewJobRepository(suite.DB)
@@ -139,7 +139,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	// Prepare
 	id := uuid.New()
 	chID := uuid.New()
-	j := job.NewJob(
+	j := importing.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -150,7 +150,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 		"Amsterdam",
 		true,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-		job.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.BadDB)
 
