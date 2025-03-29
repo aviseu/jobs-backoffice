@@ -1,6 +1,7 @@
 package job_test
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -25,7 +26,7 @@ func (suite *JobSuite) Test_Success() {
 	j := job.New(
 		id,
 		chID,
-		job.StatusActive,
+		base.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -38,8 +39,8 @@ func (suite *JobSuite) Test_Success() {
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
-	suite.Equal(job.StatusActive, j.Status())
-	suite.Equal(job.PublishStatusUnpublished, j.PublishStatus())
+	suite.Equal(base.JobStatusActive, j.Status())
+	suite.Equal(base.JobPublishStatusUnpublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())
@@ -60,7 +61,7 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 	j := job.New(
 		id,
 		chID,
-		job.StatusActive,
+		base.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -72,14 +73,14 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		),
-		job.WithPublishStatus(job.PublishStatusPublished),
+		job.WithPublishStatus(base.JobPublishStatusPublished),
 	)
 
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
-	suite.Equal(job.StatusActive, j.Status())
-	suite.Equal(job.PublishStatusPublished, j.PublishStatus())
+	suite.Equal(base.JobStatusActive, j.Status())
+	suite.Equal(base.JobPublishStatusPublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())

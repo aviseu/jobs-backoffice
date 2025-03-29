@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"sync"
 
 	"github.com/google/uuid"
@@ -92,7 +93,7 @@ func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, res
 
 	// save if existing does not exist in incoming
 	for _, ex := range existing {
-		if ex.Status() == StatusInactive {
+		if ex.Status() == base.JobStatusInactive {
 			continue
 		}
 		for _, in := range incoming {

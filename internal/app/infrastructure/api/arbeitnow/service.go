@@ -2,6 +2,7 @@ package arbeitnow
 
 import (
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"net/http"
 	"time"
 
@@ -55,7 +56,7 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 		result = append(result, job.New(
 			uuid.NewSHA1(s.ch.ID(), []byte(j.Slug)), // UUID V5
 			s.ch.ID(),
-			job.StatusActive,
+			base.JobStatusActive,
 			j.URL,
 			j.Title,
 			j.Description,

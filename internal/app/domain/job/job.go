@@ -1,32 +1,11 @@
 package job
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"time"
 
 	"github.com/google/uuid"
 )
-
-type Status int
-
-const (
-	StatusInactive Status = iota
-	StatusActive
-)
-
-func (s Status) String() string {
-	return [...]string{"inactive", "active"}[s]
-}
-
-type PublishStatus int
-
-const (
-	PublishStatusUnpublished PublishStatus = iota
-	PublishStatusPublished
-)
-
-func (s PublishStatus) String() string {
-	return [...]string{"unpublished", "published"}[s]
-}
 
 type Job struct {
 	postedAt      time.Time
@@ -40,8 +19,8 @@ type Job struct {
 	id            uuid.UUID
 	remote        bool
 	channelID     uuid.UUID
-	status        Status
-	publishStatus PublishStatus
+	status        base.JobStatus
+	publishStatus base.JobPublishStatus
 }
 
 type Optional func(*Job)
@@ -53,18 +32,18 @@ func WithTimestamps(c, u time.Time) Optional {
 	}
 }
 
-func WithPublishStatus(s PublishStatus) Optional {
+func WithPublishStatus(s base.JobPublishStatus) Optional {
 	return func(j *Job) {
 		j.publishStatus = s
 	}
 }
 
-func New(id, channelID uuid.UUID, s Status, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
+func New(id, channelID uuid.UUID, s base.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
 	j := &Job{
 		id:            id,
 		channelID:     channelID,
 		status:        s,
-		publishStatus: PublishStatusUnpublished,
+		publishStatus: base.JobPublishStatusUnpublished,
 		url:           url,
 		title:         title,
 		description:   description,
@@ -127,23 +106,23 @@ func (j *Job) UpdatedAt() time.Time {
 	return j.updatedAt
 }
 
-func (j *Job) Status() Status {
+func (j *Job) Status() base.JobStatus {
 	return j.status
 }
 
-func (j *Job) PublishStatus() PublishStatus {
+func (j *Job) PublishStatus() base.JobPublishStatus {
 	return j.publishStatus
 }
 
 func (j *Job) MarkAsMissing() {
-	j.status = StatusInactive
-	j.publishStatus = PublishStatusUnpublished
+	j.status = base.JobStatusInactive
+	j.publishStatus = base.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 
 func (j *Job) MarkAsChanged() {
-	j.status = StatusActive
-	j.publishStatus = PublishStatusUnpublished
+	j.status = base.JobStatusActive
+	j.publishStatus = base.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 

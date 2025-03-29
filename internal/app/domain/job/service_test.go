@@ -3,6 +3,7 @@ package job_test
 import (
 	"context"
 	"errors"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -37,18 +38,18 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	}(results)
 
 	chID := uuid.New()
-	existingNoChange := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
-	existingChange := job.New(uuid.New(), chID, job.StatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
-	existingActiveMissing := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
-	existingInactiveMissing := job.New(uuid.New(), chID, job.StatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished))
+	existingNoChange := job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
+	existingChange := job.New(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
+	existingActiveMissing := job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
+	existingInactiveMissing := job.New(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished))
 	r.Add(existingNoChange)
 	r.Add(existingChange)
 	r.Add(existingActiveMissing)
 	r.Add(existingInactiveMissing)
 
-	incomingNoChange := job.New(existingNoChange.ID(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), job.WithPublishStatus(job.PublishStatusUnpublished))
-	incomingChange := job.New(existingChange.ID(), chID, job.StatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusUnpublished))
-	incomingNew := job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusUnpublished))
+	incomingNoChange := job.New(existingNoChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), job.WithPublishStatus(base.JobPublishStatusUnpublished))
+	incomingChange := job.New(existingChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusUnpublished))
+	incomingNew := job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusUnpublished))
 	incoming := []*job.Job{incomingNoChange, incomingChange, incomingNew}
 
 	// Execute
@@ -60,20 +61,20 @@ func (suite *ServiceSuite) Test_Sync_Success() {
 	suite.NoError(err)
 	suite.Len(r.Jobs, 5)
 
-	suite.Equal(job.StatusActive, r.Jobs[existingNoChange.ID()].Status())
-	suite.Equal(job.PublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[existingNoChange.ID()].Status())
+	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus())
 
-	suite.Equal(job.StatusActive, r.Jobs[existingChange.ID()].Status())
-	suite.Equal(job.PublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[existingChange.ID()].Status())
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus())
 
-	suite.Equal(job.StatusInactive, r.Jobs[existingActiveMissing.ID()].Status())
-	suite.Equal(job.PublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus())
+	suite.Equal(base.JobStatusInactive, r.Jobs[existingActiveMissing.ID()].Status())
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus())
 
-	suite.Equal(job.StatusInactive, r.Jobs[existingInactiveMissing.ID()].Status())
-	suite.Equal(job.PublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus())
+	suite.Equal(base.JobStatusInactive, r.Jobs[existingInactiveMissing.ID()].Status())
+	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus())
 
-	suite.Equal(job.StatusActive, r.Jobs[incomingNew.ID()].Status())
-	suite.Equal(job.PublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus())
+	suite.Equal(base.JobStatusActive, r.Jobs[incomingNew.ID()].Status())
+	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus())
 
 	// Assert results
 	suite.Len(resultMap, 4)
@@ -100,8 +101,8 @@ func (suite *ServiceSuite) Test_Sync_RepositoryFail() {
 
 	chID := uuid.New()
 	incoming := []*job.Job{
-		job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished)),
-		job.New(uuid.New(), chID, job.StatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(job.PublishStatusPublished)),
+		job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished)),
+		job.New(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), job.WithPublishStatus(base.JobPublishStatusPublished)),
 	}
 
 	// Execute

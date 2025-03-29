@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"time"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
@@ -8,19 +9,19 @@ import (
 )
 
 type Job struct {
-	PostedAt      time.Time `db:"posted_at"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	URL           string    `db:"url"`
-	Title         string    `db:"title"`
-	Description   string    `db:"description"`
-	Source        string    `db:"source"`
-	Location      string    `db:"location"`
-	ID            uuid.UUID `db:"id"`
-	ChannelID     uuid.UUID `db:"channel_id"`
-	Remote        bool      `db:"remote"`
-	Status        int       `db:"status"`
-	PublishStatus int       `db:"publish_status"`
+	PostedAt      time.Time             `db:"posted_at"`
+	CreatedAt     time.Time             `db:"created_at"`
+	UpdatedAt     time.Time             `db:"updated_at"`
+	URL           string                `db:"url"`
+	Title         string                `db:"title"`
+	Description   string                `db:"description"`
+	Source        string                `db:"source"`
+	Location      string                `db:"location"`
+	ID            uuid.UUID             `db:"id"`
+	ChannelID     uuid.UUID             `db:"channel_id"`
+	Remote        bool                  `db:"remote"`
+	Status        base.JobStatus        `db:"status"`
+	PublishStatus base.JobPublishStatus `db:"publish_status"`
 }
 
 func fromDomainJob(j *job.Job) *Job {
@@ -36,8 +37,8 @@ func fromDomainJob(j *job.Job) *Job {
 		PostedAt:      j.PostedAt(),
 		CreatedAt:     j.CreatedAt(),
 		UpdatedAt:     j.UpdatedAt(),
-		Status:        int(j.Status()),
-		PublishStatus: int(j.PublishStatus()),
+		Status:        j.Status(),
+		PublishStatus: j.PublishStatus(),
 	}
 }
 
@@ -45,7 +46,7 @@ func toDomainJob(j *Job) *job.Job {
 	return job.New(
 		j.ID,
 		j.ChannelID,
-		job.Status(j.Status),
+		j.Status,
 		j.URL,
 		j.Title,
 		j.Description,
@@ -54,6 +55,6 @@ func toDomainJob(j *Job) *job.Job {
 		j.Remote,
 		j.PostedAt,
 		job.WithTimestamps(j.CreatedAt, j.UpdatedAt),
-		job.WithPublishStatus(job.PublishStatus(j.PublishStatus)),
+		job.WithPublishStatus(j.PublishStatus),
 	)
 }
