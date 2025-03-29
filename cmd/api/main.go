@@ -10,7 +10,6 @@ import (
 
 	cpubsub "cloud.google.com/go/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
@@ -90,7 +89,7 @@ func run(ctx context.Context) error {
 	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
 	is := importing.NewImportService(ir)
-	ia := domain.NewScheduleImportAction(is, ps, log)
+	ia := importing.NewScheduleImportAction(is, ps, log)
 
 	// start server
 	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, is, ia, cfg.API, log))

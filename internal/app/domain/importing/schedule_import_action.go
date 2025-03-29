@@ -1,4 +1,4 @@
-package domain
+package importing
 
 import (
 	"context"
@@ -6,18 +6,17 @@ import (
 	"log/slog"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/google/uuid"
 )
 
 type ScheduleImportAction struct {
-	is  *importing.ImportService
+	is  *ImportService
 	log *slog.Logger
 
 	ps PubSubService
 }
 
-func NewScheduleImportAction(is *importing.ImportService, ps PubSubService, log *slog.Logger) *ScheduleImportAction {
+func NewScheduleImportAction(is *ImportService, ps PubSubService, log *slog.Logger) *ScheduleImportAction {
 	return &ScheduleImportAction{
 		is:  is,
 		ps:  ps,
@@ -25,7 +24,7 @@ func NewScheduleImportAction(is *importing.ImportService, ps PubSubService, log 
 	}
 }
 
-func (s *ScheduleImportAction) Execute(ctx context.Context, ch *configuring.Channel) (*importing.Import, error) {
+func (s *ScheduleImportAction) Execute(ctx context.Context, ch *configuring.Channel) (*Import, error) {
 	s.log.Info(fmt.Sprintf("scheduling import for channel %s [%s] [name: %s]", ch.ID(), ch.Integration().String(), ch.Name()))
 
 	i, err := s.is.Start(ctx, uuid.New(), ch.ID())

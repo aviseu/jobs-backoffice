@@ -3,11 +3,11 @@ package importh
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"io"
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/protobuf/proto"
@@ -15,11 +15,11 @@ import (
 )
 
 type Handler struct {
-	ia  *domain.ImportAction
+	ia  *importing.ImportAction
 	log *slog.Logger
 }
 
-func NewHandler(ia *domain.ImportAction, log *slog.Logger) *Handler {
+func NewHandler(ia *importing.ImportAction, log *slog.Logger) *Handler {
 	return &Handler{
 		ia:  ia,
 		log: log,

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -745,7 +744,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()
-	ia := domain.NewScheduleImportAction(is, ps, log)
+	ia := importing.NewScheduleImportAction(is, ps, log)
 	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
@@ -794,7 +793,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()
-	ia := domain.NewScheduleImportAction(is, ps, log)
+	ia := importing.NewScheduleImportAction(is, ps, log)
 	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/schedule", nil)
@@ -825,7 +824,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()
-	ia := domain.NewScheduleImportAction(is, ps, log)
+	ia := importing.NewScheduleImportAction(is, ps, log)
 	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
 
 	chID := uuid.New()

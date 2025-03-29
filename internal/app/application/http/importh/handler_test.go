@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -61,7 +60,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		},
 		log,
 	)
-	ia := domain.NewImportAction(chr, is, f)
+	ia := importing.NewImportAction(chr, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
@@ -144,7 +143,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		},
 		log,
 	)
-	ia := domain.NewImportAction(chr, is, f)
+	ia := importing.NewImportAction(chr, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)

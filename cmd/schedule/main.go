@@ -7,7 +7,6 @@ import (
 	"os"
 
 	cpubsub "cloud.google.com/go/pubsub"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
@@ -86,8 +85,8 @@ func run(ctx context.Context) error {
 
 	chr := postgres.NewChannelRepository(db)
 
-	importSingle := domain.NewScheduleImportAction(is, ps, log)
-	importActive := domain.NewScheduleImportsAction(chr, importSingle)
+	importSingle := importing.NewScheduleImportAction(is, ps, log)
+	importActive := importing.NewScheduleImportsAction(chr, importSingle)
 
 	slog.Info("starting imports...")
 	if err := importActive.Execute(ctx); err != nil {

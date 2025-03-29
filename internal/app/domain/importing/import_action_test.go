@@ -1,9 +1,8 @@
-package domain_test
+package importing_test
 
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -87,7 +86,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
-	action := domain.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, is, f)
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -128,7 +127,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := domain.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, is, f)
 	id := uuid.New()
 
 	// Execute
@@ -153,7 +152,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := domain.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, is, f)
 	i := importing.NewImport(uuid.New(), uuid.New())
 	ir.Add(i.ToDTO())
 
@@ -181,7 +180,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
-	action := domain.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, is, f)
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 

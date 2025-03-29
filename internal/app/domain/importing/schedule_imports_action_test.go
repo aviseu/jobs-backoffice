@@ -1,9 +1,8 @@
-package domain_test
+package importing_test
 
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -29,8 +28,8 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chr, ia)
+	ia := importing.NewScheduleImportAction(is, ps, log)
+	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id1 := uuid.New()
 	chr.Add(configuring.NewChannel(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
@@ -78,8 +77,8 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chr, ia)
+	ia := importing.NewScheduleImportAction(is, ps, log)
+	s := importing.NewScheduleImportsAction(chr, ia)
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -101,8 +100,8 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
 	lbuf, log := testutils.NewLogger()
-	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chr, ia)
+	ia := importing.NewScheduleImportAction(is, ps, log)
+	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
@@ -129,8 +128,8 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom!"))
 	lbuf, log := testutils.NewLogger()
-	ia := domain.NewScheduleImportAction(is, ps, log)
-	s := domain.NewScheduleImportsAction(chr, ia)
+	ia := importing.NewScheduleImportAction(is, ps, log)
+	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())

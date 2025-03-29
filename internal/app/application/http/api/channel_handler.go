@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -24,11 +24,11 @@ type ChannelRepository interface {
 type ChannelHandler struct {
 	chs *configuring.Service
 	chr ChannelRepository
-	ia  *domain.ScheduleImportAction
+	ia  *importing.ScheduleImportAction
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ia *domain.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ia *importing.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
 		chr: chr,
