@@ -34,10 +34,10 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id1 := uuid.New()
-	chr.Add(configuring.New(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 	id2 := uuid.New()
-	chr.Add(configuring.New(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
-	chr.Add(configuring.New(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).DTO())
+	chr.Add(configuring.New(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.New(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -108,7 +108,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -137,7 +137,7 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())

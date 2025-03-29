@@ -90,9 +90,9 @@ func (suite *ServiceSuite) Test_All_Success() {
 	s := configuring.NewService(r)
 
 	ch1 := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch1.DTO())
+	r.Add(ch1.ToDTO())
 	ch2 := configuring.New(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch2.DTO())
+	r.Add(ch2.ToDTO())
 
 	// Execute
 	chs, err := s.All(context.Background())
@@ -125,9 +125,9 @@ func (suite *ServiceSuite) Test_GetActive_Success() {
 	s := configuring.NewService(r)
 
 	ch1 := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch1.DTO())
+	r.Add(ch1.ToDTO())
 	ch2 := configuring.New(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusInactive)
-	r.Add(ch2.DTO())
+	r.Add(ch2.ToDTO())
 
 	// Execute
 	chs, err := s.GetActive(context.Background())
@@ -158,7 +158,7 @@ func (suite *ServiceSuite) Test_Find_Success() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	ch2, err := s.Find(context.Background(), ch.ID())
@@ -188,7 +188,7 @@ func (suite *ServiceSuite) Test_Find_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	_, err := s.Find(context.Background(), ch.ID())
@@ -207,7 +207,7 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
 	ch := configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateCommand(ch.ID(), "channel 2")
 
 	// Execute
@@ -253,7 +253,7 @@ func (suite *ServiceSuite) Test_Update_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateCommand(ch.ID(), "channel 2")
 
 	// Execute
@@ -270,7 +270,7 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateCommand(ch.ID(), "")
 
 	// Execute
@@ -287,7 +287,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusInactive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	err := s.Activate(context.Background(), ch.ID())
@@ -317,7 +317,7 @@ func (suite *ServiceSuite) Test_Activate_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusInactive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	err := s.Activate(context.Background(), ch.ID())
@@ -333,7 +333,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	err := s.Deactivate(context.Background(), ch.ID())
@@ -363,7 +363,7 @@ func (suite *ServiceSuite) Test_Deactivate_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
-	r.Add(ch.DTO())
+	r.Add(ch.ToDTO())
 
 	// Execute
 	err := s.Deactivate(context.Background(), ch.ID())

@@ -68,7 +68,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
-	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID).ToDTO())
@@ -152,7 +152,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
-	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID).ToDTO())

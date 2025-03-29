@@ -88,7 +88,7 @@ func (ch *Channel) Deactivate() {
 	ch.updatedAt = time.Now()
 }
 
-func (ch *Channel) DTO() *postgres.Channel {
+func (ch *Channel) ToDTO() *postgres.Channel {
 	return &postgres.Channel{
 		ID:          ch.id,
 		Name:        ch.name,
