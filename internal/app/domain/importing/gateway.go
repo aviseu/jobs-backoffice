@@ -40,7 +40,7 @@ func NewGateway(p Provider, js *job.Service, is *ImportService, log *slog.Logger
 
 func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *job.Result) {
 	for r := range results {
-		jr := NewResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
+		jr := NewImportJobResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
 		if err := g.is.SaveJobResult(ctx, jr); err != nil {
 			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", jr.JobID(), jr.ImportID(), err).Error())
 			continue

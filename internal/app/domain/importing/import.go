@@ -25,31 +25,31 @@ type Import struct {
 
 type ImportOptional func(*Import)
 
-func WithStatus(s base.ImportStatus) ImportOptional {
+func ImportWithStatus(s base.ImportStatus) ImportOptional {
 	return func(i *Import) {
 		i.status = s
 	}
 }
 
-func WithError(err string) ImportOptional {
+func ImportWithError(err string) ImportOptional {
 	return func(i *Import) {
 		i.error = null.StringFrom(err)
 	}
 }
 
-func WithStartAt(s time.Time) ImportOptional {
+func ImportWithStartAt(s time.Time) ImportOptional {
 	return func(i *Import) {
 		i.startedAt = s
 	}
 }
 
-func WithEndAt(e time.Time) ImportOptional {
+func ImportWithEndAt(e time.Time) ImportOptional {
 	return func(i *Import) {
 		i.endedAt = null.TimeFrom(e)
 	}
 }
 
-func WithMetadata(newJobs, updated, noChange, missing, failed int) ImportOptional {
+func ImportWithMetadata(newJobs, updated, noChange, missing, failed int) ImportOptional {
 	return func(i *Import) {
 		i.newJobs = newJobs
 		i.updatedJobs = updated
@@ -59,7 +59,7 @@ func WithMetadata(newJobs, updated, noChange, missing, failed int) ImportOptiona
 	}
 }
 
-func New(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
+func NewImport(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
 	i := &Import{
 		id:        id,
 		channelID: channelID,
@@ -164,18 +164,18 @@ func (i *Import) ToDTO() *postgres.Import {
 
 func NewImportFromDTO(i *postgres.Import) *Import {
 	opts := []ImportOptional{
-		WithStartAt(i.StartedAt),
-		WithStatus(i.Status),
-		WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
+		ImportWithStartAt(i.StartedAt),
+		ImportWithStatus(i.Status),
+		ImportWithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
 	}
 	if i.Error.Valid {
-		opts = append(opts, WithError(i.Error.String))
+		opts = append(opts, ImportWithError(i.Error.String))
 	}
 	if i.EndedAt.Valid {
-		opts = append(opts, WithEndAt(i.EndedAt.Time))
+		opts = append(opts, ImportWithEndAt(i.EndedAt.Time))
 	}
 
-	return New(
+	return NewImport(
 		i.ID,
 		i.ChannelID,
 		opts...,

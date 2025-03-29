@@ -8,21 +8,21 @@ import (
 	"testing"
 )
 
-func TestJobResult(t *testing.T) {
-	suite.Run(t, new(JobResultSuite))
+func TestImportJobResult(t *testing.T) {
+	suite.Run(t, new(ImportJobResultSuite))
 }
 
-type JobResultSuite struct {
+type ImportJobResultSuite struct {
 	suite.Suite
 }
 
-func (suite *JobResultSuite) Test_Success() {
+func (suite *ImportJobResultSuite) Test_Success() {
 	// Prepare
 	id := uuid.New()
 	importID := uuid.New()
 
 	// Execute
-	j := importing.NewResult(id, importID, base.ImportJobResultNew)
+	j := importing.NewImportJobResult(id, importID, base.ImportJobResultNew)
 
 	// Assert
 	suite.Equal(id, j.JobID())

@@ -69,7 +69,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
-	ir.Add(importing.New(iID, chID).ToDTO())
+	ir.Add(importing.NewImport(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -152,7 +152,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
-	ir.Add(importing.New(iID, chID).ToDTO())
+	ir.Add(importing.NewImport(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),

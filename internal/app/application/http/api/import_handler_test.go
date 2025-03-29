@@ -38,25 +38,25 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	id1 := uuid.New()
 	sAt1 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
 	eAt1 := time.Date(2020, 1, 1, 0, 0, 4, 0, time.UTC)
-	i1 := importing.New(
+	i1 := importing.NewImport(
 		id1,
 		ch.ID(),
-		importing.WithStatus(base.ImportStatusPublishing),
-		importing.WithMetadata(1, 2, 3, 4, 5),
-		importing.WithStartAt(sAt1),
-		importing.WithEndAt(eAt1),
-		importing.WithError("happened this error"),
+		importing.ImportWithStatus(base.ImportStatusPublishing),
+		importing.ImportWithMetadata(1, 2, 3, 4, 5),
+		importing.ImportWithStartAt(sAt1),
+		importing.ImportWithEndAt(eAt1),
+		importing.ImportWithError("happened this error"),
 	)
 	ir.Add(i1.ToDTO())
 
 	id2 := uuid.New()
 	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i2 := importing.New(id2, ch.ID(), importing.WithStartAt(sAt2))
+	i2 := importing.NewImport(id2, ch.ID(), importing.ImportWithStartAt(sAt2))
 	ir.Add(i2.ToDTO())
 
 	id3 := uuid.New()
 	sAt3 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
-	i3 := importing.New(id3, ch.ID(), importing.WithStartAt(sAt3))
+	i3 := importing.NewImport(id3, ch.ID(), importing.ImportWithStartAt(sAt3))
 	ir.Add(i3.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
@@ -119,14 +119,14 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := importing.New(
+	i := importing.NewImport(
 		id,
 		ch.ID(),
-		importing.WithStatus(base.ImportStatusCompleted),
-		importing.WithMetadata(1, 2, 3, 4, 5),
-		importing.WithStartAt(sAt),
-		importing.WithEndAt(eAt),
-		importing.WithError("happened this error"),
+		importing.ImportWithStatus(base.ImportStatusCompleted),
+		importing.ImportWithMetadata(1, 2, 3, 4, 5),
+		importing.ImportWithStartAt(sAt),
+		importing.ImportWithEndAt(eAt),
+		importing.ImportWithError("happened this error"),
 	)
 	ir.Add(i.ToDTO())
 

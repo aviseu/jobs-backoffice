@@ -17,7 +17,7 @@ type ImportSuite struct {
 
 func (suite *ImportSuite) Test_Success() {
 	// Execute
-	i := importing.New(uuid.New(), uuid.New(), importing.WithMetadata(1, 2, 3, 4, 5))
+	i := importing.NewImport(uuid.New(), uuid.New(), importing.ImportWithMetadata(1, 2, 3, 4, 5))
 
 	// Assert
 	suite.Equal(1, i.NewJobs())

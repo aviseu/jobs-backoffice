@@ -30,7 +30,7 @@ func NewImportService(r ImportRepository) *ImportService {
 }
 
 func (s *ImportService) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, error) {
-	i := New(id, channelID)
+	i := NewImport(id, channelID)
 	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", channelID, err)
 	}
@@ -38,7 +38,7 @@ func (s *ImportService) Start(ctx context.Context, id, channelID uuid.UUID) (*Im
 	return i, nil
 }
 
-func (s *ImportService) SaveJobResult(ctx context.Context, r *JobResult) error {
+func (s *ImportService) SaveJobResult(ctx context.Context, r *ImportJobResult) error {
 	return s.r.SaveImportJob(ctx, r.ToDTO())
 }
 

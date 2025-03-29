@@ -84,7 +84,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	)
 	jr.Add(j2.ToDTO())
 
-	i := importing.New(uuid.New(), ch.ID())
+	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	// Execute
@@ -152,7 +152,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
-	i := importing.New(uuid.New(), ch.ID())
+	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	// Execute
@@ -199,7 +199,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
-	i := importing.New(uuid.New(), ch.ID())
+	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	// Execute

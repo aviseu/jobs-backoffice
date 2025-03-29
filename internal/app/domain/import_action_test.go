@@ -85,7 +85,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	)
 	jr.Add(j2.ToDTO())
 
-	i := importing.New(uuid.New(), ch.ID())
+	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	action := domain.NewImportAction(chr, is, f)
@@ -155,7 +155,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	js := job.NewService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
 	action := domain.NewImportAction(chr, is, f)
-	i := importing.New(uuid.New(), uuid.New())
+	i := importing.NewImport(uuid.New(), uuid.New())
 	ir.Add(i.ToDTO())
 
 	// Execute
@@ -183,7 +183,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	js := job.NewService(jr, 10, 10)
 	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
 	action := domain.NewImportAction(chr, is, f)
-	i := importing.New(uuid.New(), ch.ID())
+	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	// Execute
