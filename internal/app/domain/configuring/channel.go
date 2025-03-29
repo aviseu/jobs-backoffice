@@ -87,7 +87,7 @@ func (ch *Channel) Deactivate() {
 	ch.updatedAt = time.Now()
 }
 
-func (ch *Channel) ToDTO() *aggregator.Channel {
+func (ch *Channel) ToAggregator() *aggregator.Channel {
 	return &aggregator.Channel{
 		ID:          ch.id,
 		Name:        ch.name,

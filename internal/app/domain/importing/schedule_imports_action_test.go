@@ -32,10 +32,10 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id1 := uuid.New()
-	chr.Add(configuring.NewChannel(id1, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id1, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 	id2 := uuid.New()
-	chr.Add(configuring.NewChannel(id2, "channel 2", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
-	chr.Add(configuring.NewChannel(uuid.New(), "channel 3", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive).ToDTO())
+	chr.Add(configuring.NewChannel(id2, "channel 2", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
+	chr.Add(configuring.NewChannel(uuid.New(), "channel 3", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive).ToAggregator())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -104,7 +104,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -132,7 +132,7 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	// Execute
 	err := s.Execute(context.Background())

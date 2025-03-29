@@ -34,7 +34,7 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 		aggregator.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
-	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch.ToDTO())
+	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch.ToAggregator())
 
 	// Execute
 	jobs, err := s.GetJobs()
@@ -76,7 +76,7 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 		aggregator.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
-	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch.ToDTO())
+	s := arbeitnow.NewService(c, arbeitnow.Config{URL: server.URL}, ch.ToAggregator())
 
 	// Execute
 	jobs, err := s.GetJobs()
@@ -98,7 +98,7 @@ func (suite *ServiceSuite) Test_Channel_Success() {
 		aggregator.ChannelStatusActive,
 	)
 	c := testutils.NewRequestLogger(http.DefaultClient)
-	s := arbeitnow.NewService(c, arbeitnow.Config{URL: "https://google.com"}, ch.ToDTO())
+	s := arbeitnow.NewService(c, arbeitnow.Config{URL: "https://google.com"}, ch.ToAggregator())
 
 	// Execute
 	ch2 := s.Channel()

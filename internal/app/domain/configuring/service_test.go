@@ -92,7 +92,7 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
 	ch := configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
 	// Execute
@@ -138,7 +138,7 @@ func (suite *ServiceSuite) Test_Update_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
 	// Execute
@@ -155,7 +155,7 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "")
 
 	// Execute
@@ -172,7 +172,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 
 	// Execute
 	err := s.Activate(context.Background(), ch.ID())
@@ -202,7 +202,7 @@ func (suite *ServiceSuite) Test_Activate_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 
 	// Execute
 	err := s.Activate(context.Background(), ch.ID())
@@ -218,7 +218,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 
 	// Execute
 	err := s.Deactivate(context.Background(), ch.ID())
@@ -248,7 +248,7 @@ func (suite *ServiceSuite) Test_Deactivate_Error() {
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToDTO())
+	r.Add(ch.ToAggregator())
 
 	// Execute
 	err := s.Deactivate(context.Background(), ch.ID())

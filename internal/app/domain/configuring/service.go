@@ -45,7 +45,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Chann
 		aggregator.ChannelStatusInactive,
 	)
 
-	if err := s.r.Save(ctx, ch.ToDTO()); err != nil {
+	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
 		return nil, fmt.Errorf("failed to create channel: %w", err)
 	}
 
@@ -67,7 +67,7 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Chann
 		return nil, fmt.Errorf("failed to update channel: %w", err)
 	}
 
-	if err := s.r.Save(ctx, ch.ToDTO()); err != nil {
+	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
 		return nil, fmt.Errorf("failed to update channel: %w", err)
 	}
 
@@ -87,7 +87,7 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 
 	ch.Activate()
 
-	if err := s.r.Save(ctx, ch.ToDTO()); err != nil {
+	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
 		return fmt.Errorf("failed to activate channel: %w", err)
 	}
 
@@ -107,7 +107,7 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 
 	ch.Deactivate()
 
-	if err := s.r.Save(ctx, ch.ToDTO()); err != nil {
+	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
 		return fmt.Errorf("failed to activate channel: %w", err)
 	}
 

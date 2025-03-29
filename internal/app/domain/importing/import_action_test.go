@@ -53,7 +53,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	)
 	chr := testutils.NewChannelRepository()
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToDTO())
+	chr.Add(ch.ToAggregator())
 
 	j1 := importing.NewJob(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
@@ -175,7 +175,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToDTO())
+	chr.Add(ch.ToAggregator())
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()

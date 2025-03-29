@@ -34,7 +34,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToDTO())
+	chr.Add(ch.ToAggregator())
 
 	id1 := uuid.New()
 	sAt1 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
@@ -115,7 +115,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToDTO())
+	chr.Add(ch.ToAggregator())
 
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)

@@ -3,7 +3,6 @@ package importing
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 )
@@ -33,16 +32,14 @@ func (s *ImportAction) Execute(ctx context.Context, iID uuid.UUID) error {
 		return fmt.Errorf("failed to find import %s: %w", iID, err)
 	}
 
-	dto, err := s.chr.Find(ctx, i.ChannelID())
+	ch, err := s.chr.Find(ctx, i.ChannelID())
 	if err != nil {
 		return fmt.Errorf("failed to find channel %s: %w", i.ChannelID(), err)
 	}
 
-	ch := configuring.NewChannelFromDTO(dto)
-
-	g := s.f.Create(ch.ToDTO())
+	g := s.f.Create(ch)
 	if err := g.Import(ctx, i); err != nil {
-		return fmt.Errorf("failed to import channel %s: %w", ch.ID(), err)
+		return fmt.Errorf("failed to import channel %s: %w", ch.ID, err)
 	}
 
 	return nil

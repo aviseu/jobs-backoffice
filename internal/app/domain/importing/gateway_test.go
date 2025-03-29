@@ -53,7 +53,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.New(), "channel", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	gw := f.Create(ch.ToDTO())
+	gw := f.Create(ch.ToAggregator())
 
 	j1 := importing.NewJob(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
@@ -150,7 +150,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.New(), "channel", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	gw := f.Create(ch.ToDTO())
+	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
@@ -197,7 +197,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 		log,
 	)
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	gw := f.Create(ch.ToDTO())
+	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
