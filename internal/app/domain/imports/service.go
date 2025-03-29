@@ -2,7 +2,9 @@ package imports
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,12 +12,12 @@ import (
 )
 
 type Repository interface {
-	SaveImport(ctx context.Context, i *Import) error
-	SaveImportJob(ctx context.Context, j *JobResult) error
+	SaveImport(ctx context.Context, i *postgres.Import) error
+	SaveImportJob(ctx context.Context, j *postgres.ImportJobResult) error
 
-	GetImports(ctx context.Context) ([]*Import, error)
-	FindImport(ctx context.Context, id uuid.UUID) (*Import, error)
-	GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*JobResult, error)
+	GetImports(ctx context.Context) ([]*postgres.Import, error)
+	FindImport(ctx context.Context, id uuid.UUID) (*postgres.Import, error)
+	GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*postgres.ImportJobResult, error)
 }
 
 type Service struct {
@@ -28,7 +30,7 @@ func NewService(r Repository) *Service {
 
 func (s *Service) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, error) {
 	i := New(id, channelID)
-	if err := s.r.SaveImport(ctx, i); err != nil {
+	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", channelID, err)
 	}
 
@@ -36,12 +38,12 @@ func (s *Service) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, 
 }
 
 func (s *Service) SaveJobResult(ctx context.Context, r *JobResult) error {
-	return s.r.SaveImportJob(ctx, r)
+	return s.r.SaveImportJob(ctx, r.ToDTO())
 }
 
 func (s *Service) SetStatus(ctx context.Context, i *Import, status Status) error {
 	i.status = status
-	if err := s.r.SaveImport(ctx, i); err != nil {
+	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return fmt.Errorf("failed to set status %s for import %s: %w", status.String(), i.ID(), err)
 	}
 
@@ -56,7 +58,7 @@ func (s *Service) MarkAsCompleted(ctx context.Context, i *Import) error {
 		return fmt.Errorf("failed to fill metadata from jobs for import %s while marking as completed: %w", i.ID(), err)
 	}
 
-	if err := s.r.SaveImport(ctx, i); err != nil {
+	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return fmt.Errorf("failed to mark import %s as completed: %w", i.ID(), err)
 	}
 
@@ -72,7 +74,7 @@ func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error 
 		return fmt.Errorf("failed to fill metadata from jobs for import %s while marking as failed: %w", i.ID(), err)
 	}
 
-	if err := s.r.SaveImport(ctx, i); err != nil {
+	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return fmt.Errorf("failed to mark import %s as failed: %w", i.ID(), err)
 	}
 
@@ -80,18 +82,41 @@ func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error 
 }
 
 func (s *Service) GetImports(ctx context.Context) ([]*Import, error) {
-	return s.r.GetImports(ctx)
+	imports, err := s.r.GetImports(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get imports: %w", err)
+	}
+
+	results := make([]*Import, 0, len(imports))
+	for _, dto := range imports {
+		results = append(results, NewImportFromDTO(dto))
+	}
+
+	return results, nil
 }
 
 func (s *Service) FindImport(ctx context.Context, id uuid.UUID) (*Import, error) {
-	return s.r.FindImport(ctx, id)
+	dto, err := s.r.FindImport(ctx, id)
+	if err != nil {
+		if errors.Is(err, postgres.ErrImportNotFound) {
+			return nil, ErrImportNotFound
+		}
+		return nil, fmt.Errorf("failed to find import %s: %w", id, err)
+	}
+
+	return NewImportFromDTO(dto), nil
 }
 
 func (s *Service) FindImportWithForcedMetadata(ctx context.Context, id uuid.UUID) (*Import, error) {
-	i, err := s.r.FindImport(ctx, id)
+	dto, err := s.r.FindImport(ctx, id)
 	if err != nil {
+		if errors.Is(err, postgres.ErrImportNotFound) {
+			return nil, ErrImportNotFound
+		}
 		return nil, fmt.Errorf("failed to find import %s: %w", id, err)
 	}
+
+	i := NewImportFromDTO(dto)
 
 	if i.TotalJobs() == 0 {
 		jj, err := s.r.GetJobsByImportID(ctx, id)
@@ -101,7 +126,7 @@ func (s *Service) FindImportWithForcedMetadata(ctx context.Context, id uuid.UUID
 
 		i.resetMetadata()
 		for _, r := range jj {
-			i.addJobResult(r.Result())
+			i.addJobResult(NewJobResultFromDTO(r).Result())
 		}
 	}
 
@@ -116,7 +141,7 @@ func (s *Service) setMetadataFromJobs(i *Import) error {
 
 	i.resetMetadata()
 	for _, r := range jobs {
-		i.addJobResult(r.Result())
+		i.addJobResult(NewJobResultFromDTO(r).Result())
 	}
 
 	return nil

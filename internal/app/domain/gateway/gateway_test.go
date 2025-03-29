@@ -86,7 +86,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	jr.Add(j2)
 
 	i := imports.New(uuid.New(), ch.ID())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)
@@ -100,7 +100,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	// Assert imports
 	suite.Len(ir.Imports, 1)
 	for _, v := range ir.Imports {
-		i = v
+		i = imports.NewImportFromDTO(v)
 	}
 	suite.Equal(ch.ID(), i.ChannelID())
 	suite.Equal(2, i.NewJobs())
@@ -113,10 +113,10 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 
 	// Assert import results
 	suite.Len(ir.JobResults, 4)
-	suite.Equal(base.JobStatusNoChange, ir.JobResults[j1.ID()].Result())
-	suite.Equal(base.JobStatusMissing, ir.JobResults[j2.ID()].Result())
-	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result())
-	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result())
+	suite.Equal(int(base.JobStatusNoChange), ir.JobResults[j1.ID()].Result)
+	suite.Equal(int(base.JobStatusMissing), ir.JobResults[j2.ID()].Result)
+	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
+	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
 
 	// Assert Logs
 	suite.Empty(lbuf)
@@ -154,7 +154,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)
@@ -201,7 +201,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)

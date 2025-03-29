@@ -2,6 +2,7 @@ package imports
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
 	"github.com/google/uuid"
@@ -158,4 +159,40 @@ func (i *Import) addJobResult(r base.JobStatus) {
 	case base.JobStatusFailed:
 		i.failedJobs++
 	}
+}
+
+func (i *Import) ToDTO() *postgres.Import {
+	return &postgres.Import{
+		ID:           i.ID(),
+		ChannelID:    i.ChannelID(),
+		StartedAt:    i.StartedAt(),
+		EndedAt:      i.EndedAt(),
+		Error:        i.Error(),
+		Status:       int(i.Status()),
+		NewJobs:      i.NewJobs(),
+		UpdatedJobs:  i.UpdatedJobs(),
+		NoChangeJobs: i.NoChangeJobs(),
+		MissingJobs:  i.MissingJobs(),
+		FailedJobs:   i.FailedJobs(),
+	}
+}
+
+func NewImportFromDTO(i *postgres.Import) *Import {
+	opts := []ImportOptional{
+		WithStartAt(i.StartedAt),
+		WithStatus(Status(i.Status)),
+		WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
+	}
+	if i.Error.Valid {
+		opts = append(opts, WithError(i.Error.String))
+	}
+	if i.EndedAt.Valid {
+		opts = append(opts, WithEndAt(i.EndedAt.Time))
+	}
+
+	return New(
+		i.ID,
+		i.ChannelID,
+		opts...,
+	)
 }

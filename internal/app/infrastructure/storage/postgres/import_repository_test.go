@@ -46,7 +46,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	)
 
 	// Execute
-	err = r.SaveImport(context.Background(), i)
+	err = r.SaveImport(context.Background(), i.ToDTO())
 
 	// Execute
 	suite.NoError(err)
@@ -89,7 +89,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 	)
 
 	// Execute
-	err := r.SaveImport(context.Background(), i)
+	err := r.SaveImport(context.Background(), i.ToDTO())
 
 	// Assert
 	suite.Error(err)
@@ -121,7 +121,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 		imports.WithEndAt(eAt),
 		imports.WithMetadata(1, 2, 3, 4, 5),
 	)
-	err = r.SaveImport(context.Background(), i)
+	err = r.SaveImport(context.Background(), i.ToDTO())
 	suite.NoError(err)
 
 	// Execute
@@ -129,17 +129,17 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(i.ID(), i2.ID())
-	suite.Equal(i.ChannelID(), i2.ChannelID())
-	suite.Equal(i.Status(), i2.Status())
-	suite.True(i.StartedAt().Equal(i2.StartedAt()))
-	suite.True(i.EndedAt().Time.Equal(i2.EndedAt().Time))
-	suite.Equal(i.Error(), i2.Error())
-	suite.Equal(i.NewJobs(), i2.NewJobs())
-	suite.Equal(i.UpdatedJobs(), i2.UpdatedJobs())
-	suite.Equal(i.NoChangeJobs(), i2.NoChangeJobs())
-	suite.Equal(i.MissingJobs(), i2.MissingJobs())
-	suite.Equal(i.FailedJobs(), i2.FailedJobs())
+	suite.Equal(i.ID(), i2.ID)
+	suite.Equal(i.ChannelID(), i2.ChannelID)
+	suite.Equal(int(i.Status()), i2.Status)
+	suite.True(i.StartedAt().Equal(i2.StartedAt))
+	suite.True(i.EndedAt().Time.Equal(i2.EndedAt.Time))
+	suite.Equal(i.Error(), i2.Error)
+	suite.Equal(i.NewJobs(), i2.NewJobs)
+	suite.Equal(i.UpdatedJobs(), i2.UpdatedJobs)
+	suite.Equal(i.NoChangeJobs(), i2.NoChangeJobs)
+	suite.Equal(i.MissingJobs(), i2.MissingJobs)
+	suite.Equal(i.FailedJobs(), i2.FailedJobs)
 }
 
 func (suite *ImportRepositorySuite) Test_FindImport_Fail() {
@@ -166,7 +166,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_NotFound() {
 	i, err := r.FindImport(context.Background(), id)
 
 	// Assert
-	suite.ErrorIs(err, imports.ErrImportNotFound)
+	suite.ErrorIs(err, postgres.ErrImportNotFound)
 	suite.Nil(i)
 }
 
@@ -220,9 +220,9 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	suite.NoError(err)
 	suite.Len(ii, 3)
 
-	suite.Equal(id3, ii[0].ID())
-	suite.Equal(id2, ii[1].ID())
-	suite.Equal(id1, ii[2].ID())
+	suite.Equal(id3, ii[0].ID)
+	suite.Equal(id2, ii[1].ID)
+	suite.Equal(id1, ii[2].ID)
 }
 
 func (suite *ImportRepositorySuite) Test_GetImports_Fail() {
@@ -262,7 +262,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	jr := imports.NewResult(uuid.New(), iID, base.JobStatusUpdated)
 
 	// Execute
-	err = r.SaveImportJob(context.Background(), jr)
+	err = r.SaveImportJob(context.Background(), jr.ToDTO())
 
 	// Assert
 	suite.NoError(err)
@@ -285,7 +285,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 	jr := imports.NewResult(uuid.New(), uuid.New(), base.JobStatusUpdated)
 
 	// Execute
-	err := r.SaveImportJob(context.Background(), jr)
+	err := r.SaveImportJob(context.Background(), jr.ToDTO())
 
 	// Assert
 	suite.Error(err)

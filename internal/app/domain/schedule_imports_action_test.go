@@ -7,6 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -46,12 +47,12 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 
 	// Assert imports created
 	suite.Equal(2, len(ir.Imports))
-	var i1, i2 *imports.Import
+	var i1, i2 *postgres.Import
 	for _, i := range ir.Imports {
-		if i.ChannelID() == id1 {
+		if i.ChannelID == id1 {
 			i1 = i
 		}
-		if i.ChannelID() == id2 {
+		if i.ChannelID == id2 {
 			i2 = i
 		}
 	}
@@ -60,8 +61,8 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 
 	// Assert correct values published
 	suite.Len(ps.ImportIDs, 2)
-	suite.Equal(i1.ID(), ps.ImportIDs[0])
-	suite.Equal(i2.ID(), ps.ImportIDs[1])
+	suite.Equal(i1.ID, ps.ImportIDs[0])
+	suite.Equal(i2.ID, ps.ImportIDs[1])
 
 	// Assert logs
 	lines := testutils.LogLines(lbuf)

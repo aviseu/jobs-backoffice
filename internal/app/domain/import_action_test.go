@@ -88,7 +88,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	jr.Add(j2)
 
 	i := imports.New(uuid.New(), ch.ID())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	action := domain.NewImportAction(chs, is, f)
 
@@ -101,7 +101,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	// Assert Jobs
 	suite.Len(ir.Imports, 1)
 	for _, imp := range ir.Imports {
-		i = imp
+		i = imports.NewImportFromDTO(imp)
 	}
 	suite.Equal(ch.ID(), i.ChannelID())
 	suite.Equal(2, i.NewJobs())
@@ -112,10 +112,10 @@ func (suite *ImportActionSuite) Test_Success() {
 
 	// Assert import results
 	suite.Len(ir.JobResults, 4)
-	suite.Equal(base.JobStatusNoChange, ir.JobResults[j1.ID()].Result())
-	suite.Equal(base.JobStatusMissing, ir.JobResults[j2.ID()].Result())
-	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result())
-	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result())
+	suite.Equal(int(base.JobStatusNoChange), ir.JobResults[j1.ID()].Result)
+	suite.Equal(int(base.JobStatusMissing), ir.JobResults[j2.ID()].Result)
+	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
+	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
 
 	// Assert Logs
 	suite.Empty(lbuf)
@@ -160,7 +160,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
 	action := domain.NewImportAction(chs, is, f)
 	i := imports.New(uuid.New(), uuid.New())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -189,7 +189,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	f := gateway.NewFactory(js, is, http.DefaultClient, gateway.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
 	action := domain.NewImportAction(chs, is, f)
 	i := imports.New(uuid.New(), ch.ID())
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())

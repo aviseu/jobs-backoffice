@@ -3,7 +3,6 @@ package postgres
 import (
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 	"gopkg.in/guregu/null.v3"
 )
@@ -20,40 +19,4 @@ type Import struct {
 	FailedJobs   int         `db:"failed_jobs"`
 	ID           uuid.UUID   `db:"id"`
 	ChannelID    uuid.UUID   `db:"channel_id"`
-}
-
-func fromDomainImport(i *imports.Import) *Import {
-	return &Import{
-		ID:           i.ID(),
-		ChannelID:    i.ChannelID(),
-		StartedAt:    i.StartedAt(),
-		EndedAt:      i.EndedAt(),
-		Error:        i.Error(),
-		Status:       int(i.Status()),
-		NewJobs:      i.NewJobs(),
-		UpdatedJobs:  i.UpdatedJobs(),
-		NoChangeJobs: i.NoChangeJobs(),
-		MissingJobs:  i.MissingJobs(),
-		FailedJobs:   i.FailedJobs(),
-	}
-}
-
-func toDomainImport(i *Import) *imports.Import {
-	opts := []imports.ImportOptional{
-		imports.WithStartAt(i.StartedAt),
-		imports.WithStatus(imports.Status(i.Status)),
-		imports.WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
-	}
-	if i.Error.Valid {
-		opts = append(opts, imports.WithError(i.Error.String))
-	}
-	if i.EndedAt.Valid {
-		opts = append(opts, imports.WithEndAt(i.EndedAt.Time))
-	}
-
-	return imports.New(
-		i.ID,
-		i.ChannelID,
-		opts...,
-	)
 }

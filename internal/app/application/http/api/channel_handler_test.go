@@ -771,9 +771,9 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	suite.Len(ir.Imports, 1)
 	i, ok := ir.Imports[iID]
 	suite.True(ok)
-	suite.Equal(iID, i.ID())
-	suite.Equal(chID, i.ChannelID())
-	suite.Equal(imports.StatusPending, i.Status())
+	suite.Equal(iID, i.ID)
+	suite.Equal(chID, i.ChannelID)
+	suite.Equal(int(imports.StatusPending), i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -783,7 +783,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 
 	// Assert pubsub
 	suite.Len(ps.ImportIDs, 1)
-	suite.Equal(i.ID(), ps.ImportIDs[0])
+	suite.Equal(i.ID, ps.ImportIDs[0])
 }
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {

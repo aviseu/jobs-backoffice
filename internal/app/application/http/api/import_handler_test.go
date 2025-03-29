@@ -47,17 +47,17 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 		imports.WithEndAt(eAt1),
 		imports.WithError("happened this error"),
 	)
-	ir.Add(i1)
+	ir.Add(i1.ToDTO())
 
 	id2 := uuid.New()
 	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
 	i2 := imports.New(id2, ch.ID(), imports.WithStartAt(sAt2))
-	ir.Add(i2)
+	ir.Add(i2.ToDTO())
 
 	id3 := uuid.New()
 	sAt3 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	i3 := imports.New(id3, ch.ID(), imports.WithStartAt(sAt3))
-	ir.Add(i3)
+	ir.Add(i3.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -128,7 +128,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 		imports.WithEndAt(eAt),
 		imports.WithError("happened this error"),
 	)
-	ir.Add(i)
+	ir.Add(i.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
 	suite.NoError(err)
@@ -166,7 +166,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"error":{"message":"import not found: failed to find import `+id.String()+`: import not found"}}`+"\n", rr.Body.String())
+	suite.Equal(`{"error":{"message":"import not found"}}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf.String())

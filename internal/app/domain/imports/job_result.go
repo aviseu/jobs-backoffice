@@ -2,6 +2,7 @@ package imports
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/google/uuid"
 )
 
@@ -29,4 +30,20 @@ func (j *JobResult) ImportID() uuid.UUID {
 
 func (j *JobResult) Result() base.JobStatus {
 	return j.result
+}
+
+func (j *JobResult) ToDTO() *postgres.ImportJobResult {
+	return &postgres.ImportJobResult{
+		ID:       j.JobID(),
+		ImportID: j.ImportID(),
+		Result:   int(j.Result()),
+	}
+}
+
+func NewJobResultFromDTO(j *postgres.ImportJobResult) *JobResult {
+	return NewResult(
+		j.ID,
+		j.ImportID,
+		base.JobStatus(j.Result),
+	)
 }

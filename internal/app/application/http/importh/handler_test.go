@@ -11,6 +11,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/golang/protobuf/proto"
@@ -70,7 +71,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
-	ir.Add(imports.New(iID, chID))
+	ir.Add(imports.New(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -101,14 +102,14 @@ func (suite *HandlerSuite) Test_Import_Success() {
 
 	// Assert state change
 	suite.Len(ir.Imports, 1)
-	var i *imports.Import
+	var i *postgres.Import
 	for _, v := range ir.Imports {
 		i = v
 	}
 	suite.NotNil(i)
-	suite.Equal(iID, i.ID())
-	suite.Equal(chID, i.ChannelID())
-	suite.Equal(imports.StatusCompleted, i.Status())
+	suite.Equal(iID, i.ID)
+	suite.Equal(chID, i.ChannelID)
+	suite.Equal(int(imports.StatusCompleted), i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -154,7 +155,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
-	ir.Add(imports.New(iID, chID))
+	ir.Add(imports.New(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -185,17 +186,17 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 
 	// Assert state change
 	suite.Len(ir.Imports, 1)
-	var i *imports.Import
+	var i *postgres.Import
 	for _, v := range ir.Imports {
 		i = v
 	}
 	suite.NotNil(i)
-	suite.Equal(iID, i.ID())
-	suite.Equal(chID, i.ChannelID())
-	suite.Equal(imports.StatusFailed, i.Status())
-	suite.True(i.Error().Valid)
-	suite.Contains(i.Error().String, "failed to get jobs page 1 on channel")
-	suite.Contains(i.Error().String, "<title>An Error Occurred: Method Not Allowed</title>")
+	suite.Equal(iID, i.ID)
+	suite.Equal(chID, i.ChannelID)
+	suite.Equal(int(imports.StatusFailed), i.Status)
+	suite.True(i.Error.Valid)
+	suite.Contains(i.Error.String, "failed to get jobs page 1 on channel")
+	suite.Contains(i.Error.String, "<title>An Error Occurred: Method Not Allowed</title>")
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
