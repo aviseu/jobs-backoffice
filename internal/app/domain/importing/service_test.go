@@ -13,18 +13,18 @@ import (
 	"time"
 )
 
-func TestService(t *testing.T) {
-	suite.Run(t, new(ServiceSuite))
+func TestImportService(t *testing.T) {
+	suite.Run(t, new(ImportServiceSuite))
 }
 
-type ServiceSuite struct {
+type ImportServiceSuite struct {
 	suite.Suite
 }
 
-func (suite *ServiceSuite) Test_Success() {
+func (suite *ImportServiceSuite) Test_Success() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 	chID := uuid.New()
 
@@ -84,10 +84,10 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(5, ir.Imports[i.ID()].FailedJobs)
 }
 
-func (suite *ServiceSuite) Test_Fail() {
+func (suite *ImportServiceSuite) Test_Fail() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 	chID := uuid.New()
 
@@ -105,10 +105,10 @@ func (suite *ServiceSuite) Test_Fail() {
 	suite.Equal("boom!", ir.Imports[i.ID()].Error.String)
 }
 
-func (suite *ServiceSuite) Test_FindImport_Success() {
+func (suite *ImportServiceSuite) Test_FindImport_Success() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 	id := uuid.New()
 	ir.Add(importing.New(id, uuid.New()).ToDTO())
@@ -122,11 +122,11 @@ func (suite *ServiceSuite) Test_FindImport_Success() {
 	suite.Equal(id, i.ID())
 }
 
-func (suite *ServiceSuite) Test_FindImport_Fail() {
+func (suite *ImportServiceSuite) Test_FindImport_Fail() {
 	// Prepare
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 
 	// Execute
@@ -139,10 +139,10 @@ func (suite *ServiceSuite) Test_FindImport_Fail() {
 	suite.False(errs.IsValidationError(err))
 }
 
-func (suite *ServiceSuite) Test_FindImport_NotFound() {
+func (suite *ImportServiceSuite) Test_FindImport_NotFound() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 
 	// Execute
@@ -154,10 +154,10 @@ func (suite *ServiceSuite) Test_FindImport_NotFound() {
 	suite.True(errs.IsValidationError(err))
 }
 
-func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithoutMetadata_Success() {
+func (suite *ImportServiceSuite) Test_FindImportWithForcedMetadata_WithoutMetadata_Success() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 	id := uuid.New()
 	ir.Add(importing.New(id, uuid.New()).ToDTO())
@@ -190,10 +190,10 @@ func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithoutMetadata_Suc
 	suite.Equal(5, i.FailedJobs())
 }
 
-func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithMetadata_Success() {
+func (suite *ImportServiceSuite) Test_FindImportWithForcedMetadata_WithMetadata_Success() {
 	// Prepare
 	ir := testutils.NewImportRepository()
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 	id := uuid.New()
 	ir.Add(importing.New(id, uuid.New(), importing.WithMetadata(1, 2, 3, 4, 5)).ToDTO())
@@ -211,11 +211,11 @@ func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_WithMetadata_Succes
 	suite.Equal(5, i.FailedJobs())
 }
 
-func (suite *ServiceSuite) Test_FindImportWithForcedMetadata_Fail() {
+func (suite *ImportServiceSuite) Test_FindImportWithForcedMetadata_Fail() {
 	// Prepare
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	s := importing.NewService(ir)
+	s := importing.NewImportService(ir)
 	ctx := context.Background()
 
 	// Execute

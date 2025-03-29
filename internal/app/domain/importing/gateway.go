@@ -19,14 +19,14 @@ type Provider interface {
 type Gateway struct {
 	p   Provider
 	js  *job.Service
-	is  *Service
+	is  *ImportService
 	log *slog.Logger
 
 	resultBufferSize int
 	resultWorkers    int
 }
 
-func NewGateway(p Provider, js *job.Service, is *Service, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
+func NewGateway(p Provider, js *job.Service, is *ImportService, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
 	return &Gateway{
 		p:   p,
 		js:  js,

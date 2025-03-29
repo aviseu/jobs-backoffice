@@ -13,12 +13,12 @@ import (
 )
 
 type ImportHandler struct {
-	is  *importing.Service
+	is  *importing.ImportService
 	chr ChannelRepository
 	log *slog.Logger
 }
 
-func NewImportHandler(chr ChannelRepository, is *importing.Service, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chr ChannelRepository, is *importing.ImportService, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
 		chr: chr,
 		is:  is,

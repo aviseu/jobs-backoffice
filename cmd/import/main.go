@@ -81,7 +81,7 @@ func run(ctx context.Context) error {
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	jr := postgres.NewJobRepository(db)
 	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 

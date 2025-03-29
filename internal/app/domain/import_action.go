@@ -17,11 +17,11 @@ type ChannelRepository interface {
 
 type ImportAction struct {
 	chr ChannelRepository
-	is  *importing.Service
+	is  *importing.ImportService
 	f   *importing.Factory
 }
 
-func NewImportAction(chr ChannelRepository, is *importing.Service, f *importing.Factory) *ImportAction {
+func NewImportAction(chr ChannelRepository, is *importing.ImportService, f *importing.Factory) *ImportAction {
 	return &ImportAction{
 		chr: chr,
 		is:  is,

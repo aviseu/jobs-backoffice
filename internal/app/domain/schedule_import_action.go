@@ -11,13 +11,13 @@ import (
 )
 
 type ScheduleImportAction struct {
-	is  *importing.Service
+	is  *importing.ImportService
 	log *slog.Logger
 
 	ps PubSubService
 }
 
-func NewScheduleImportAction(is *importing.Service, ps PubSubService, log *slog.Logger) *ScheduleImportAction {
+func NewScheduleImportAction(is *importing.ImportService, ps PubSubService, log *slog.Logger) *ScheduleImportAction {
 	return &ScheduleImportAction{
 		is:  is,
 		ps:  ps,

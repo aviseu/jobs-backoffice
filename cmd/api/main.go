@@ -89,7 +89,7 @@ func run(ctx context.Context) error {
 	chr := postgres.NewChannelRepository(db)
 	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	ia := domain.NewScheduleImportAction(is, ps, log)
 
 	// start server

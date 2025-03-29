@@ -43,7 +43,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := importing.NewFactory(
@@ -126,7 +126,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := importing.NewFactory(

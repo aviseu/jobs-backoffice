@@ -12,7 +12,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-type Repository interface {
+type ImportRepository interface {
 	SaveImport(ctx context.Context, i *postgres.Import) error
 	SaveImportJob(ctx context.Context, j *postgres.ImportJobResult) error
 
@@ -21,15 +21,15 @@ type Repository interface {
 	GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*postgres.ImportJobResult, error)
 }
 
-type Service struct {
-	r Repository
+type ImportService struct {
+	r ImportRepository
 }
 
-func NewService(r Repository) *Service {
-	return &Service{r: r}
+func NewImportService(r ImportRepository) *ImportService {
+	return &ImportService{r: r}
 }
 
-func (s *Service) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, error) {
+func (s *ImportService) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, error) {
 	i := New(id, channelID)
 	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", channelID, err)
@@ -38,11 +38,11 @@ func (s *Service) Start(ctx context.Context, id, channelID uuid.UUID) (*Import, 
 	return i, nil
 }
 
-func (s *Service) SaveJobResult(ctx context.Context, r *JobResult) error {
+func (s *ImportService) SaveJobResult(ctx context.Context, r *JobResult) error {
 	return s.r.SaveImportJob(ctx, r.ToDTO())
 }
 
-func (s *Service) SetStatus(ctx context.Context, i *Import, status base.ImportStatus) error {
+func (s *ImportService) SetStatus(ctx context.Context, i *Import, status base.ImportStatus) error {
 	i.status = status
 	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return fmt.Errorf("failed to set status %s for import %s: %w", status.String(), i.ID(), err)
@@ -51,7 +51,7 @@ func (s *Service) SetStatus(ctx context.Context, i *Import, status base.ImportSt
 	return nil
 }
 
-func (s *Service) MarkAsCompleted(ctx context.Context, i *Import) error {
+func (s *ImportService) MarkAsCompleted(ctx context.Context, i *Import) error {
 	i.status = base.ImportStatusCompleted
 	i.endedAt = null.TimeFrom(time.Now())
 
@@ -66,7 +66,7 @@ func (s *Service) MarkAsCompleted(ctx context.Context, i *Import) error {
 	return nil
 }
 
-func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error {
+func (s *ImportService) MarkAsFailed(ctx context.Context, i *Import, err error) error {
 	i.status = base.ImportStatusFailed
 	i.endedAt = null.TimeFrom(time.Now())
 	i.error = null.StringFrom(err.Error())
@@ -82,7 +82,7 @@ func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error 
 	return nil
 }
 
-func (s *Service) GetImports(ctx context.Context) ([]*Import, error) {
+func (s *ImportService) GetImports(ctx context.Context) ([]*Import, error) {
 	imports, err := s.r.GetImports(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get imports: %w", err)
@@ -96,7 +96,7 @@ func (s *Service) GetImports(ctx context.Context) ([]*Import, error) {
 	return results, nil
 }
 
-func (s *Service) FindImport(ctx context.Context, id uuid.UUID) (*Import, error) {
+func (s *ImportService) FindImport(ctx context.Context, id uuid.UUID) (*Import, error) {
 	dto, err := s.r.FindImport(ctx, id)
 	if err != nil {
 		if errors.Is(err, postgres.ErrImportNotFound) {
@@ -108,7 +108,7 @@ func (s *Service) FindImport(ctx context.Context, id uuid.UUID) (*Import, error)
 	return NewImportFromDTO(dto), nil
 }
 
-func (s *Service) FindImportWithForcedMetadata(ctx context.Context, id uuid.UUID) (*Import, error) {
+func (s *ImportService) FindImportWithForcedMetadata(ctx context.Context, id uuid.UUID) (*Import, error) {
 	dto, err := s.r.FindImport(ctx, id)
 	if err != nil {
 		if errors.Is(err, postgres.ErrImportNotFound) {
@@ -134,7 +134,7 @@ func (s *Service) FindImportWithForcedMetadata(ctx context.Context, id uuid.UUID
 	return i, nil
 }
 
-func (s *Service) setMetadataFromJobs(i *Import) error {
+func (s *ImportService) setMetadataFromJobs(i *Import) error {
 	jobs, err := s.r.GetJobsByImportID(context.Background(), i.ID())
 	if err != nil {
 		return fmt.Errorf("failed to get jobs for import %s while filling metadata: %w", i.ID(), err)

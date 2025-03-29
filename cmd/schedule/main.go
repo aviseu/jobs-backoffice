@@ -82,7 +82,7 @@ func run(ctx context.Context) error {
 	// services
 	slog.Info("setting up services...")
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 
 	chr := postgres.NewChannelRepository(db)
 

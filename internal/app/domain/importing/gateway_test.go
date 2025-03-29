@@ -31,7 +31,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
 	f := importing.NewFactory(
@@ -128,7 +128,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	jr.FailWith(errors.New("boom!"))
 	js := job.NewService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
 	f := importing.NewFactory(
@@ -175,7 +175,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
-	is := importing.NewService(ir)
+	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
 	f := importing.NewFactory(

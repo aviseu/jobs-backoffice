@@ -26,12 +26,12 @@ type HTTPClient interface {
 type Factory struct {
 	c   HTTPClient
 	js  *job.Service
-	is  *Service
+	is  *ImportService
 	log *slog.Logger
 	cfg Config
 }
 
-func NewFactory(js *job.Service, is *Service, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
+func NewFactory(js *job.Service, is *ImportService, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
 	return &Factory{
 		cfg: cfg,
 		js:  js,
