@@ -24,22 +24,22 @@ type Job struct {
 	publishStatus base.JobPublishStatus
 }
 
-type Optional func(*Job)
+type JobOptional func(*Job)
 
-func WithTimestamps(c, u time.Time) Optional {
+func JobWithTimestamps(c, u time.Time) JobOptional {
 	return func(j *Job) {
 		j.createdAt = c
 		j.updatedAt = u
 	}
 }
 
-func WithPublishStatus(s base.JobPublishStatus) Optional {
+func JobWithPublishStatus(s base.JobPublishStatus) JobOptional {
 	return func(j *Job) {
 		j.publishStatus = s
 	}
 }
 
-func New(id, channelID uuid.UUID, s base.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...Optional) *Job {
+func NewJob(id, channelID uuid.UUID, s base.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
 	j := &Job{
 		id:            id,
 		channelID:     channelID,
@@ -160,7 +160,7 @@ func (j *Job) ToDTO() *postgres.Job {
 }
 
 func NewJobFromDTO(j *postgres.Job) *Job {
-	return New(
+	return NewJob(
 		j.ID,
 		j.ChannelID,
 		j.Status,
@@ -171,7 +171,7 @@ func NewJobFromDTO(j *postgres.Job) *Job {
 		j.Location,
 		j.Remote,
 		j.PostedAt,
-		WithTimestamps(j.CreatedAt, j.UpdatedAt),
-		WithPublishStatus(j.PublishStatus),
+		JobWithTimestamps(j.CreatedAt, j.UpdatedAt),
+		JobWithPublishStatus(j.PublishStatus),
 	)
 }

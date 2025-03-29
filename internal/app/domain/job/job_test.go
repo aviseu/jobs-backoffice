@@ -23,7 +23,7 @@ func (suite *JobSuite) Test_Success() {
 	chID := uuid.New()
 
 	// Execute
-	j := job.New(
+	j := job.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -58,7 +58,7 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 	chID := uuid.New()
 
 	// Execute
-	j := job.New(
+	j := job.NewJob(
 		id,
 		chID,
 		base.JobStatusActive,
@@ -69,11 +69,11 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 		"Amsterdam",
 		true,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-		job.WithTimestamps(
+		job.JobWithTimestamps(
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		),
-		job.WithPublishStatus(base.JobPublishStatusPublished),
+		job.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 
 	// Assert

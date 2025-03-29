@@ -53,7 +53,7 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 
 	result := make([]*job.Job, 0, len(jobs))
 	for _, j := range jobs {
-		result = append(result, job.New(
+		result = append(result, job.NewJob(
 			uuid.NewSHA1(s.ch.ID(), []byte(j.Slug)), // UUID V5
 			s.ch.ID(),
 			base.JobStatusActive,

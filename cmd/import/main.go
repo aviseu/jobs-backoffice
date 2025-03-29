@@ -83,7 +83,7 @@ func run(ctx context.Context) error {
 	ir := postgres.NewImportRepository(db)
 	is := importing.NewImportService(ir)
 	jr := postgres.NewJobRepository(db)
-	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
+	js := job.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := importing.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
 	ia := domain.NewImportAction(chr, is, f)

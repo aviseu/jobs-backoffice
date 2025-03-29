@@ -11,27 +11,27 @@ import (
 	"github.com/google/uuid"
 )
 
-type Repository interface {
+type JobRepository interface {
 	Save(ctx context.Context, j *postgres.Job) error
 	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*postgres.Job, error)
 }
 
-type Service struct {
-	r Repository
+type JobService struct {
+	r JobRepository
 
 	workerBuffer int
 	workerCount  int
 }
 
-func NewService(r Repository, workerBuffer, workerCount int) *Service {
-	return &Service{
+func NewJobService(r JobRepository, workerBuffer, workerCount int) *JobService {
+	return &JobService{
 		r:            r,
 		workerBuffer: workerBuffer,
 		workerCount:  workerCount,
 	}
 }
 
-func worker(ctx context.Context, wg *sync.WaitGroup, r Repository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
+func worker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
 	for j := range jobs {
 		if err := r.Save(ctx, j.ToDTO()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
@@ -41,7 +41,7 @@ func worker(ctx context.Context, wg *sync.WaitGroup, r Repository, jobs <-chan *
 	wg.Done()
 }
 
-func (s *Service) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, results chan<- *Result) error {
+func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*Job, results chan<- *Result) error {
 	// get existing jobs
 	existing, err := s.r.GetByChannelID(ctx, chID)
 	if err != nil {

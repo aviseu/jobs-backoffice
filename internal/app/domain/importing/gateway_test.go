@@ -29,7 +29,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
-	js := job.NewService(jr, 10, 10)
+	js := job.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
@@ -55,7 +55,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	ch := configuring.NewChannel(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
-	j1 := job.New(
+	j1 := job.NewJob(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
 		ch.ID(),
 		base.JobStatusActive,
@@ -66,10 +66,10 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		"Munich",
 		true,
 		time.Unix(1739357344, 0),
-		job.WithPublishStatus(base.JobPublishStatusPublished),
+		job.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	jr.Add(j1.ToDTO())
-	j2 := job.New(
+	j2 := job.NewJob(
 		uuid.New(),
 		ch.ID(),
 		base.JobStatusActive,
@@ -80,7 +80,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		"Munich",
 		true,
 		time.Unix(1739357344, 0),
-		job.WithPublishStatus(base.JobPublishStatusPublished),
+		job.JobWithPublishStatus(base.JobPublishStatusPublished),
 	)
 	jr.Add(j2.ToDTO())
 
@@ -126,7 +126,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
 	jr.FailWith(errors.New("boom!"))
-	js := job.NewService(jr, 10, 10)
+	js := job.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
@@ -173,7 +173,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
-	js := job.NewService(jr, 10, 10)
+	js := job.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)

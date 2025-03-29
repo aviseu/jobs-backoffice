@@ -45,7 +45,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
-	js := job.NewService(jr, 10, 10)
+	js := job.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(
 		js,
 		is,
@@ -128,7 +128,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
-	js := job.NewService(jr, 10, 10)
+	js := job.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(
 		js,
 		is,
