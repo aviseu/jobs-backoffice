@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 )
 
@@ -20,14 +20,14 @@ type Provider interface {
 type Gateway struct {
 	p   Provider
 	js  *job.Service
-	is  *imports.Service
+	is  *importing.Service
 	log *slog.Logger
 
 	resultBufferSize int
 	resultWorkers    int
 }
 
-func NewGateway(p Provider, js *job.Service, is *imports.Service, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
+func NewGateway(p Provider, js *job.Service, is *importing.Service, log *slog.Logger, resultBufferSize, resultWorkers int) *Gateway {
 	return &Gateway{
 		p:   p,
 		js:  js,
@@ -39,9 +39,9 @@ func NewGateway(p Provider, js *job.Service, is *imports.Service, log *slog.Logg
 	}
 }
 
-func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Import, results <-chan *job.Result) {
+func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *importing.Import, results <-chan *job.Result) {
 	for r := range results {
-		jr := imports.NewResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
+		jr := importing.NewResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
 		if err := g.is.SaveJobResult(ctx, jr); err != nil {
 			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", jr.JobID(), jr.ImportID(), err).Error())
 			continue
@@ -50,7 +50,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Imp
 	wg.Done()
 }
 
-func (g *Gateway) Import(ctx context.Context, i *imports.Import) error {
+func (g *Gateway) Import(ctx context.Context, i *importing.Import) error {
 	if err := g.is.SetStatus(ctx, i, base.ImportStatusFetching); err != nil {
 		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
 	}

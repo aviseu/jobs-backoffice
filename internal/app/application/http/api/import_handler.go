@@ -7,18 +7,18 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 type ImportHandler struct {
-	is  *imports.Service
+	is  *importing.Service
 	chr ChannelRepository
 	log *slog.Logger
 }
 
-func NewImportHandler(chr ChannelRepository, is *imports.Service, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chr ChannelRepository, is *importing.Service, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
 		chr: chr,
 		is:  is,
@@ -72,7 +72,7 @@ func (h *ImportHandler) FindImport(w http.ResponseWriter, r *http.Request) {
 
 	i, err := h.is.FindImportWithForcedMetadata(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, imports.ErrImportNotFound) {
+		if errors.Is(err, importing.ErrImportNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}

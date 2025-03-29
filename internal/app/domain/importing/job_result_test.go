@@ -1,8 +1,8 @@
-package imports_test
+package importing_test
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -22,7 +22,7 @@ func (suite *JobResultSuite) Test_Success() {
 	importID := uuid.New()
 
 	// Execute
-	j := imports.NewResult(id, importID, base.ImportJobResultNew)
+	j := importing.NewResult(id, importID, base.ImportJobResultNew)
 
 	// Assert
 	suite.Equal(id, j.JobID())

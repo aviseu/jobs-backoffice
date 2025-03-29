@@ -11,7 +11,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/importh"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
@@ -33,7 +33,7 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler(chs *configuring.Service, chr api.ChannelRepository, is *imports.Service, ia *domain.ScheduleImportAction, cfg Config, log *slog.Logger) http.Handler {
+func APIRootHandler(chs *configuring.Service, chr api.ChannelRepository, is *importing.Service, ia *domain.ScheduleImportAction, cfg Config, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	if cfg.Cors {

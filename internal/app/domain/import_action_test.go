@@ -7,7 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -32,7 +32,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
 	f := gateway.NewFactory(
@@ -86,7 +86,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	)
 	jr.Add(j2.ToDTO())
 
-	i := imports.New(uuid.New(), ch.ID())
+	i := importing.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	action := domain.NewImportAction(chr, is, f)
@@ -100,7 +100,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	// Assert Jobs
 	suite.Len(ir.Imports, 1)
 	for _, imp := range ir.Imports {
-		i = imports.NewImportFromDTO(imp)
+		i = importing.NewImportFromDTO(imp)
 	}
 	suite.Equal(ch.ID(), i.ChannelID())
 	suite.Equal(2, i.NewJobs())
@@ -126,7 +126,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
@@ -151,12 +151,12 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
 	action := domain.NewImportAction(chr, is, f)
-	i := imports.New(uuid.New(), uuid.New())
+	i := importing.New(uuid.New(), uuid.New())
 	ir.Add(i.ToDTO())
 
 	// Execute
@@ -179,12 +179,12 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(js, is, http.DefaultClient, gateway.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
 	action := domain.NewImportAction(chr, is, f)
-	i := imports.New(uuid.New(), ch.ID())
+	i := importing.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())
 
 	// Execute

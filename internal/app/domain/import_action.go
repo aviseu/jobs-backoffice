@@ -7,7 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/google/uuid"
 )
 
@@ -18,11 +18,11 @@ type ChannelRepository interface {
 
 type ImportAction struct {
 	chr ChannelRepository
-	is  *imports.Service
+	is  *importing.Service
 	f   *gateway.Factory
 }
 
-func NewImportAction(chr ChannelRepository, is *imports.Service, f *gateway.Factory) *ImportAction {
+func NewImportAction(chr ChannelRepository, is *importing.Service, f *gateway.Factory) *ImportAction {
 	return &ImportAction{
 		chr: chr,
 		is:  is,

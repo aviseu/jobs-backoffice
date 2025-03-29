@@ -5,7 +5,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -27,7 +27,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
@@ -38,25 +38,25 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	id1 := uuid.New()
 	sAt1 := time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)
 	eAt1 := time.Date(2020, 1, 1, 0, 0, 4, 0, time.UTC)
-	i1 := imports.New(
+	i1 := importing.New(
 		id1,
 		ch.ID(),
-		imports.WithStatus(base.ImportStatusPublishing),
-		imports.WithMetadata(1, 2, 3, 4, 5),
-		imports.WithStartAt(sAt1),
-		imports.WithEndAt(eAt1),
-		imports.WithError("happened this error"),
+		importing.WithStatus(base.ImportStatusPublishing),
+		importing.WithMetadata(1, 2, 3, 4, 5),
+		importing.WithStartAt(sAt1),
+		importing.WithEndAt(eAt1),
+		importing.WithError("happened this error"),
 	)
 	ir.Add(i1.ToDTO())
 
 	id2 := uuid.New()
 	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i2 := imports.New(id2, ch.ID(), imports.WithStartAt(sAt2))
+	i2 := importing.New(id2, ch.ID(), importing.WithStartAt(sAt2))
 	ir.Add(i2.ToDTO())
 
 	id3 := uuid.New()
 	sAt3 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
-	i3 := imports.New(id3, ch.ID(), imports.WithStartAt(sAt3))
+	i3 := importing.New(id3, ch.ID(), importing.WithStartAt(sAt3))
 	ir.Add(i3.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
@@ -80,7 +80,7 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
@@ -108,7 +108,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
@@ -119,14 +119,14 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := imports.New(
+	i := importing.New(
 		id,
 		ch.ID(),
-		imports.WithStatus(base.ImportStatusCompleted),
-		imports.WithMetadata(1, 2, 3, 4, 5),
-		imports.WithStartAt(sAt),
-		imports.WithEndAt(eAt),
-		imports.WithError("happened this error"),
+		importing.WithStatus(base.ImportStatusCompleted),
+		importing.WithMetadata(1, 2, 3, 4, 5),
+		importing.WithStartAt(sAt),
+		importing.WithEndAt(eAt),
+		importing.WithError("happened this error"),
 	)
 	ir.Add(i.ToDTO())
 
@@ -150,7 +150,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
@@ -177,7 +177,7 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)

@@ -3,7 +3,7 @@ package postgres_test
 import (
 	"context"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -35,14 +35,14 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := imports.New(
+	i := importing.New(
 		id,
 		chID,
-		imports.WithError("error"),
-		imports.WithStatus(base.ImportStatusProcessing),
-		imports.WithStartAt(sAt),
-		imports.WithEndAt(eAt),
-		imports.WithMetadata(1, 2, 3, 4, 5),
+		importing.WithError("error"),
+		importing.WithStatus(base.ImportStatusProcessing),
+		importing.WithStartAt(sAt),
+		importing.WithEndAt(eAt),
+		importing.WithMetadata(1, 2, 3, 4, 5),
 	)
 
 	// Execute
@@ -78,14 +78,14 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 	r := postgres.NewImportRepository(suite.BadDB)
 	id := uuid.New()
 	chID := uuid.New()
-	i := imports.New(
+	i := importing.New(
 		id,
 		chID,
-		imports.WithError("error"),
-		imports.WithStatus(base.ImportStatusProcessing),
-		imports.WithStartAt(time.Now()),
-		imports.WithEndAt(time.Now()),
-		imports.WithMetadata(1, 2, 3, 4, 5),
+		importing.WithError("error"),
+		importing.WithStatus(base.ImportStatusProcessing),
+		importing.WithStartAt(time.Now()),
+		importing.WithEndAt(time.Now()),
+		importing.WithMetadata(1, 2, 3, 4, 5),
 	)
 
 	// Execute
@@ -112,14 +112,14 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := imports.New(
+	i := importing.New(
 		id,
 		chID,
-		imports.WithError("error"),
-		imports.WithStatus(base.ImportStatusProcessing),
-		imports.WithStartAt(sAt),
-		imports.WithEndAt(eAt),
-		imports.WithMetadata(1, 2, 3, 4, 5),
+		importing.WithError("error"),
+		importing.WithStatus(base.ImportStatusProcessing),
+		importing.WithStartAt(sAt),
+		importing.WithEndAt(eAt),
+		importing.WithMetadata(1, 2, 3, 4, 5),
 	)
 	err = r.SaveImport(context.Background(), i.ToDTO())
 	suite.NoError(err)
@@ -259,7 +259,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	suite.NoError(err)
 
 	r := postgres.NewImportRepository(suite.DB)
-	jr := imports.NewResult(uuid.New(), iID, base.ImportJobResultUpdated)
+	jr := importing.NewResult(uuid.New(), iID, base.ImportJobResultUpdated)
 
 	// Execute
 	err = r.SaveImportJob(context.Background(), jr.ToDTO())
@@ -282,7 +282,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 	// Prepare
 	r := postgres.NewImportRepository(suite.BadDB)
-	jr := imports.NewResult(uuid.New(), uuid.New(), base.ImportJobResultUpdated)
+	jr := importing.NewResult(uuid.New(), uuid.New(), base.ImportJobResultUpdated)
 
 	// Execute
 	err := r.SaveImportJob(context.Background(), jr.ToDTO())

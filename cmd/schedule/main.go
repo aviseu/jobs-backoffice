@@ -8,7 +8,7 @@ import (
 
 	cpubsub "cloud.google.com/go/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -82,7 +82,7 @@ func run(ctx context.Context) error {
 	// services
 	slog.Info("setting up services...")
 	ir := postgres.NewImportRepository(db)
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 
 	chr := postgres.NewChannelRepository(db)
 

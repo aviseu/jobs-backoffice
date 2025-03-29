@@ -12,7 +12,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -89,7 +89,7 @@ func run(ctx context.Context) error {
 	chr := postgres.NewChannelRepository(db)
 	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	ia := domain.NewScheduleImportAction(is, ps, log)
 
 	// start server

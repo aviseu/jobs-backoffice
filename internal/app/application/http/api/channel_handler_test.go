@@ -8,7 +8,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -741,7 +741,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()
@@ -790,7 +790,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()
@@ -821,7 +821,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
 	ps := testutils.NewPubSubService()

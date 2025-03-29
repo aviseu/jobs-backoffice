@@ -1,7 +1,7 @@
-package imports_test
+package importing_test
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -17,7 +17,7 @@ type ImportSuite struct {
 
 func (suite *ImportSuite) Test_Success() {
 	// Execute
-	i := imports.New(uuid.New(), uuid.New(), imports.WithMetadata(1, 2, 3, 4, 5))
+	i := importing.New(uuid.New(), uuid.New(), importing.WithMetadata(1, 2, 3, 4, 5))
 
 	// Assert
 	suite.Equal(1, i.NewJobs())

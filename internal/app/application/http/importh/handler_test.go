@@ -8,7 +8,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -44,7 +44,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(
@@ -70,7 +70,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
-	ir.Add(imports.New(iID, chID).ToDTO())
+	ir.Add(importing.New(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -127,7 +127,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := imports.NewService(ir)
+	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
 	f := gateway.NewFactory(
@@ -153,7 +153,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
-	ir.Add(imports.New(iID, chID).ToDTO())
+	ir.Add(importing.New(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),

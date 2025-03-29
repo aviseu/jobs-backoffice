@@ -5,7 +5,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"gopkg.in/guregu/null.v3"
 )
 
@@ -94,7 +94,7 @@ type ImportResponse struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
-func NewImportResponse(i *imports.Import, ch *postgres.Channel) *ImportResponse {
+func NewImportResponse(i *importing.Import, ch *postgres.Channel) *ImportResponse {
 	ended := null.NewString("", false)
 	if i.EndedAt().Valid {
 		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
@@ -122,7 +122,7 @@ type ImportsResponse struct {
 	Imports []*ImportResponse `json:"imports"`
 }
 
-func NewImportsResponse(imports []*imports.Import, channels []*postgres.Channel) *ImportsResponse {
+func NewImportsResponse(imports []*importing.Import, channels []*postgres.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportResponse, 0, len(imports)),
 	}
