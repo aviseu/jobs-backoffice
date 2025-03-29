@@ -3,7 +3,6 @@ package testutils
 import (
 	"cmp"
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
@@ -61,7 +60,7 @@ func (r *ChannelRepository) GetActive(_ context.Context) ([]*aggregator.Channel,
 
 	channels := make([]*aggregator.Channel, 0)
 	for _, ch := range r.Channels {
-		if ch.Status == base.ChannelStatusActive {
+		if ch.Status == aggregator.ChannelStatusActive {
 			channels = append(channels, ch)
 		}
 	}

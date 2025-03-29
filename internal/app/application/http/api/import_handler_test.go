@@ -6,6 +6,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -32,7 +33,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
-	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	id1 := uuid.New()
@@ -113,7 +114,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, is, nil, http.Config{}, log)
 
-	ch := configuring.NewChannel(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	id := uuid.New()

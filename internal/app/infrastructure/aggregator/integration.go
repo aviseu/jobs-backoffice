@@ -1,4 +1,4 @@
-package base
+package aggregator
 
 type Integration int
 

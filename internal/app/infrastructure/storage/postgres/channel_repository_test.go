@@ -2,7 +2,6 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -27,8 +26,8 @@ func (suite *ChannelRepositorySuite) Test_Save_New_Success() {
 	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name",
-		Integration: base.IntegrationArbeitnow,
-		Status:      base.ChannelStatusActive,
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
@@ -46,8 +45,8 @@ func (suite *ChannelRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
 	suite.Equal("Channel Name", dbChannel.Name)
-	suite.Equal(base.IntegrationArbeitnow, dbChannel.Integration)
-	suite.Equal(base.ChannelStatusActive, dbChannel.Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, dbChannel.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, dbChannel.Status)
 	suite.True(dbChannel.CreatedAt.After(time.Now().Add(-2 * time.Second)))
 	suite.True(dbChannel.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 }
@@ -59,8 +58,8 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id,
 		"Channel Name",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusInactive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
 		cAt,
 		cAt,
 	)
@@ -70,8 +69,8 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name new",
-		Integration: base.IntegrationArbeitnow,
-		Status:      base.ChannelStatusActive,
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
 		CreatedAt:   cAt,
 		UpdatedAt:   uAt,
 	}
@@ -94,8 +93,8 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
 	suite.Equal("Channel Name new", dbChannel.Name)
-	suite.Equal(base.IntegrationArbeitnow, dbChannel.Integration)
-	suite.Equal(base.ChannelStatusActive, dbChannel.Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, dbChannel.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, dbChannel.Status)
 }
 
 func (suite *ChannelRepositorySuite) Test_Save_Error() {
@@ -104,8 +103,8 @@ func (suite *ChannelRepositorySuite) Test_Save_Error() {
 	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name",
-		Integration: base.IntegrationArbeitnow,
-		Status:      base.ChannelStatusActive,
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
 	}
 	r := postgres.NewChannelRepository(suite.BadDB)
 
@@ -124,8 +123,8 @@ func (suite *ChannelRepositorySuite) Test_All_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id1,
 		"Channel Name 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 	)
@@ -135,8 +134,8 @@ func (suite *ChannelRepositorySuite) Test_All_Success() {
 	_, err = suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id2,
 		"Channel Name 2",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusInactive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
 		time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC),
 	)
@@ -153,15 +152,15 @@ func (suite *ChannelRepositorySuite) Test_All_Success() {
 
 	suite.Equal(id1, chs[0].ID)
 	suite.Equal("Channel Name 1", chs[0].Name)
-	suite.Equal(base.IntegrationArbeitnow, chs[0].Integration)
-	suite.Equal(base.ChannelStatusActive, chs[0].Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, chs[0].Integration)
+	suite.Equal(aggregator.ChannelStatusActive, chs[0].Status)
 	suite.True(chs[0].CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(chs[0].UpdatedAt.Equal(time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
 
 	suite.Equal(id2, chs[1].ID)
 	suite.Equal("Channel Name 2", chs[1].Name)
-	suite.Equal(base.IntegrationArbeitnow, chs[1].Integration)
-	suite.Equal(base.ChannelStatusInactive, chs[1].Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, chs[1].Integration)
+	suite.Equal(aggregator.ChannelStatusInactive, chs[1].Status)
 	suite.True(chs[1].CreatedAt.Equal(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC)))
 	suite.True(chs[1].UpdatedAt.Equal(time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
 }
@@ -185,8 +184,8 @@ func (suite *ChannelRepositorySuite) Test_GetActive_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id1,
 		"Channel Name 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 	)
@@ -196,8 +195,8 @@ func (suite *ChannelRepositorySuite) Test_GetActive_Success() {
 	_, err = suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id2,
 		"Channel Name 2",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusInactive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
 		time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC),
 	)
@@ -233,8 +232,8 @@ func (suite *ChannelRepositorySuite) Test_Find_Success() {
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		id,
 		"Channel Name",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 	)
@@ -252,8 +251,8 @@ func (suite *ChannelRepositorySuite) Test_Find_Success() {
 
 	suite.Equal(id, ch.ID)
 	suite.Equal("Channel Name", ch.Name)
-	suite.Equal(base.IntegrationArbeitnow, ch.Integration)
-	suite.Equal(base.ChannelStatusActive, ch.Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, ch.Status)
 	suite.True(ch.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(ch.UpdatedAt.Equal(time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
 }

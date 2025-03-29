@@ -7,6 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -64,7 +65,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
-	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
 	ir.Add(importing.NewImport(iID, chID).ToDTO())
@@ -147,7 +148,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
-	chr.Add(configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
 
 	iID := uuid.New()
 	ir.Add(importing.NewImport(iID, chID).ToDTO())

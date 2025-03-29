@@ -63,7 +63,7 @@ func (s *Service) GetJobs() ([]*postgres.Job, error) {
 			Location:    j.Location,
 			Remote:      j.Remote,
 			PostedAt:    time.Unix(j.CreatedAt, 0),
-			Source:      base.IntegrationArbeitnow.String(),
+			Source:      aggregator.IntegrationArbeitnow.String(),
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		})

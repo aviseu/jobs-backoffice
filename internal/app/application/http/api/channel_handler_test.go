@@ -48,8 +48,8 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 		ch = c
 	}
 	suite.Equal("Channel Name", ch.Name)
-	suite.Equal(base.IntegrationArbeitnow, ch.Integration)
-	suite.Equal(base.ChannelStatusInactive, ch.Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusInactive, ch.Status)
 	suite.True(ch.CreatedAt.After(time.Now().Add(-2 * time.Second)))
 	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -125,9 +125,9 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
 
-	ch1 := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
+	ch1 := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
 	r.Add(ch1.ToDTO())
-	ch2 := configuring.NewChannel(uuid.New(), "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
+	ch2 := configuring.NewChannel(uuid.New(), "channel 2", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
 	r.Add(ch2.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
@@ -202,8 +202,8 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -310,8 +310,8 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -330,8 +330,8 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	suite.Len(r.Channels, 1)
 	c := r.First()
 	suite.Equal("NewChannel Name", c.Name)
-	suite.Equal(base.IntegrationArbeitnow, c.Integration)
-	suite.Equal(base.ChannelStatusActive, c.Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, c.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -400,8 +400,8 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -441,8 +441,8 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -484,8 +484,8 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusInactive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -503,7 +503,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(base.ChannelStatusActive, c.Status)
+	suite.Equal(aggregator.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -572,8 +572,8 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusInactive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -596,7 +596,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(base.ChannelStatusInactive, c.Status)
+	suite.Equal(aggregator.ChannelStatusInactive, c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -615,8 +615,8 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -634,7 +634,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(base.ChannelStatusInactive, c.Status)
+	suite.Equal(aggregator.ChannelStatusInactive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -703,8 +703,8 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	ch := configuring.NewChannel(
 		uuid.New(),
 		"channel 1",
-		base.IntegrationArbeitnow,
-		base.ChannelStatusActive,
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusActive,
 		configuring.WithTimestamps(
 			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
@@ -727,7 +727,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(base.ChannelStatusActive, c.Status)
+	suite.Equal(aggregator.ChannelStatusActive, c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -748,7 +748,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
@@ -828,7 +828,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
 
 	chID := uuid.New()
-	ch := configuring.NewChannel(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)

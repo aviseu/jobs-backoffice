@@ -1,7 +1,6 @@
 package configuring
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
@@ -12,8 +11,8 @@ type Channel struct {
 	createdAt   time.Time
 	updatedAt   time.Time
 	name        string
-	integration base.Integration
-	status      base.ChannelStatus
+	integration aggregator.Integration
+	status      aggregator.ChannelStatus
 	id          uuid.UUID
 }
 
@@ -26,7 +25,7 @@ func WithTimestamps(c, u time.Time) Optional {
 	}
 }
 
-func NewChannel(id uuid.UUID, name string, i base.Integration, s base.ChannelStatus, opts ...Optional) *Channel {
+func NewChannel(id uuid.UUID, name string, i aggregator.Integration, s aggregator.ChannelStatus, opts ...Optional) *Channel {
 	ch := &Channel{
 		id:          id,
 		name:        name,
@@ -51,11 +50,11 @@ func (ch *Channel) Name() string {
 	return ch.name
 }
 
-func (ch *Channel) Integration() base.Integration {
+func (ch *Channel) Integration() aggregator.Integration {
 	return ch.integration
 }
 
-func (ch *Channel) Status() base.ChannelStatus {
+func (ch *Channel) Status() aggregator.ChannelStatus {
 	return ch.status
 }
 
@@ -79,12 +78,12 @@ func (ch *Channel) Update(name string) error {
 }
 
 func (ch *Channel) Activate() {
-	ch.status = base.ChannelStatusActive
+	ch.status = aggregator.ChannelStatusActive
 	ch.updatedAt = time.Now()
 }
 
 func (ch *Channel) Deactivate() {
-	ch.status = base.ChannelStatusInactive
+	ch.status = aggregator.ChannelStatusInactive
 	ch.updatedAt = time.Now()
 }
 

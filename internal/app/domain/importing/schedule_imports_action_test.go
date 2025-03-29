@@ -3,9 +3,9 @@ package importing_test
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -32,10 +32,10 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id1 := uuid.New()
-	chr.Add(configuring.NewChannel(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id1, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
 	id2 := uuid.New()
-	chr.Add(configuring.NewChannel(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
-	chr.Add(configuring.NewChannel(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).ToDTO())
+	chr.Add(configuring.NewChannel(id2, "channel 2", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(uuid.New(), "channel 3", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -104,7 +104,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -132,7 +132,7 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	s := importing.NewScheduleImportsAction(chr, ia)
 
 	id := uuid.New()
-	chr.Add(configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).ToDTO())
+	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToDTO())
 
 	// Execute
 	err := s.Execute(context.Background())

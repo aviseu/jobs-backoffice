@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
@@ -26,7 +25,7 @@ func NewService(r Repository) *Service {
 func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Channel, error) {
 	var errs error
 
-	i, ok := base.ParseIntegration(cmd.Integration)
+	i, ok := aggregator.ParseIntegration(cmd.Integration)
 	if !ok {
 		errs = errors.Join(errs, fmt.Errorf("failed to find integration %s: %w", cmd.Integration, ErrInvalidIntegration))
 	}
@@ -43,7 +42,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Chann
 		uuid.New(),
 		cmd.Name,
 		i,
-		base.ChannelStatusInactive,
+		aggregator.ChannelStatusInactive,
 	)
 
 	if err := s.r.Save(ctx, ch.ToDTO()); err != nil {

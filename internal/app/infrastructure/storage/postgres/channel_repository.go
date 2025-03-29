@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 
@@ -52,7 +51,7 @@ func (r *ChannelRepository) All(ctx context.Context) ([]*aggregator.Channel, err
 
 func (r *ChannelRepository) GetActive(ctx context.Context) ([]*aggregator.Channel, error) {
 	var result []*aggregator.Channel
-	err := r.db.SelectContext(ctx, &result, "SELECT * FROM channels WHERE status = $1 ORDER BY name", base.ChannelStatusActive)
+	err := r.db.SelectContext(ctx, &result, "SELECT * FROM channels WHERE status = $1 ORDER BY name", aggregator.ChannelStatusActive)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get active channels: %w", err)
 	}

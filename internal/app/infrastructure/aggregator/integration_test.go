@@ -1,7 +1,7 @@
-package base_test
+package aggregator_test
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -16,16 +16,16 @@ type IntegrationSuite struct {
 
 func (suite *IntegrationSuite) Test_ParseIntegration_Success() {
 	// Execute
-	i, ok := base.ParseIntegration("arbeitnow")
+	i, ok := aggregator.ParseIntegration("arbeitnow")
 
 	// Assert
 	suite.True(ok)
-	suite.Equal(base.IntegrationArbeitnow, i)
+	suite.Equal(aggregator.IntegrationArbeitnow, i)
 }
 
 func (suite *IntegrationSuite) Test_ParseIntegration_Error() {
 	// Execute
-	_, ok := base.ParseIntegration("invalid")
+	_, ok := aggregator.ParseIntegration("invalid")
 
 	// Assert
 	suite.False(ok)
@@ -33,9 +33,9 @@ func (suite *IntegrationSuite) Test_ParseIntegration_Error() {
 
 func (suite *IntegrationSuite) Test_ListIntegrations_Success() {
 	// Execute
-	list := base.ListIntegrations()
+	list := aggregator.ListIntegrations()
 
 	// Assert
 	suite.Len(list, 1)
-	suite.Equal(base.IntegrationArbeitnow, list[0])
+	suite.Equal(aggregator.IntegrationArbeitnow, list[0])
 }

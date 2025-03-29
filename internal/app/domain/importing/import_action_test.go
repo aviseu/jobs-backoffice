@@ -6,6 +6,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -51,7 +52,7 @@ func (suite *ImportActionSuite) Test_Success() {
 		log,
 	)
 	chr := testutils.NewChannelRepository()
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 
 	j1 := importing.NewJob(
@@ -173,7 +174,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToDTO())
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)

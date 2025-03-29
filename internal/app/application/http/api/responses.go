@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
@@ -65,7 +64,7 @@ type IntegrationsResponse struct {
 	Integrations []string `json:"integrations"`
 }
 
-func NewListIntegrationsResponse(integrations []base.Integration) *IntegrationsResponse {
+func NewListIntegrationsResponse(integrations []aggregator.Integration) *IntegrationsResponse {
 	resp := &IntegrationsResponse{
 		Integrations: make([]string, 0, len(integrations)),
 	}

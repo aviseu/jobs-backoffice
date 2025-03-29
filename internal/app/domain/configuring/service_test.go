@@ -3,8 +3,8 @@ package configuring_test
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -36,8 +36,8 @@ func (suite *ServiceSuite) Test_Create_Success() {
 	// Assert result
 	suite.NoError(err)
 	suite.Equal("Channel Name", ch.Name())
-	suite.Equal(base.IntegrationArbeitnow, ch.Integration())
-	suite.Equal(base.ChannelStatusInactive, ch.Status())
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration())
+	suite.Equal(aggregator.ChannelStatusInactive, ch.Status())
 	suite.True(ch.CreatedAt().After(time.Now().Add(-2 * time.Second)))
 	suite.True(ch.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
 
@@ -91,7 +91,7 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
-	ch := configuring.NewChannel(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
+	ch := configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
 	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
@@ -102,8 +102,8 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	suite.NoError(err)
 	suite.Equal(id, res.ID())
 	suite.Equal("channel 2", res.Name())
-	suite.Equal(base.IntegrationArbeitnow, res.Integration())
-	suite.Equal(base.ChannelStatusActive, res.Status())
+	suite.Equal(aggregator.IntegrationArbeitnow, res.Integration())
+	suite.Equal(aggregator.ChannelStatusActive, res.Status())
 	suite.True(cat.Equal(res.CreatedAt()))
 	suite.True(res.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
 
@@ -111,8 +111,8 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	suite.NoError(err)
 	suite.Equal(id, res.ID())
 	suite.Equal("channel 2", r.First().Name)
-	suite.Equal(base.IntegrationArbeitnow, r.First().Integration)
-	suite.Equal(base.ChannelStatusActive, r.First().Status)
+	suite.Equal(aggregator.IntegrationArbeitnow, r.First().Integration)
+	suite.Equal(aggregator.ChannelStatusActive, r.First().Status)
 	suite.True(cat.Equal(r.First().CreatedAt))
 	suite.True(res.UpdatedAt().Equal(r.First().UpdatedAt))
 }
@@ -137,7 +137,7 @@ func (suite *ServiceSuite) Test_Update_Error() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
 
@@ -154,7 +154,7 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	r.Add(ch.ToDTO())
 	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "")
 
@@ -171,7 +171,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusInactive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
 	r.Add(ch.ToDTO())
 
 	// Execute
@@ -179,7 +179,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(base.ChannelStatusActive, r.First().Status)
+	suite.Equal(aggregator.ChannelStatusActive, r.First().Status)
 }
 
 func (suite *ServiceSuite) Test_Activate_NotFound() {
@@ -201,7 +201,7 @@ func (suite *ServiceSuite) Test_Activate_Error() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusInactive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
 	r.Add(ch.ToDTO())
 
 	// Execute
@@ -217,7 +217,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	r.Add(ch.ToDTO())
 
 	// Execute
@@ -225,7 +225,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(base.ChannelStatusInactive, r.First().Status)
+	suite.Equal(aggregator.ChannelStatusInactive, r.First().Status)
 }
 
 func (suite *ServiceSuite) Test_Deactivate_NotFound() {
@@ -247,7 +247,7 @@ func (suite *ServiceSuite) Test_Deactivate_Error() {
 	r := testutils.NewChannelRepository()
 	r.FailWith(errors.New("boom!"))
 	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	r.Add(ch.ToDTO())
 
 	// Execute
