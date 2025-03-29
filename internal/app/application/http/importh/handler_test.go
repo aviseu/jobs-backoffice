@@ -109,7 +109,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(int(imports.StatusCompleted), i.Status)
+	suite.Equal(base.ImportStatusCompleted, i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -193,7 +193,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(int(imports.StatusFailed), i.Status)
+	suite.Equal(base.ImportStatusFailed, i.Status)
 	suite.True(i.Error.Valid)
 	suite.Contains(i.Error.String, "failed to get jobs page 1 on channel")
 	suite.Contains(i.Error.String, "<title>An Error Occurred: Method Not Allowed</title>")

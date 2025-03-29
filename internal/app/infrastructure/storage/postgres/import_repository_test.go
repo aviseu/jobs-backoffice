@@ -39,7 +39,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		id,
 		chID,
 		imports.WithError("error"),
-		imports.WithStatus(imports.StatusProcessing),
+		imports.WithStatus(base.ImportStatusProcessing),
 		imports.WithStartAt(sAt),
 		imports.WithEndAt(eAt),
 		imports.WithMetadata(1, 2, 3, 4, 5),
@@ -62,7 +62,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.NoError(err)
 	suite.Equal(i.ID(), dbImport.ID)
 	suite.Equal(i.ChannelID(), dbImport.ChannelID)
-	suite.Equal(int(i.Status()), dbImport.Status)
+	suite.Equal(i.Status(), dbImport.Status)
 	suite.True(i.StartedAt().Equal(dbImport.StartedAt))
 	suite.True(i.EndedAt().Time.Equal(dbImport.EndedAt.Time))
 	suite.Equal(i.Error().String, dbImport.Error.String)
@@ -82,7 +82,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 		id,
 		chID,
 		imports.WithError("error"),
-		imports.WithStatus(imports.StatusProcessing),
+		imports.WithStatus(base.ImportStatusProcessing),
 		imports.WithStartAt(time.Now()),
 		imports.WithEndAt(time.Now()),
 		imports.WithMetadata(1, 2, 3, 4, 5),
@@ -116,7 +116,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 		id,
 		chID,
 		imports.WithError("error"),
-		imports.WithStatus(imports.StatusProcessing),
+		imports.WithStatus(base.ImportStatusProcessing),
 		imports.WithStartAt(sAt),
 		imports.WithEndAt(eAt),
 		imports.WithMetadata(1, 2, 3, 4, 5),
@@ -131,7 +131,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	suite.NoError(err)
 	suite.Equal(i.ID(), i2.ID)
 	suite.Equal(i.ChannelID(), i2.ChannelID)
-	suite.Equal(int(i.Status()), i2.Status)
+	suite.Equal(i.Status(), i2.Status)
 	suite.True(i.StartedAt().Equal(i2.StartedAt))
 	suite.True(i.EndedAt().Time.Equal(i2.EndedAt.Time))
 	suite.Equal(i.Error(), i2.Error)
@@ -188,7 +188,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id1,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		sAt1,
 	)
 	suite.NoError(err)
@@ -198,7 +198,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id2,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		sAt2,
 	)
 	suite.NoError(err)
@@ -208,7 +208,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id3,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		sAt3,
 	)
 	suite.NoError(err)
@@ -253,7 +253,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		iID,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		time.Now(),
 	)
 	suite.NoError(err)
@@ -308,7 +308,7 @@ func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		iID1,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		time.Now(),
 	)
 	suite.NoError(err)
@@ -317,7 +317,7 @@ func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		iID2,
 		chID,
-		imports.StatusProcessing,
+		base.ImportStatusProcessing,
 		time.Now(),
 	)
 	suite.NoError(err)

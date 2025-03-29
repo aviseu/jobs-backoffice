@@ -109,7 +109,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	suite.Equal(1, i.MissingJobs())
 	suite.Equal(0, i.FailedJobs())
 	suite.True(i.EndedAt().Time.After(time.Now().Add(-2 * time.Second)))
-	suite.Equal(imports.StatusCompleted, i.Status())
+	suite.Equal(base.ImportStatusCompleted, i.Status())
 
 	// Assert import results
 	suite.Len(ir.JobResults, 4)

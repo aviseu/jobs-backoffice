@@ -51,7 +51,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *imports.Imp
 }
 
 func (g *Gateway) Import(ctx context.Context, i *imports.Import) error {
-	if err := g.is.SetStatus(ctx, i, imports.StatusFetching); err != nil {
+	if err := g.is.SetStatus(ctx, i, base.ImportStatusFetching); err != nil {
 		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
 	}
 
@@ -64,7 +64,7 @@ func (g *Gateway) Import(ctx context.Context, i *imports.Import) error {
 		return err
 	}
 
-	if err := g.is.SetStatus(ctx, i, imports.StatusProcessing); err != nil {
+	if err := g.is.SetStatus(ctx, i, base.ImportStatusProcessing); err != nil {
 		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
 	}
 
@@ -83,7 +83,7 @@ func (g *Gateway) Import(ctx context.Context, i *imports.Import) error {
 	close(results)
 	wg.Wait()
 
-	if err := g.is.SetStatus(ctx, i, imports.StatusPublishing); err != nil {
+	if err := g.is.SetStatus(ctx, i, base.ImportStatusPublishing); err != nil {
 		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
 	}
 

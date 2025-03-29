@@ -34,19 +34,19 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Len(ir.Imports, 1)
 	suite.NotNil(ir.Imports[i.ID()])
 	suite.Equal(chID, ir.Imports[i.ID()].ChannelID)
-	suite.Equal(int(imports.StatusPending), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusPending, ir.Imports[i.ID()].Status)
 	suite.True(ir.Imports[i.ID()].StartedAt.After(time.Now().Add(-2 * time.Second)))
 	suite.False(ir.Imports[i.ID()].EndedAt.Valid)
 
 	// Fetch
-	err = s.SetStatus(ctx, i, imports.StatusFetching)
+	err = s.SetStatus(ctx, i, base.ImportStatusFetching)
 	suite.NoError(err)
-	suite.Equal(int(imports.StatusFetching), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusFetching, ir.Imports[i.ID()].Status)
 
 	// Process Import
-	err = s.SetStatus(ctx, i, imports.StatusProcessing)
+	err = s.SetStatus(ctx, i, base.ImportStatusProcessing)
 	suite.NoError(err)
-	suite.Equal(int(imports.StatusProcessing), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusProcessing, ir.Imports[i.ID()].Status)
 
 	// Add JobResults
 	suite.NoError(s.SaveJobResult(ctx, imports.NewResult(uuid.New(), i.ID(), base.JobStatusNew)))
@@ -67,14 +67,14 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Len(ir.JobResults, 15)
 
 	// Publishing
-	err = s.SetStatus(ctx, i, imports.StatusPublishing)
+	err = s.SetStatus(ctx, i, base.ImportStatusPublishing)
 	suite.NoError(err)
-	suite.Equal(int(imports.StatusPublishing), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusPublishing, ir.Imports[i.ID()].Status)
 
 	// Completed
 	err = s.MarkAsCompleted(ctx, i)
 	suite.NoError(err)
-	suite.Equal(int(imports.StatusCompleted), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusCompleted, ir.Imports[i.ID()].Status)
 	suite.True(ir.Imports[i.ID()].EndedAt.Valid)
 	suite.True(ir.Imports[i.ID()].EndedAt.Time.After(time.Now().Add(-2 * time.Second)))
 	suite.Equal(1, ir.Imports[i.ID()].NewJobs)
@@ -99,7 +99,7 @@ func (suite *ServiceSuite) Test_Fail() {
 	// Fail
 	err = s.MarkAsFailed(ctx, i, errors.New("boom!"))
 	suite.NoError(err)
-	suite.Equal(int(imports.StatusFailed), ir.Imports[i.ID()].Status)
+	suite.Equal(base.ImportStatusFailed, ir.Imports[i.ID()].Status)
 	suite.True(ir.Imports[i.ID()].EndedAt.Valid)
 	suite.True(ir.Imports[i.ID()].EndedAt.Time.After(time.Now().Add(-2 * time.Second)))
 	suite.Equal("boom!", ir.Imports[i.ID()].Error.String)

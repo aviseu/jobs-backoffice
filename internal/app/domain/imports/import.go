@@ -9,26 +9,11 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-type Status int
-
-const (
-	StatusPending Status = iota
-	StatusFetching
-	StatusProcessing
-	StatusPublishing
-	StatusCompleted
-	StatusFailed
-)
-
-func (s Status) String() string {
-	return [...]string{"pending", "fetching", "processing", "publishing", "completed", "failed"}[s]
-}
-
 type Import struct {
 	startedAt    time.Time
 	endedAt      null.Time
 	error        null.String
-	status       Status
+	status       base.ImportStatus
 	newJobs      int
 	updatedJobs  int
 	noChangeJobs int
@@ -40,7 +25,7 @@ type Import struct {
 
 type ImportOptional func(*Import)
 
-func WithStatus(s Status) ImportOptional {
+func WithStatus(s base.ImportStatus) ImportOptional {
 	return func(i *Import) {
 		i.status = s
 	}
@@ -78,7 +63,7 @@ func New(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
 	i := &Import{
 		id:        id,
 		channelID: channelID,
-		status:    StatusPending,
+		status:    base.ImportStatusPending,
 		startedAt: time.Now(),
 		endedAt:   null.NewTime(time.Now(), false),
 	}
@@ -98,7 +83,7 @@ func (i *Import) ChannelID() uuid.UUID {
 	return i.channelID
 }
 
-func (i *Import) Status() Status {
+func (i *Import) Status() base.ImportStatus {
 	return i.status
 }
 
@@ -168,7 +153,7 @@ func (i *Import) ToDTO() *postgres.Import {
 		StartedAt:    i.StartedAt(),
 		EndedAt:      i.EndedAt(),
 		Error:        i.Error(),
-		Status:       int(i.Status()),
+		Status:       i.Status(),
 		NewJobs:      i.NewJobs(),
 		UpdatedJobs:  i.UpdatedJobs(),
 		NoChangeJobs: i.NoChangeJobs(),
@@ -180,7 +165,7 @@ func (i *Import) ToDTO() *postgres.Import {
 func NewImportFromDTO(i *postgres.Import) *Import {
 	opts := []ImportOptional{
 		WithStartAt(i.StartedAt),
-		WithStatus(Status(i.Status)),
+		WithStatus(i.Status),
 		WithMetadata(i.NewJobs, i.UpdatedJobs, i.NoChangeJobs, i.MissingJobs, i.FailedJobs),
 	}
 	if i.Error.Valid {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
@@ -41,7 +42,7 @@ func (s *Service) SaveJobResult(ctx context.Context, r *JobResult) error {
 	return s.r.SaveImportJob(ctx, r.ToDTO())
 }
 
-func (s *Service) SetStatus(ctx context.Context, i *Import, status Status) error {
+func (s *Service) SetStatus(ctx context.Context, i *Import, status base.ImportStatus) error {
 	i.status = status
 	if err := s.r.SaveImport(ctx, i.ToDTO()); err != nil {
 		return fmt.Errorf("failed to set status %s for import %s: %w", status.String(), i.ID(), err)
@@ -51,7 +52,7 @@ func (s *Service) SetStatus(ctx context.Context, i *Import, status Status) error
 }
 
 func (s *Service) MarkAsCompleted(ctx context.Context, i *Import) error {
-	i.status = StatusCompleted
+	i.status = base.ImportStatusCompleted
 	i.endedAt = null.TimeFrom(time.Now())
 
 	if err := s.setMetadataFromJobs(i); err != nil {
@@ -66,7 +67,7 @@ func (s *Service) MarkAsCompleted(ctx context.Context, i *Import) error {
 }
 
 func (s *Service) MarkAsFailed(ctx context.Context, i *Import, err error) error {
-	i.status = StatusFailed
+	i.status = base.ImportStatusFailed
 	i.endedAt = null.TimeFrom(time.Now())
 	i.error = null.StringFrom(err.Error())
 

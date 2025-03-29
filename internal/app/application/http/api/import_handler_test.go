@@ -41,7 +41,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	i1 := imports.New(
 		id1,
 		ch.ID(),
-		imports.WithStatus(imports.StatusPublishing),
+		imports.WithStatus(base.ImportStatusPublishing),
 		imports.WithMetadata(1, 2, 3, 4, 5),
 		imports.WithStartAt(sAt1),
 		imports.WithEndAt(eAt1),
@@ -122,7 +122,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	i := imports.New(
 		id,
 		ch.ID(),
-		imports.WithStatus(imports.StatusCompleted),
+		imports.WithStatus(base.ImportStatusCompleted),
 		imports.WithMetadata(1, 2, 3, 4, 5),
 		imports.WithStartAt(sAt),
 		imports.WithEndAt(eAt),

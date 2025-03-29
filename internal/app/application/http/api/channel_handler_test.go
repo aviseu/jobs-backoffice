@@ -773,7 +773,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	suite.True(ok)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(int(imports.StatusPending), i.Status)
+	suite.Equal(base.ImportStatusPending, i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
