@@ -6,7 +6,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
@@ -35,11 +34,11 @@ func (suite *ImportActionSuite) Test_Success() {
 	is := importing.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		c,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
@@ -129,7 +128,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
-	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
+	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
 	action := domain.NewImportAction(chr, is, f)
 	id := uuid.New()
 
@@ -154,7 +153,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
-	f := gateway.NewFactory(js, is, testutils.NewHTTPClientMock(), gateway.Config{}, log)
+	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
 	action := domain.NewImportAction(chr, is, f)
 	i := importing.New(uuid.New(), uuid.New())
 	ir.Add(i.ToDTO())
@@ -182,7 +181,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
-	f := gateway.NewFactory(js, is, http.DefaultClient, gateway.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
+	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
 	action := domain.NewImportAction(chr, is, f)
 	i := importing.New(uuid.New(), ch.ID())
 	ir.Add(i.ToDTO())

@@ -7,7 +7,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
@@ -47,11 +46,11 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		oghttp.DefaultClient,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{URL: server.URL},
 			Import: struct {
 				ResultBufferSize int `split_words:"true" default:"10"`
@@ -130,11 +129,11 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	is := importing.NewService(ir)
 	jr := testutils.NewJobRepository()
 	js := job.NewService(jr, 10, 10)
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		oghttp.DefaultClient,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{URL: server.URL},
 			Import: struct {
 				ResultBufferSize int `split_words:"true" default:"10"`

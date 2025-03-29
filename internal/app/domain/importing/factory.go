@@ -1,4 +1,4 @@
-package gateway
+package importing
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )
@@ -27,12 +26,12 @@ type HTTPClient interface {
 type Factory struct {
 	c   HTTPClient
 	js  *job.Service
-	is  *importing.Service
+	is  *Service
 	log *slog.Logger
 	cfg Config
 }
 
-func NewFactory(js *job.Service, is *importing.Service, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
+func NewFactory(js *job.Service, is *Service, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
 	return &Factory{
 		cfg: cfg,
 		js:  js,

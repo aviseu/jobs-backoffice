@@ -1,11 +1,10 @@
-package gateway_test
+package importing_test
 
 import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
@@ -35,11 +34,11 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	is := importing.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		c,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
@@ -132,11 +131,11 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	is := importing.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		c,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},
@@ -179,11 +178,11 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	is := importing.NewService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
-	f := gateway.NewFactory(
+	f := importing.NewFactory(
 		js,
 		is,
 		c,
-		gateway.Config{
+		importing.Config{
 			Arbeitnow: arbeitnow.Config{
 				URL: server.URL,
 			},

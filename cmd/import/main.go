@@ -12,7 +12,6 @@ import (
 
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
@@ -26,7 +25,7 @@ import (
 
 type config struct {
 	DB      storage.Config
-	Gateway gateway.Config
+	Gateway importing.Config
 	Import  http.Config `split_words:"true"`
 	Job     struct {
 		Workers int `default:"10"`
@@ -86,7 +85,7 @@ func run(ctx context.Context) error {
 	jr := postgres.NewJobRepository(db)
 	js := job.NewService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
-	f := gateway.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
+	f := importing.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
 	ia := domain.NewImportAction(chr, is, f)
 
 	// start server
