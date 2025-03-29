@@ -113,10 +113,10 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 
 	// Assert import results
 	suite.Len(ir.JobResults, 4)
-	suite.Equal(int(base.JobStatusNoChange), ir.JobResults[j1.ID()].Result)
-	suite.Equal(int(base.JobStatusMissing), ir.JobResults[j2.ID()].Result)
-	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
-	suite.Equal(int(base.JobStatusNew), ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
+	suite.Equal(base.JobStatusNoChange, ir.JobResults[j1.ID()].Result)
+	suite.Equal(base.JobStatusMissing, ir.JobResults[j2.ID()].Result)
+	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
+	suite.Equal(base.JobStatusNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
 
 	// Assert Logs
 	suite.Empty(lbuf)

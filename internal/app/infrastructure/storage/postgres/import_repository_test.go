@@ -276,7 +276,7 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	var dbImportJobResult postgres.ImportJobResult
 	err = suite.DB.Get(&dbImportJobResult, "SELECT * FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
 	suite.NoError(err)
-	suite.Equal(base.JobStatusUpdated, base.JobStatus(dbImportJobResult.Result))
+	suite.Equal(base.JobStatusUpdated, dbImportJobResult.Result)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {

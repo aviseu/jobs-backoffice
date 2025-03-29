@@ -36,7 +36,7 @@ func (j *JobResult) ToDTO() *postgres.ImportJobResult {
 	return &postgres.ImportJobResult{
 		ID:       j.JobID(),
 		ImportID: j.ImportID(),
-		Result:   int(j.Result()),
+		Result:   j.Result(),
 	}
 }
 
@@ -44,6 +44,6 @@ func NewJobResultFromDTO(j *postgres.ImportJobResult) *JobResult {
 	return NewResult(
 		j.ID,
 		j.ImportID,
-		base.JobStatus(j.Result),
+		j.Result,
 	)
 }
