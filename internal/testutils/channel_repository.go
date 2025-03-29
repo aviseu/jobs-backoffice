@@ -60,7 +60,7 @@ func (r *ChannelRepository) GetActive(_ context.Context) ([]*postgres.Channel, e
 
 	channels := make([]*postgres.Channel, 0)
 	for _, ch := range r.Channels {
-		if ch.Status == int(base.ChannelStatusActive) {
+		if ch.Status == base.ChannelStatusActive {
 			channels = append(channels, ch)
 		}
 	}

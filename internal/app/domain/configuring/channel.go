@@ -92,8 +92,8 @@ func (ch *Channel) DTO() *postgres.Channel {
 	return &postgres.Channel{
 		ID:          ch.id,
 		Name:        ch.name,
-		Integration: int(ch.integration),
-		Status:      int(ch.status),
+		Integration: ch.integration,
+		Status:      ch.status,
 		CreatedAt:   ch.createdAt,
 		UpdatedAt:   ch.updatedAt,
 	}
@@ -103,8 +103,8 @@ func fromDTO(dto *postgres.Channel) *Channel {
 	return New(
 		dto.ID,
 		dto.Name,
-		base.Integration(dto.Integration),
-		base.ChannelStatus(dto.Status),
+		dto.Integration,
+		dto.Status,
 		WithTimestamps(dto.CreatedAt, dto.UpdatedAt),
 	)
 }

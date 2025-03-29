@@ -226,8 +226,8 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	suite.NoError(err)
 	suite.Equal(id, res.ID())
 	suite.Equal("channel 2", r.First().Name)
-	suite.Equal(int(base.IntegrationArbeitnow), r.First().Integration)
-	suite.Equal(int(base.ChannelStatusActive), r.First().Status)
+	suite.Equal(base.IntegrationArbeitnow, r.First().Integration)
+	suite.Equal(base.ChannelStatusActive, r.First().Status)
 	suite.True(cat.Equal(r.First().CreatedAt))
 	suite.True(res.UpdatedAt().Equal(r.First().UpdatedAt))
 }
@@ -294,7 +294,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(int(base.ChannelStatusActive), r.First().Status)
+	suite.Equal(base.ChannelStatusActive, r.First().Status)
 }
 
 func (suite *ServiceSuite) Test_Activate_NotFound() {
@@ -340,7 +340,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(int(base.ChannelStatusInactive), r.First().Status)
+	suite.Equal(base.ChannelStatusInactive, r.First().Status)
 }
 
 func (suite *ServiceSuite) Test_Deactivate_NotFound() {

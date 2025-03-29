@@ -49,8 +49,8 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 		ch = c
 	}
 	suite.Equal("Channel Name", ch.Name)
-	suite.Equal(int(base.IntegrationArbeitnow), ch.Integration)
-	suite.Equal(int(base.ChannelStatusInactive), ch.Status)
+	suite.Equal(base.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(base.ChannelStatusInactive, ch.Status)
 	suite.True(ch.CreatedAt.After(time.Now().Add(-2 * time.Second)))
 	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -331,8 +331,8 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	suite.Len(r.Channels, 1)
 	c := r.First()
 	suite.Equal("New Name", c.Name)
-	suite.Equal(int(base.IntegrationArbeitnow), c.Integration)
-	suite.Equal(int(base.ChannelStatusActive), c.Status)
+	suite.Equal(base.IntegrationArbeitnow, c.Integration)
+	suite.Equal(base.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -504,7 +504,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(int(base.ChannelStatusActive), c.Status)
+	suite.Equal(base.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -597,7 +597,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(int(base.ChannelStatusInactive), c.Status)
+	suite.Equal(base.ChannelStatusInactive, c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -635,7 +635,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(int(base.ChannelStatusInactive), c.Status)
+	suite.Equal(base.ChannelStatusInactive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
@@ -728,7 +728,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	// Assert state change
 	suite.Len(r.Channels, 1)
 	c := r.First()
-	suite.Equal(int(base.ChannelStatusActive), c.Status)
+	suite.Equal(base.ChannelStatusActive, c.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
