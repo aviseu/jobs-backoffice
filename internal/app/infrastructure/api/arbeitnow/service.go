@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/google/uuid"
 )
@@ -18,11 +18,11 @@ type HTTPClient interface {
 
 type Service struct {
 	c       *client
-	ch      *channel.Channel
+	ch      *configuring.Channel
 	baseURL string
 }
 
-func NewService(c HTTPClient, cfg Config, ch *channel.Channel) *Service {
+func NewService(c HTTPClient, cfg Config, ch *configuring.Channel) *Service {
 	return &Service{
 		c:       newClient(c),
 		baseURL: cfg.URL,
@@ -69,6 +69,6 @@ func (s *Service) GetJobs() ([]*job.Job, error) {
 	return result, nil
 }
 
-func (s *Service) Channel() *channel.Channel {
+func (s *Service) Channel() *configuring.Channel {
 	return s.ch
 }

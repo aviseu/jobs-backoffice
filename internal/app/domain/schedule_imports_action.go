@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/google/uuid"
 )
 
@@ -14,10 +14,10 @@ type PubSubService interface {
 
 type ScheduleImportsAction struct {
 	ia  *ScheduleImportAction
-	chs *channel.Service
+	chs *configuring.Service
 }
 
-func NewScheduleImportsAction(chs *channel.Service, ia *ScheduleImportAction) *ScheduleImportsAction {
+func NewScheduleImportsAction(chs *configuring.Service, ia *ScheduleImportAction) *ScheduleImportsAction {
 	return &ScheduleImportsAction{
 		chs: chs,
 		ia:  ia,

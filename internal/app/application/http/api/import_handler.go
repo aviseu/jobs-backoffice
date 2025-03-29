@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -15,11 +15,11 @@ import (
 
 type ImportHandler struct {
 	is  *imports.Service
-	chs *channel.Service
+	chs *configuring.Service
 	log *slog.Logger
 }
 
-func NewImportHandler(chs *channel.Service, is *imports.Service, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chs *configuring.Service, is *imports.Service, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
 		chs: chs,
 		is:  is,

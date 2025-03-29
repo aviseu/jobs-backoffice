@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
@@ -54,9 +54,9 @@ func (suite *ImportActionSuite) Test_Success() {
 		log,
 	)
 	chr := testutils.NewChannelRepository()
-	ch := channel.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.DTO())
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 
 	j1 := job.New(
 		uuid.NewSHA1(ch.ID(), []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288")),
@@ -125,7 +125,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
@@ -152,7 +152,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
@@ -179,9 +179,9 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.DTO())
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()

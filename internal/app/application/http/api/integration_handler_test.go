@@ -2,7 +2,7 @@ package api_test
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"
@@ -22,7 +22,7 @@ func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	r := testutils.NewChannelRepository()
-	s := channel.NewService(r)
+	s := configuring.NewService(r)
 	h := http.APIRootHandler(s, nil, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)

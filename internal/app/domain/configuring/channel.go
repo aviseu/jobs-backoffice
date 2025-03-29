@@ -1,4 +1,4 @@
-package channel
+package configuring
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"

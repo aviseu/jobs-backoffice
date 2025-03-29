@@ -12,7 +12,7 @@ import (
 
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
@@ -82,7 +82,7 @@ func run(ctx context.Context) error {
 	// services
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
 	is := imports.NewService(ir)
 	jr := postgres.NewJobRepository(db)

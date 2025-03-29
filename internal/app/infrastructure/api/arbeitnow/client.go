@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 )
 
 const ChannelHeader = "X-Channel-Id"
@@ -21,7 +21,7 @@ func newClient(c HTTPClient) *client {
 	}
 }
 
-func (c *client) JobBoard(endpoint string, ch *channel.Channel) (*jobBoardResponse, error) {
+func (c *client) JobBoard(endpoint string, ch *configuring.Channel) (*jobBoardResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request for jobBoard: %w", err)

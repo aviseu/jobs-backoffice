@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -29,10 +29,10 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := channel.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.DTO())
 
 	id1 := uuid.New()
@@ -82,7 +82,7 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
@@ -110,10 +110,10 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
-	ch := channel.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.New(), "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	chr.Add(ch.DTO())
 
 	id := uuid.New()
@@ -152,7 +152,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	id := uuid.New()
@@ -179,7 +179,7 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, is, nil, http.Config{}, log)
 
 	id := uuid.New()

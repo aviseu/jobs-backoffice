@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 )
@@ -25,7 +25,7 @@ func NewScheduleImportAction(is *imports.Service, ps PubSubService, log *slog.Lo
 	}
 }
 
-func (s *ScheduleImportAction) Execute(ctx context.Context, ch *channel.Channel) (*imports.Import, error) {
+func (s *ScheduleImportAction) Execute(ctx context.Context, ch *configuring.Channel) (*imports.Import, error) {
 	s.log.Info(fmt.Sprintf("scheduling import for channel %s [%s] [name: %s]", ch.ID(), ch.Integration().String(), ch.Name()))
 
 	i, err := s.is.Start(ctx, uuid.New(), ch.ID())

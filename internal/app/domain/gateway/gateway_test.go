@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
@@ -53,7 +53,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 		},
 		log,
 	)
-	ch := channel.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	j1 := job.New(
@@ -150,7 +150,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 		},
 		log,
 	)
-	ch := channel.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.New(), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())
@@ -197,7 +197,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 		},
 		log,
 	)
-	ch := channel.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	ch := configuring.New(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel", base.IntegrationArbeitnow, base.ChannelStatusActive)
 	gw := f.Create(ch)
 
 	i := imports.New(uuid.New(), ch.ID())

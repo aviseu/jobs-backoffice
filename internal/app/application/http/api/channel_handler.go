@@ -4,23 +4,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"log/slog"
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
 	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 type ChannelHandler struct {
-	chs *channel.Service
+	chs *configuring.Service
 	ia  *domain.ScheduleImportAction
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *channel.Service, ia *domain.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, ia *domain.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
 		log: log,
@@ -50,7 +50,7 @@ func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := channel.NewCreateCommand(req.Name, req.Integration)
+	cmd := configuring.NewCreateCommand(req.Name, req.Integration)
 	ch, err := h.chs.Create(r.Context(), cmd)
 	if err != nil {
 		if errs.IsValidationError(err) {
@@ -98,7 +98,7 @@ func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.chs.Find(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, channel.ErrChannelNotFound) {
+		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -130,10 +130,10 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := channel.NewUpdateCommand(id, req.Name)
+	cmd := configuring.NewUpdateCommand(id, req.Name)
 	ch, err := h.chs.Update(r.Context(), cmd)
 	if err != nil {
-		if errors.Is(err, channel.ErrChannelNotFound) {
+		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -165,7 +165,7 @@ func (h *ChannelHandler) ActivateChannel(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := h.chs.Activate(r.Context(), id); err != nil {
-		if errors.Is(err, channel.ErrChannelNotFound) {
+		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -187,7 +187,7 @@ func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := h.chs.Deactivate(r.Context(), id); err != nil {
-		if errors.Is(err, channel.ErrChannelNotFound) {
+		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -224,7 +224,7 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 
 	ch, err := h.chs.Find(r.Context(), channelID)
 	if err != nil {
-		if errors.Is(err, channel.ErrChannelNotFound) {
+		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, fmt.Errorf("channel not found: %w", err), http.StatusNotFound)
 			return
 		}

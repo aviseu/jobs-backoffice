@@ -6,13 +6,13 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 )
 
 type Provider interface {
-	Channel() *channel.Channel
+	Channel() *configuring.Channel
 	GetJobs() ([]*job.Job, error)
 }
 

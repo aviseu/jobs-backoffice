@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
@@ -42,7 +42,7 @@ func NewFactory(js *job.Service, is *imports.Service, c HTTPClient, cfg Config, 
 	}
 }
 
-func (f *Factory) Create(ch *channel.Channel) *Gateway {
+func (f *Factory) Create(ch *configuring.Channel) *Gateway {
 	var p Provider
 	if ch.Integration() == base.IntegrationArbeitnow {
 		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)

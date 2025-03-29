@@ -4,19 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/google/uuid"
 )
 
 type ImportAction struct {
-	chs *channel.Service
+	chs *configuring.Service
 	is  *imports.Service
 	f   *gateway.Factory
 }
 
-func NewImportAction(chs *channel.Service, is *imports.Service, f *gateway.Factory) *ImportAction {
+func NewImportAction(chs *configuring.Service, is *imports.Service, f *gateway.Factory) *ImportAction {
 	return &ImportAction{
 		chs: chs,
 		is:  is,

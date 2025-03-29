@@ -1,8 +1,8 @@
-package channel_test
+package configuring_test
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -22,7 +22,7 @@ func (suite *ChannelSuite) Test_Success() {
 	id := uuid.New()
 
 	// Execute
-	ch := channel.New(
+	ch := configuring.New(
 		id,
 		"Channel Name",
 		base.IntegrationArbeitnow,
@@ -45,12 +45,12 @@ func (suite *ChannelSuite) Test_WithTimestamps_Success() {
 	uAt := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
 
 	// Execute
-	ch := channel.New(
+	ch := configuring.New(
 		id,
 		"Channel Name",
 		base.IntegrationArbeitnow,
 		base.ChannelStatusActive,
-		channel.WithTimestamps(cAt, uAt),
+		configuring.WithTimestamps(cAt, uAt),
 	)
 
 	// Assert

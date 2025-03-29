@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -24,7 +24,7 @@ type ScheduleImportsActionSuite struct {
 func (suite *ScheduleImportsActionSuite) Test_Success() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
@@ -33,10 +33,10 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id1 := uuid.New()
-	chr.Add(channel.New(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id1, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 	id2 := uuid.New()
-	chr.Add(channel.New(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
-	chr.Add(channel.New(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).DTO())
+	chr.Add(configuring.New(id2, "channel 2", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(uuid.New(), "channel 3", base.IntegrationArbeitnow, base.ChannelStatusInactive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -74,7 +74,7 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
@@ -97,7 +97,7 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	is := imports.NewService(ir)
@@ -107,7 +107,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(channel.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())
@@ -126,7 +126,7 @@ func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
 func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	// Prepare
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	ps := testutils.NewPubSubService()
@@ -136,7 +136,7 @@ func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	s := domain.NewScheduleImportsAction(chs, ia)
 
 	id := uuid.New()
-	chr.Add(channel.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	// Execute
 	err := s.Execute(context.Background())

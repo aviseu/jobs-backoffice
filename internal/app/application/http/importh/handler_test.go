@@ -6,7 +6,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/gateway"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
@@ -42,7 +42,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
@@ -67,7 +67,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
-	chr.Add(channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID))
@@ -126,7 +126,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
-	chs := channel.NewService(chr)
+	chs := configuring.NewService(chr)
 	ir := testutils.NewImportRepository()
 	is := imports.NewService(ir)
 	jr := testutils.NewJobRepository()
@@ -151,7 +151,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
-	chr.Add(channel.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
+	chr.Add(configuring.New(chID, "Channel Name", base.IntegrationArbeitnow, base.ChannelStatusActive).DTO())
 
 	iID := uuid.New()
 	ir.Add(imports.New(iID, chID))

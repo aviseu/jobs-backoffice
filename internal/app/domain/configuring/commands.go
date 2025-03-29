@@ -1,4 +1,4 @@
-package channel
+package configuring
 
 import "github.com/google/uuid"
 

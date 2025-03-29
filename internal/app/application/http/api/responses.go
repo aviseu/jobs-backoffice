@@ -4,7 +4,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/imports"
 	"gopkg.in/guregu/null.v3"
 )
@@ -18,7 +18,7 @@ type ChannelResponse struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-func NewChannelResponse(ch *channel.Channel) *ChannelResponse {
+func NewChannelResponse(ch *configuring.Channel) *ChannelResponse {
 	return &ChannelResponse{
 		ID:          ch.ID().String(),
 		Name:        ch.Name(),
@@ -49,7 +49,7 @@ type ListChannelsResponse struct {
 	Channels []*ChannelResponse `json:"channels"`
 }
 
-func NewListChannelsResponse(channels []*channel.Channel) *ListChannelsResponse {
+func NewListChannelsResponse(channels []*configuring.Channel) *ListChannelsResponse {
 	resp := &ListChannelsResponse{
 		Channels: make([]*ChannelResponse, 0, len(channels)),
 	}
@@ -94,7 +94,7 @@ type ImportResponse struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
-func NewImportResponse(i *imports.Import, ch *channel.Channel) *ImportResponse {
+func NewImportResponse(i *imports.Import, ch *configuring.Channel) *ImportResponse {
 	ended := null.NewString("", false)
 	if i.EndedAt().Valid {
 		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
@@ -122,7 +122,7 @@ type ImportsResponse struct {
 	Imports []*ImportResponse `json:"imports"`
 }
 
-func NewImportsResponse(imports []*imports.Import, channels []*channel.Channel) *ImportsResponse {
+func NewImportsResponse(imports []*imports.Import, channels []*configuring.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportResponse, 0, len(imports)),
 	}

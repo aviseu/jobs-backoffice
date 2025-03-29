@@ -7,16 +7,16 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/go-chi/chi/v5"
 )
 
 type IntegrationHandler struct {
-	s   *channel.Service
+	s   *configuring.Service
 	log *slog.Logger
 }
 
-func NewIntegrationHandler(s *channel.Service, log *slog.Logger) *IntegrationHandler {
+func NewIntegrationHandler(s *configuring.Service, log *slog.Logger) *IntegrationHandler {
 	return &IntegrationHandler{
 		s:   s,
 		log: log,

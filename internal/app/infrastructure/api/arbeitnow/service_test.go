@@ -2,7 +2,7 @@ package arbeitnow_test
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/channel"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/job"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -27,7 +27,7 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
-	ch := channel.New(
+	ch := configuring.New(
 		uuid.New(),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,
@@ -69,7 +69,7 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
-	ch := channel.New(
+	ch := configuring.New(
 		uuid.MustParse(testutils.ArbeitnowMethodNotFound),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,
@@ -91,7 +91,7 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 
 func (suite *ServiceSuite) Test_Channel_Success() {
 	// Prepare
-	ch := channel.New(
+	ch := configuring.New(
 		uuid.New(),
 		"arbeitnow integration",
 		base.IntegrationArbeitnow,
