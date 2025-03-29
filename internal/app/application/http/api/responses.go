@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -18,7 +18,7 @@ type ChannelResponse struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-func NewChannelResponse(ch *postgres.Channel) *ChannelResponse {
+func NewChannelResponse(ch *aggregator.Channel) *ChannelResponse {
 	return &ChannelResponse{
 		ID:          ch.ID.String(),
 		Name:        ch.Name,
@@ -49,7 +49,7 @@ type ListChannelsResponse struct {
 	Channels []*ChannelResponse `json:"channels"`
 }
 
-func NewListChannelsResponse(channels []*postgres.Channel) *ListChannelsResponse {
+func NewListChannelsResponse(channels []*aggregator.Channel) *ListChannelsResponse {
 	resp := &ListChannelsResponse{
 		Channels: make([]*ChannelResponse, 0, len(channels)),
 	}
@@ -94,7 +94,7 @@ type ImportResponse struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
-func NewImportResponse(i *importing.Import, ch *postgres.Channel) *ImportResponse {
+func NewImportResponse(i *importing.Import, ch *aggregator.Channel) *ImportResponse {
 	ended := null.NewString("", false)
 	if i.EndedAt().Valid {
 		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
@@ -122,7 +122,7 @@ type ImportsResponse struct {
 	Imports []*ImportResponse `json:"imports"`
 }
 
-func NewImportsResponse(imports []*importing.Import, channels []*postgres.Channel) *ImportsResponse {
+func NewImportsResponse(imports []*importing.Import, channels []*aggregator.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportResponse, 0, len(imports)),
 	}

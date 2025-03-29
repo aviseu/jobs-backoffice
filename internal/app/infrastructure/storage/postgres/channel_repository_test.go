@@ -3,6 +3,8 @@ package postgres_test
 import (
 	"context"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -22,7 +24,7 @@ type ChannelRepositorySuite struct {
 func (suite *ChannelRepositorySuite) Test_Save_New_Success() {
 	// Prepare
 	id := uuid.New()
-	ch := &postgres.Channel{
+	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name",
 		Integration: base.IntegrationArbeitnow,
@@ -39,7 +41,7 @@ func (suite *ChannelRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 
 	// Assert state change
-	var dbChannel postgres.Channel
+	var dbChannel aggregator.Channel
 	err = suite.DB.Get(&dbChannel, "SELECT * FROM channels WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
@@ -65,7 +67,7 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 
 	uAt := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
-	ch := &postgres.Channel{
+	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name new",
 		Integration: base.IntegrationArbeitnow,
@@ -87,7 +89,7 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(1, count)
 
-	var dbChannel postgres.Channel
+	var dbChannel aggregator.Channel
 	err = suite.DB.Get(&dbChannel, "SELECT * FROM channels WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbChannel.ID)
@@ -99,7 +101,7 @@ func (suite *ChannelRepositorySuite) Test_Save_Existing_Success() {
 func (suite *ChannelRepositorySuite) Test_Save_Error() {
 	// Prepare
 	id := uuid.New()
-	ch := &postgres.Channel{
+	ch := &aggregator.Channel{
 		ID:          id,
 		Name:        "Channel Name",
 		Integration: base.IntegrationArbeitnow,
@@ -268,7 +270,7 @@ func (suite *ChannelRepositorySuite) Test_Find_NotFound() {
 	suite.Nil(ch)
 	suite.Error(err)
 	suite.ErrorContains(err, id.String())
-	suite.ErrorIs(err, postgres.ErrChannelNotFound)
+	suite.ErrorIs(err, infrastructure.ErrChannelNotFound)
 }
 
 func (suite *ChannelRepositorySuite) Test_Find_Error() {

@@ -8,7 +8,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -43,7 +43,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 
 	// Assert state change
 	suite.Len(r.Channels, 1)
-	var ch *postgres.Channel
+	var ch *aggregator.Channel
 	for _, c := range r.Channels {
 		ch = c
 	}

@@ -3,6 +3,7 @@ package arbeitnow
 import (
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"net/http"
 	"time"
@@ -18,11 +19,11 @@ type HTTPClient interface {
 
 type Service struct {
 	c       *client
-	ch      *postgres.Channel
+	ch      *aggregator.Channel
 	baseURL string
 }
 
-func NewService(c HTTPClient, cfg Config, ch *postgres.Channel) *Service {
+func NewService(c HTTPClient, cfg Config, ch *aggregator.Channel) *Service {
 	return &Service{
 		c:       newClient(c),
 		baseURL: cfg.URL,
@@ -71,6 +72,6 @@ func (s *Service) GetJobs() ([]*postgres.Job, error) {
 	return result, nil
 }
 
-func (s *Service) Channel() *postgres.Channel {
+func (s *Service) Channel() *aggregator.Channel {
 	return s.ch
 }

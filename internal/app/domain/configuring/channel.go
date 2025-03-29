@@ -2,7 +2,7 @@ package configuring
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
 	"github.com/google/uuid"
@@ -88,8 +88,8 @@ func (ch *Channel) Deactivate() {
 	ch.updatedAt = time.Now()
 }
 
-func (ch *Channel) ToDTO() *postgres.Channel {
-	return &postgres.Channel{
+func (ch *Channel) ToDTO() *aggregator.Channel {
+	return &aggregator.Channel{
 		ID:          ch.id,
 		Name:        ch.name,
 		Integration: ch.integration,
@@ -99,7 +99,7 @@ func (ch *Channel) ToDTO() *postgres.Channel {
 	}
 }
 
-func NewChannelFromDTO(dto *postgres.Channel) *Channel {
+func NewChannelFromDTO(dto *aggregator.Channel) *Channel {
 	return NewChannel(
 		dto.ID,
 		dto.Name,

@@ -2,7 +2,7 @@ package importing
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"log/slog"
 	"net/http"
 
@@ -40,7 +40,7 @@ func NewFactory(js *JobService, is *ImportService, c HTTPClient, cfg Config, log
 	}
 }
 
-func (f *Factory) Create(ch *postgres.Channel) *Gateway {
+func (f *Factory) Create(ch *aggregator.Channel) *Gateway {
 	var p Provider
 	if ch.Integration == base.IntegrationArbeitnow {
 		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)

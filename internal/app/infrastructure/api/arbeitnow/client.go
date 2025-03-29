@@ -3,7 +3,7 @@ package arbeitnow
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"io"
 	"net/http"
 )
@@ -20,7 +20,7 @@ func newClient(c HTTPClient) *client {
 	}
 }
 
-func (c *client) JobBoard(endpoint string, ch *postgres.Channel) (*jobBoardResponse, error) {
+func (c *client) JobBoard(endpoint string, ch *aggregator.Channel) (*jobBoardResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request for jobBoard: %w", err)

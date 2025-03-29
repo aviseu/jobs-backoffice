@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
-
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 )
 
 type Repository interface {
-	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
-	Save(context.Context, *postgres.Channel) error
+	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
+	Save(context.Context, *aggregator.Channel) error
 }
 
 type Service struct {
@@ -56,7 +56,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Chann
 func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Channel, error) {
 	dto, err := s.r.Find(ctx, cmd.ID)
 	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
+		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return nil, ErrChannelNotFound
 		}
 		return nil, fmt.Errorf("failed to find channel: %w", err)
@@ -78,7 +78,7 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Chann
 func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 	dto, err := s.r.Find(ctx, id)
 	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
+		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return ErrChannelNotFound
 		}
 		return fmt.Errorf("failed to find channel: %w", err)
@@ -98,7 +98,7 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 	dto, err := s.r.Find(ctx, id)
 	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
+		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return ErrChannelNotFound
 		}
 		return fmt.Errorf("failed to find channel: %w", err)

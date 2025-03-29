@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"log/slog"
 	"net/http"
 
@@ -17,8 +18,8 @@ import (
 )
 
 type ChannelRepository interface {
-	All(ctx context.Context) ([]*postgres.Channel, error)
-	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
+	All(ctx context.Context) ([]*aggregator.Channel, error)
+	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
 }
 
 type ChannelHandler struct {
@@ -107,7 +108,7 @@ func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.chr.Find(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
+		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
@@ -223,7 +224,7 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 
 	ch, err := h.chr.Find(r.Context(), channelID)
 	if err != nil {
-		if errors.Is(err, postgres.ErrChannelNotFound) {
+		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			h.handleFail(w, fmt.Errorf("channel not found: %w", err), http.StatusNotFound)
 			return
 		}

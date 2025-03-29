@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
 	"sync"
 )
 
 type Provider interface {
-	Channel() *postgres.Channel
+	Channel() *aggregator.Channel
 	GetJobs() ([]*postgres.Job, error)
 }
 

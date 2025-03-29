@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
-
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 )
 
 type ChannelRepository interface {
-	GetActive(ctx context.Context) ([]*postgres.Channel, error)
-	Find(ctx context.Context, id uuid.UUID) (*postgres.Channel, error)
+	GetActive(ctx context.Context) ([]*aggregator.Channel, error)
+	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
 }
 
 type ImportAction struct {
