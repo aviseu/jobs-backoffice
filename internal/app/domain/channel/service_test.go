@@ -203,28 +203,33 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	// Prepare
 	r := testutils.NewChannelRepository()
 	s := channel.NewService(r)
-	ch := channel.New(uuid.New(), "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive)
+	id := uuid.New()
+	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
+	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
+	ch := channel.New(id, "channel 1", base.IntegrationArbeitnow, base.ChannelStatusActive, channel.WithTimestamps(cat, uat))
 	r.Add(ch.DTO())
 	cmd := channel.NewUpdateCommand(ch.ID(), "channel 2")
 
 	// Execute
-	ch2, err := s.Update(context.Background(), cmd)
+	res, err := s.Update(context.Background(), cmd)
 
 	// Assert result
 	suite.NoError(err)
-	suite.Equal("channel 2", ch2.Name())
-	suite.Equal(ch.Integration(), ch2.Integration())
-	suite.Equal(ch.Status(), ch2.Status())
-	suite.True(ch.CreatedAt().Equal(ch2.CreatedAt()))
-	suite.False(ch.UpdatedAt().Before(ch2.UpdatedAt()))
+	suite.Equal(id, res.ID())
+	suite.Equal("channel 2", res.Name())
+	suite.Equal(base.IntegrationArbeitnow, res.Integration())
+	suite.Equal(base.ChannelStatusActive, res.Status())
+	suite.True(cat.Equal(res.CreatedAt()))
+	suite.True(res.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
 
 	// Assert state change
 	suite.NoError(err)
+	suite.Equal(id, res.ID())
 	suite.Equal("channel 2", r.First().Name)
-	suite.Equal(int(ch.Integration()), r.First().Integration)
-	suite.Equal(int(ch.Status()), r.First().Status)
-	suite.True(ch.CreatedAt().Equal(r.First().CreatedAt))
-	suite.False(ch.UpdatedAt().Before(r.First().UpdatedAt))
+	suite.Equal(int(base.IntegrationArbeitnow), r.First().Integration)
+	suite.Equal(int(base.ChannelStatusActive), r.First().Status)
+	suite.True(cat.Equal(r.First().CreatedAt))
+	suite.True(res.UpdatedAt().Equal(r.First().UpdatedAt))
 }
 
 func (suite *ServiceSuite) Test_Update_NotFound() {
