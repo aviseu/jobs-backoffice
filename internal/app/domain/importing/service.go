@@ -3,11 +3,12 @@ package importing
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
-	"log/slog"
-	"sync"
 )
 
 type Config struct {

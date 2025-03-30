@@ -29,8 +29,7 @@ func NewFactory(c HTTPClient, cfg Config) *Factory {
 }
 
 func (f *Factory) Create(ch *aggregator.Channel) (Provider, error) {
-	switch ch.Integration {
-	case aggregator.IntegrationArbeitnow:
+	if ch.Integration == aggregator.IntegrationArbeitnow {
 		return arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch), nil
 	}
 

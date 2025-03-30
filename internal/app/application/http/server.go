@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"log/slog"
 	"net"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/importh"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )

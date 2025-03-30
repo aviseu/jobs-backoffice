@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"log/slog"
 	"os"
 
 	cpubsub "cloud.google.com/go/pubsub"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
