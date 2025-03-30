@@ -33,7 +33,7 @@ func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {
 	}
 }
 
-func APIRootHandler(chs *configuring.Service, chr api.ChannelRepository, ir importing.ImportRepository, is *scheduling.Service, cfg Config, log *slog.Logger) http.Handler {
+func APIRootHandler(chs *configuring.Service, chr api.ChannelRepository, ir api.ImportRepository, is *scheduling.Service, cfg Config, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	if cfg.Cors {
