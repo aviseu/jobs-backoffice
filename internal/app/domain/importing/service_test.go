@@ -15,15 +15,15 @@ import (
 	"time"
 )
 
-func TestImportAction(t *testing.T) {
-	suite.Run(t, new(ImportActionSuite))
+func TestService(t *testing.T) {
+	suite.Run(t, new(ServiceSuite))
 }
 
-type ImportActionSuite struct {
+type ServiceSuite struct {
 	suite.Suite
 }
 
-func (suite *ImportActionSuite) Test_Success() {
+func (suite *ServiceSuite) Test_Success() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	jr := testutils.NewJobRepository()
@@ -86,10 +86,10 @@ func (suite *ImportActionSuite) Test_Success() {
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 
-	action := importing.NewImportAction(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, f)
 
 	// Execute
-	err := action.Execute(context.Background(), i.ID())
+	err := s.Import(context.Background(), i.ID())
 
 	// Assert
 	suite.NoError(err)
@@ -118,7 +118,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	suite.Empty(lbuf)
 }
 
-func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
+func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
@@ -128,11 +128,11 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := importing.NewImportAction(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, f)
 	id := uuid.New()
 
 	// Execute
-	err := action.Execute(context.Background(), id)
+	err := s.Import(context.Background(), id)
 
 	// Assert
 	suite.Error(err)
@@ -143,7 +143,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	suite.Empty(lbuf)
 }
 
-func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
+func (suite *ServiceSuite) Test_Execute_ChannelServiceFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
@@ -153,12 +153,12 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := importing.NewImportAction(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, f)
 	i := importing.NewImport(uuid.New(), uuid.New())
 	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := action.Execute(context.Background(), i.ID())
+	err := s.Import(context.Background(), i.ID())
 
 	// Assert
 	suite.Error(err)
@@ -169,7 +169,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	suite.Empty(lbuf)
 }
 
-func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
+func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	lbuf, log := testutils.NewLogger()
@@ -181,12 +181,12 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
-	action := importing.NewImportAction(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, f)
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := action.Execute(context.Background(), i.ID())
+	err := s.Import(context.Background(), i.ID())
 
 	// Assert
 	suite.Error(err)

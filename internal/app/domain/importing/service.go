@@ -3,7 +3,6 @@ package importing
 import (
 	"context"
 	"fmt"
-
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 )
@@ -13,15 +12,15 @@ type ChannelRepository interface {
 	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
 }
 
-type ImportAction struct {
+type Service struct {
 	ir  ImportRepository
 	chr ChannelRepository
 	is  *ImportService
 	f   *Factory
 }
 
-func NewImportAction(chr ChannelRepository, ir ImportRepository, is *ImportService, f *Factory) *ImportAction {
-	return &ImportAction{
+func NewService(chr ChannelRepository, ir ImportRepository, is *ImportService, f *Factory) *Service {
+	return &Service{
 		chr: chr,
 		is:  is,
 		ir:  ir,
@@ -29,10 +28,10 @@ func NewImportAction(chr ChannelRepository, ir ImportRepository, is *ImportServi
 	}
 }
 
-func (s *ImportAction) Execute(ctx context.Context, iID uuid.UUID) error {
-	i, err := s.ir.FindImport(ctx, iID)
+func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
+	i, err := s.ir.FindImport(ctx, importID)
 	if err != nil {
-		return fmt.Errorf("failed to find import %s: %w", iID, err)
+		return fmt.Errorf("failed to find import %s: %w", importID, err)
 	}
 
 	ch, err := s.chr.Find(ctx, i.ChannelID)

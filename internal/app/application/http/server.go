@@ -54,10 +54,10 @@ func APIRootHandler(chs *configuring.Service, chr api.ChannelRepository, ir impo
 	return r
 }
 
-func ImportRootHandler(ia *importing.ImportAction, log *slog.Logger) http.Handler {
+func ImportRootHandler(is *importing.Service, log *slog.Logger) http.Handler {
 	r := chi.NewRouter()
 
-	r.Mount("/import", importh.NewHandler(ia, log).Routes())
+	r.Mount("/import", importh.NewHandler(is, log).Routes())
 
 	return r
 }

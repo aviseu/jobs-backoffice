@@ -59,8 +59,8 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		},
 		log,
 	)
-	ia := importing.NewImportAction(chr, ir, is, f)
-	h := http.ImportRootHandler(ia, log)
+	s := importing.NewService(chr, ir, is, f)
+	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.New()
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
@@ -142,8 +142,8 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		},
 		log,
 	)
-	ia := importing.NewImportAction(chr, ir, is, f)
-	h := http.ImportRootHandler(ia, log)
+	s := importing.NewService(chr, ir, is, f)
+	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())

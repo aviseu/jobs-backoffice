@@ -84,10 +84,10 @@ func run(ctx context.Context) error {
 	js := importing.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := importing.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
-	ia := importing.NewImportAction(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, f)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(ia, log))
+	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(s, log))
 	listener, err := net.Listen("tcp", cfg.Import.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import.Addr, err)

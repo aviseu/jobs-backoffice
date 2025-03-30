@@ -15,13 +15,13 @@ import (
 )
 
 type Handler struct {
-	ia  *importing.ImportAction
+	is  *importing.Service
 	log *slog.Logger
 }
 
-func NewHandler(ia *importing.ImportAction, log *slog.Logger) *Handler {
+func NewHandler(is *importing.Service, log *slog.Logger) *Handler {
 	return &Handler{
-		ia:  ia,
+		is:  is,
 		log: log,
 	}
 }
@@ -72,7 +72,7 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.log.Info("processing import " + importID.String())
-	if err := h.ia.Execute(r.Context(), importID); err != nil {
+	if err := h.is.Import(r.Context(), importID); err != nil {
 		h.log.Error(fmt.Errorf("failed to execute import %s: %w", importID, err).Error())
 		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message
 		return
