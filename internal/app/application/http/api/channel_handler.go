@@ -25,16 +25,16 @@ type ChannelRepository interface {
 type ChannelHandler struct {
 	chs *configuring.Service
 	chr ChannelRepository
-	is  *scheduling.Service
+	ss  *scheduling.Service
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, is *scheduling.Service, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ss *scheduling.Service, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
 		chr: chr,
 		log: log,
-		is:  is,
+		ss:  ss,
 	}
 }
 
@@ -234,7 +234,7 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// temporary
-	i, err := h.is.ScheduleImport(context.Background(), ch)
+	i, err := h.ss.ScheduleImport(context.Background(), ch)
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to schedule import: %w", err))
 		return
