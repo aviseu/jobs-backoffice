@@ -29,7 +29,6 @@ func (suite *ServiceSuite) Test_Success() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
 	cfg := importing.Config{
@@ -84,7 +83,7 @@ func (suite *ServiceSuite) Test_Success() {
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 
-	s := importing.NewService(chr, ir, is, js, f, cfg, log)
+	s := importing.NewService(chr, ir, js, f, cfg, log)
 
 	// Execute
 	err := s.Import(context.Background(), i.ID())
@@ -122,7 +121,6 @@ func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	c := testutils.NewHTTPClientMock()
@@ -139,7 +137,7 @@ func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 		c,
 		cfg,
 	)
-	s := importing.NewService(chr, ir, is, js, f, cfg, log)
+	s := importing.NewService(chr, ir, js, f, cfg, log)
 	id := uuid.New()
 
 	// Execute
@@ -160,7 +158,6 @@ func (suite *ServiceSuite) Test_Execute_ChannelServiceFail() {
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	c := testutils.NewHTTPClientMock()
@@ -177,7 +174,7 @@ func (suite *ServiceSuite) Test_Execute_ChannelServiceFail() {
 		c,
 		cfg,
 	)
-	s := importing.NewService(chr, ir, is, js, f, cfg, log)
+	s := importing.NewService(chr, ir, js, f, cfg, log)
 	i := importing.NewImport(uuid.New(), uuid.New())
 	ir.AddImport(i.ToAggregate())
 
@@ -201,7 +198,6 @@ func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToAggregator())
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	c := http.DefaultClient
@@ -221,7 +217,7 @@ func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 		c,
 		cfg,
 	)
-	s := importing.NewService(chr, ir, is, js, f, cfg, log)
+	s := importing.NewService(chr, ir, js, f, cfg, log)
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 

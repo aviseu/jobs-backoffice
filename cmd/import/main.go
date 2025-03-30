@@ -79,15 +79,14 @@ func run(ctx context.Context) error {
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewImportService(ir)
 	jr := postgres.NewJobRepository(db)
 	js := importing.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := importing.NewFactory(ohttp.DefaultClient, cfg.Gateway)
-	s := importing.NewService(chr, ir, is, js, f, cfg.Gateway, log)
+	is := importing.NewService(chr, ir, js, f, cfg.Gateway, log)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(s, log))
+	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(is, log))
 	listener, err := net.Listen("tcp", cfg.Import.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to create listener on %s: %w", cfg.Import.Addr, err)
