@@ -80,6 +80,7 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggre
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
+	i.Jobs = jobs
 
 	return &i, nil
 }
@@ -111,7 +112,7 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 	return imports, nil
 }
 
-func (r *ImportRepository) SaveImportJob(ctx context.Context, importID uuid.UUID, jr *aggregator.ImportJob) error {
+func (r *ImportRepository) SaveImportJob(ctx context.Context, importID uuid.UUID, ij *aggregator.ImportJob) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO import_job_results (import_id, job_id, result)
@@ -119,11 +120,11 @@ func (r *ImportRepository) SaveImportJob(ctx context.Context, importID uuid.UUID
 				ON CONFLICT (import_id, job_id) DO UPDATE SET
 					result = EXCLUDED.result`,
 		importID,
-		jr.ID,
-		jr.Result,
+		ij.ID,
+		ij.Result,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to save import job result %s: %w", jr.ID, err)
+		return fmt.Errorf("failed to save import job result %s: %w", ij.ID, err)
 	}
 
 	return nil
