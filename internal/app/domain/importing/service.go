@@ -4,14 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
-	"sync"
-	"time"
-
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
-	"gopkg.in/guregu/null.v3"
+	"log/slog"
+	"sync"
 )
 
 type Config struct {
@@ -64,7 +61,7 @@ func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, f 
 	}
 }
 
-func (s *Service) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *Result) {
+func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *Result) {
 	for r := range results {
 		j := &aggregator.ImportJob{
 			ID:     r.JobID(),
@@ -78,161 +75,180 @@ func (s *Service) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, res
 	wg.Done()
 }
 
-func jsworker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
+func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, importJobs chan<- *Result, errs chan<- error) {
 	for j := range jobs {
 		if err := r.Save(ctx, j.ToDTO()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
-			results <- NewResult(j.ID(), ResultTypeFailed, WithError(err.Error()))
+			importJobs <- NewImportMetric(j.ID(), ResultTypeFailed, WithError(err.Error()))
 		}
 	}
 	wg.Done()
 }
 
 func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
-	i, err := s.ir.FindImport(ctx, importID)
+	// *******************************************************
+	// Setup for importing
+	// *******************************************************
+
+	// Find import
+	importAggr, err := s.ir.FindImport(ctx, importID)
 	if err != nil {
 		return fmt.Errorf("failed to find import %s: %w", importID, err)
 	}
+	i := NewImportFromAggregator(importAggr)
 
-	idm := NewImportFromDTO(i)
-
-	ch, err := s.chr.Find(ctx, idm.ChannelID())
+	// Find related channel
+	ch, err := s.chr.Find(ctx, i.ChannelID())
 	if err != nil {
-		return fmt.Errorf("failed to find channel %s: %w", idm.ChannelID(), err)
+		return fmt.Errorf("failed to find channel %s: %w", i.ChannelID(), err)
 	}
 
+	// Create provider that will fetch jobs from external API
 	p, err := s.f.Create(ch)
 	if err != nil {
 		return fmt.Errorf("failed to create provider for channel %s: %w", ch.ID, err)
 	}
 
-	idm.status = aggregator.ImportStatusFetching
-	if err := s.ir.SaveImport(ctx, idm.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status fetching for import %s: %w", idm.ID(), err)
+	// *******************************************************
+	// Import status: fetching
+	// *******************************************************
+	i.markAsFetching()
+	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
+		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
 	}
 
-	jobs, err := p.GetJobs()
+	// Fetch jobs from external API
+	pJobs, err := p.GetJobs()
 	if err != nil {
 		err := fmt.Errorf("failed to import channel %s: %w", ch.ID, err)
-
-		idm.status = aggregator.ImportStatusFailed
-		idm.endedAt = null.TimeFrom(time.Now())
-		idm.error = null.StringFrom(err.Error())
-
-		if err2 := s.ir.SaveImport(ctx, idm.ToAggregate()); err2 != nil {
-			return fmt.Errorf("failed to mark import %s as failed: %w: %w", idm.ID(), err2, err)
+		i.markAsFailed(err)
+		if err2 := s.ir.SaveImport(ctx, i.ToAggregate()); err2 != nil {
+			return fmt.Errorf("failed to mark import %s as failed: %w: %w", i.ID(), err2, err)
 		}
 
 		return err
 	}
 
-	idm.status = aggregator.ImportStatusProcessing
-	if err := s.ir.SaveImport(ctx, idm.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status processing for import %s: %w", idm.ID(), err)
+	// Convert aggregator jobs into domain jobs
+	incomingJobs := make([]*Job, len(pJobs))
+	for i, job := range pJobs {
+		incomingJobs[i] = NewJobFromAggregator(job)
 	}
 
-	// create workers
-	var wg sync.WaitGroup
-	results := make(chan *Result, s.cfg.Import.ResultBufferSize)
+	// *******************************************************
+	// Import status: processing
+	// *******************************************************
+	i.markAsProcessing()
+	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
+		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
+	}
+
+	// Create worker group for saving metrics (ImportJobs)
+	var metricsWG sync.WaitGroup
+	metrics := make(chan *Result, s.cfg.Import.ResultBufferSize)
 	for w := 1; w <= s.cfg.Import.ResultWorkers; w++ {
-		wg.Add(1)
-		go s.worker(ctx, &wg, idm, results)
+		metricsWG.Add(1)
+		go s.metricsWorker(ctx, &metricsWG, i, metrics)
 	}
 
-	// get existing jobs
-	existing, err := s.jr.GetByChannelID(ctx, ch.ID)
-	if err != nil {
-		return fmt.Errorf("failed to get existing jobs: %w", err)
-	}
-
-	// create job workers
-	var wgWorkers sync.WaitGroup
-	jobChan := make(chan *Job, s.workerBuffer)
+	// Create worker group for saving Jobs in the database
+	var jobsWG sync.WaitGroup
+	jobsToSave := make(chan *Job, s.workerBuffer)
 	errs := make(chan error, s.workerBuffer)
 	for w := 1; w <= s.workerCount; w++ {
-		wgWorkers.Add(1)
-		go jsworker(ctx, &wgWorkers, s.jr, jobChan, results, errs)
+		jobsWG.Add(1)
+		go s.jobWorker(ctx, &jobsWG, s.jr, jobsToSave, metrics, errs)
 	}
 
-	// create error worker
+	// Create worker for handling errors
 	var syncErrs error
-	var wgError sync.WaitGroup
-	wgError.Add(1)
+	var errorWG sync.WaitGroup
+	errorWG.Add(1)
 	go func(errs <-chan error) {
 		for err := range errs {
 			syncErrs = errors.Join(syncErrs, err)
 		}
-		wgError.Done()
+		errorWG.Done()
 	}(errs)
 
-	incomingJobs := make([]*Job, len(jobs))
-	for i, in := range jobs {
-		inj := NewJobFromDTO(in)
-		incomingJobs[i] = inj
+	// Get existing jobs from the database
+	dbJobs, err := s.jr.GetByChannelID(ctx, ch.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get existing jobs: %w", err)
 	}
 
-	// save if incoming does not exist or is different
-	for _, in := range incomingJobs {
+	// Convert aggregator jobs into domain jobs
+	existingJobs := make([]*Job, len(dbJobs))
+	for i, job := range dbJobs {
+		existingJobs[i] = NewJobFromAggregator(job)
+	}
+
+	// Save incoming job if different or new
+	for _, incoming := range incomingJobs {
 		found := false
-		for _, ex := range existing {
-			if ex.ID == in.ID() {
+		for _, existing := range existingJobs {
+			if incoming.ID() == existing.ID() {
 				found = true
-				if in.IsEqual(NewJobFromDTO(ex)) {
-					results <- NewResult(in.ID(), ResultTypeNoChange)
+				if incoming.IsEqual(existing) {
+					metrics <- NewImportMetric(incoming.ID(), ResultTypeNoChange)
 					goto next
 				}
 			}
 		}
 
-		in.MarkAsChanged()
-		jobChan <- in
+		incoming.MarkAsChanged()
+		jobsToSave <- incoming
 		if found {
-			results <- NewResult(in.ID(), ResultTypeUpdated)
+			metrics <- NewImportMetric(incoming.ID(), ResultTypeUpdated)
 		} else {
-			results <- NewResult(in.ID(), ResultTypeNew)
+			metrics <- NewImportMetric(incoming.ID(), ResultTypeNew)
 		}
 
 	next:
 	}
 
-	// save if existing does not exist in incoming
-	for _, ex := range existing {
-		exj := NewJobFromDTO(ex)
-		if ex.Status == aggregator.JobStatusInactive {
+	// Mark as missing if exists but didn't income
+	for _, existing := range existingJobs {
+		if existing.Status() == aggregator.JobStatusInactive {
 			continue
 		}
-		for _, in := range jobs {
-			if exj.ID() == in.ID {
+		for _, incoming := range incomingJobs {
+			if existing.ID() == incoming.ID() {
 				goto skip
 			}
 		}
 
-		exj.MarkAsMissing()
-		jobChan <- exj
-		results <- NewResult(exj.ID(), ResultTypeMissing)
+		existing.MarkAsMissing()
+		jobsToSave <- existing
+		metrics <- NewImportMetric(existing.ID(), ResultTypeMissing)
 
 	skip:
 	}
 
-	close(jobChan)
-	wgWorkers.Wait()
+	// Close channels and wait for workers to finish
+	close(jobsToSave)
+	jobsWG.Wait()
 	close(errs)
-	wgError.Wait()
+	errorWG.Wait()
+	close(metrics)
+	metricsWG.Wait()
 
-	close(results)
-	wg.Wait()
-
-	idm.status = aggregator.ImportStatusPublishing
-	if err := s.ir.SaveImport(ctx, idm.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status publishing for import %s: %w", idm.ID(), err)
+	// *******************************************************
+	// Import status: publishing
+	// *******************************************************
+	i.markAsPublishing()
+	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
+		return fmt.Errorf("failed to set status publishing for import %s: %w", i.ID(), err)
 	}
 
 	// Publish (eventually)
 
-	idm.status = aggregator.ImportStatusCompleted
-	idm.endedAt = null.TimeFrom(time.Now())
-	if err := s.ir.SaveImport(ctx, idm.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to mark import %s as completed: %w", idm.ID(), err)
+	// *******************************************************
+	// Import status: completed
+	// *******************************************************
+	i.markAsCompleted()
+	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
+		return fmt.Errorf("failed to mark import %s as completed: %w", i.ID(), err)
 	}
 
 	return nil

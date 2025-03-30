@@ -135,7 +135,30 @@ func (i *Import) ToAggregate() *aggregator.Import {
 	}
 }
 
-func NewImportFromDTO(i *aggregator.Import) *Import {
+func (i *Import) markAsFailed(err error) {
+	i.status = aggregator.ImportStatusFailed
+	i.endedAt = null.TimeFrom(time.Now())
+	i.error = null.StringFrom(err.Error())
+}
+
+func (i *Import) markAsFetching() {
+	i.status = aggregator.ImportStatusFetching
+}
+
+func (i *Import) markAsProcessing() {
+	i.status = aggregator.ImportStatusProcessing
+}
+
+func (i *Import) markAsPublishing() {
+	i.status = aggregator.ImportStatusPublishing
+}
+
+func (i *Import) markAsCompleted() {
+	i.status = aggregator.ImportStatusCompleted
+	i.endedAt = null.TimeFrom(time.Now())
+}
+
+func NewImportFromAggregator(i *aggregator.Import) *Import {
 	opts := []ImportOptional{
 		ImportWithStartAt(i.StartedAt),
 		ImportWithStatus(i.Status),

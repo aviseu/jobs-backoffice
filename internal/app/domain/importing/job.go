@@ -158,7 +158,7 @@ func (j *Job) ToDTO() *aggregator.Job {
 	}
 }
 
-func NewJobFromDTO(j *aggregator.Job) *Job {
+func NewJobFromAggregator(j *aggregator.Job) *Job {
 	return NewJob(
 		j.ID,
 		j.ChannelID,

@@ -93,7 +93,7 @@ func (suite *ServiceSuite) Test_Success() {
 	// Assert Jobs
 	suite.Len(ir.Imports, 1)
 	for _, imp := range ir.Imports {
-		i = importing.NewImportFromDTO(imp)
+		i = importing.NewImportFromAggregator(imp)
 	}
 	suite.Equal(ch.ID(), i.ChannelID())
 	suite.Equal(2, i.NewJobs())

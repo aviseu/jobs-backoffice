@@ -26,7 +26,7 @@ func WithError(err string) ResultOptional {
 	}
 }
 
-func NewResult(jobID uuid.UUID, t ResultType, opts ...ResultOptional) *Result {
+func NewImportMetric(jobID uuid.UUID, t ResultType, opts ...ResultOptional) *Result {
 	r := &Result{
 		jobID: jobID,
 		t:     t,
