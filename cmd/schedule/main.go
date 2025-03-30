@@ -80,15 +80,12 @@ func run(ctx context.Context) error {
 
 	// services
 	slog.Info("setting up services...")
-	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir, ps, log)
-
 	chr := postgres.NewChannelRepository(db)
-
-	importActive := importing.NewScheduleImportsAction(chr, is)
+	ir := postgres.NewImportRepository(db)
+	is := importing.NewService(ir, chr, ps, log)
 
 	slog.Info("starting imports...")
-	if err := importActive.Execute(ctx); err != nil {
+	if err := is.ScheduleActiveChannels(ctx); err != nil {
 		return fmt.Errorf("failed to import active channels: %w", err)
 	}
 

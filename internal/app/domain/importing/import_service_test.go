@@ -23,10 +23,11 @@ type ImportServiceSuite struct {
 func (suite *ImportServiceSuite) Test_Success() {
 	// Prepare
 	_, log := testutils.NewLogger()
+	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
-	s := importing.NewService(ir, ps, log)
+	s := importing.NewService(ir, chr, ps, log)
 	ctx := context.Background()
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),
@@ -94,10 +95,11 @@ func (suite *ImportServiceSuite) Test_Success() {
 func (suite *ImportServiceSuite) Test_Fail() {
 	// Prepare
 	_, log := testutils.NewLogger()
+	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
-	s := importing.NewService(ir, ps, log)
+	s := importing.NewService(ir, chr, ps, log)
 	ctx := context.Background()
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),

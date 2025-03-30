@@ -740,8 +740,8 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, ps, log)
 	chr := testutils.NewChannelRepository()
+	is := importing.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
@@ -788,8 +788,8 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, ps, log)
 	chr := testutils.NewChannelRepository()
+	is := importing.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
@@ -815,11 +815,11 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
+	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, ps, log)
-	chr := testutils.NewChannelRepository()
+	is := importing.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
 	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
