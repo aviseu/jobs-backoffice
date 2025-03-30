@@ -43,23 +43,21 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
-	f := importing.NewFactory(
-		js,
-		is,
-		oghttp.DefaultClient,
-		importing.Config{
-			Arbeitnow: arbeitnow.Config{URL: server.URL},
-			Import: struct {
-				ResultBufferSize int `split_words:"true" default:"10"`
-				ResultWorkers    int `split_words:"true" default:"10"`
-			}{
-				ResultBufferSize: 10,
-				ResultWorkers:    10,
-			},
+	cfg := importing.Config{
+		Arbeitnow: arbeitnow.Config{URL: server.URL},
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
 		},
-		log,
+	}
+	f := importing.NewFactory(
+		oghttp.DefaultClient,
+		cfg,
 	)
-	s := importing.NewService(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.New()
@@ -126,23 +124,21 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
-	f := importing.NewFactory(
-		js,
-		is,
-		oghttp.DefaultClient,
-		importing.Config{
-			Arbeitnow: arbeitnow.Config{URL: server.URL},
-			Import: struct {
-				ResultBufferSize int `split_words:"true" default:"10"`
-				ResultWorkers    int `split_words:"true" default:"10"`
-			}{
-				ResultBufferSize: 10,
-				ResultWorkers:    10,
-			},
+	cfg := importing.Config{
+		Arbeitnow: arbeitnow.Config{URL: server.URL},
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
 		},
-		log,
+	}
+	f := importing.NewFactory(
+		oghttp.DefaultClient,
+		cfg,
 	)
-	s := importing.NewService(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)

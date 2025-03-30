@@ -69,7 +69,3 @@ func (s *Service) GetJobs() ([]*aggregator.Job, error) {
 
 	return result, nil
 }
-
-func (s *Service) Channel() *aggregator.Channel {
-	return s.ch
-}

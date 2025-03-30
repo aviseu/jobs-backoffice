@@ -1,20 +1,15 @@
 package importing
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )
 
-type Config struct {
-	Arbeitnow arbeitnow.Config
-
-	Import struct {
-		ResultBufferSize int `split_words:"true" default:"10"`
-		ResultWorkers    int `split_words:"true" default:"10"`
-	}
+type Provider interface {
+	GetJobs() ([]*aggregator.Job, error)
 }
 
 type HTTPClient interface {
@@ -23,27 +18,21 @@ type HTTPClient interface {
 
 type Factory struct {
 	c   HTTPClient
-	js  *JobService
-	is  *ImportService
-	log *slog.Logger
 	cfg Config
 }
 
-func NewFactory(js *JobService, is *ImportService, c HTTPClient, cfg Config, log *slog.Logger) *Factory {
+func NewFactory(c HTTPClient, cfg Config) *Factory {
 	return &Factory{
 		cfg: cfg,
-		js:  js,
-		is:  is,
 		c:   c,
-		log: log,
 	}
 }
 
-func (f *Factory) Create(ch *aggregator.Channel) *Gateway {
-	var p Provider
-	if ch.Integration == aggregator.IntegrationArbeitnow {
-		p = arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch)
+func (f *Factory) Create(ch *aggregator.Channel) (Provider, error) {
+	switch ch.Integration {
+	case aggregator.IntegrationArbeitnow:
+		return arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch), nil
 	}
 
-	return NewGateway(p, f.js, f.is, f.log, f.cfg.Import.ResultBufferSize, f.cfg.Import.ResultWorkers)
+	return nil, fmt.Errorf("unsupported integration: %s", ch.Integration)
 }

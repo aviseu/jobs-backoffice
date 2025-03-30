@@ -32,23 +32,21 @@ func (suite *ServiceSuite) Test_Success() {
 	is := importing.NewImportService(ir)
 	c := testutils.NewRequestLogger(http.DefaultClient)
 	lbuf, log := testutils.NewLogger()
-	f := importing.NewFactory(
-		js,
-		is,
-		c,
-		importing.Config{
-			Arbeitnow: arbeitnow.Config{
-				URL: server.URL,
-			},
-			Import: struct {
-				ResultBufferSize int `split_words:"true" default:"10"`
-				ResultWorkers    int `split_words:"true" default:"10"`
-			}{
-				ResultBufferSize: 10,
-				ResultWorkers:    10,
-			},
+	cfg := importing.Config{
+		Arbeitnow: arbeitnow.Config{
+			URL: server.URL,
 		},
-		log,
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
+		},
+	}
+	f := importing.NewFactory(
+		c,
+		cfg,
 	)
 	chr := testutils.NewChannelRepository()
 	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
@@ -86,7 +84,7 @@ func (suite *ServiceSuite) Test_Success() {
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 
-	s := importing.NewService(chr, ir, is, f)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 
 	// Execute
 	err := s.Import(context.Background(), i.ID())
@@ -127,8 +125,21 @@ func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
-	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	s := importing.NewService(chr, ir, is, f)
+	c := testutils.NewHTTPClientMock()
+	cfg := importing.Config{
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
+		},
+	}
+	f := importing.NewFactory(
+		c,
+		cfg,
+	)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 	id := uuid.New()
 
 	// Execute
@@ -152,8 +163,21 @@ func (suite *ServiceSuite) Test_Execute_ChannelServiceFail() {
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
-	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	s := importing.NewService(chr, ir, is, f)
+	c := testutils.NewHTTPClientMock()
+	cfg := importing.Config{
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
+		},
+	}
+	f := importing.NewFactory(
+		c,
+		cfg,
+	)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 	i := importing.NewImport(uuid.New(), uuid.New())
 	ir.AddImport(i.ToAggregate())
 
@@ -180,8 +204,24 @@ func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 	is := importing.NewImportService(ir)
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
-	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
-	s := importing.NewService(chr, ir, is, f)
+	c := http.DefaultClient
+	cfg := importing.Config{
+		Arbeitnow: arbeitnow.Config{
+			URL: server.URL,
+		},
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
+		},
+	}
+	f := importing.NewFactory(
+		c,
+		cfg,
+	)
+	s := importing.NewService(chr, ir, is, js, f, cfg, log)
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())
 
