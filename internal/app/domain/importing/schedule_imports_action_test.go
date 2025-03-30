@@ -6,7 +6,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -45,7 +44,7 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 
 	// Assert imports created
 	suite.Equal(2, len(ir.Imports))
-	var i1, i2 *postgres.Import
+	var i1, i2 *aggregator.Import
 	for _, i := range ir.Imports {
 		if i.ChannelID == id1 {
 			i1 = i

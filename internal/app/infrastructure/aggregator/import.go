@@ -1,4 +1,4 @@
-package postgres
+package aggregator
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"

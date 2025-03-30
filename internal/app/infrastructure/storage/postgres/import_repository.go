@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -19,7 +20,7 @@ func NewImportRepository(db *sqlx.DB) *ImportRepository {
 	return &ImportRepository{db: db}
 }
 
-func (r *ImportRepository) SaveImport(ctx context.Context, i *Import) error {
+func (r *ImportRepository) SaveImport(ctx context.Context, i *aggregator.Import) error {
 	_, err := r.db.NamedExecContext(
 		ctx,
 		`INSERT INTO imports (id, channel_id, status, started_at, ended_at, error, new_jobs, updated_jobs, no_change_jobs, missing_jobs, failed_jobs)
@@ -44,8 +45,8 @@ func (r *ImportRepository) SaveImport(ctx context.Context, i *Import) error {
 	return nil
 }
 
-func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*Import, error) {
-	var i Import
+func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error) {
+	var i aggregator.Import
 	err := r.db.GetContext(ctx, &i, "SELECT * FROM imports WHERE id = $1", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -58,8 +59,8 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*Impor
 	return &i, nil
 }
 
-func (r *ImportRepository) GetImports(ctx context.Context) ([]*Import, error) {
-	var result []*Import
+func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import, error) {
+	var result []*aggregator.Import
 	err := r.db.SelectContext(ctx, &result, "SELECT * FROM imports order by started_at desc")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get imports: %w", err)

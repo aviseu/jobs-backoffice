@@ -2,7 +2,7 @@ package importing
 
 import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
 	"github.com/google/uuid"
@@ -146,8 +146,8 @@ func (i *Import) addJobResult(r base.ImportJobResult) {
 	}
 }
 
-func (i *Import) ToDTO() *postgres.Import {
-	return &postgres.Import{
+func (i *Import) ToDTO() *aggregator.Import {
+	return &aggregator.Import{
 		ID:           i.ID(),
 		ChannelID:    i.ChannelID(),
 		StartedAt:    i.StartedAt(),
@@ -162,7 +162,7 @@ func (i *Import) ToDTO() *postgres.Import {
 	}
 }
 
-func NewImportFromDTO(i *postgres.Import) *Import {
+func NewImportFromDTO(i *aggregator.Import) *Import {
 	opts := []ImportOptional{
 		ImportWithStartAt(i.StartedAt),
 		ImportWithStatus(i.Status),

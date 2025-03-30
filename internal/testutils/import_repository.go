@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"context"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/google/uuid"
 	"slices"
@@ -9,7 +10,7 @@ import (
 )
 
 type ImportRepository struct {
-	Imports    map[uuid.UUID]*postgres.Import
+	Imports    map[uuid.UUID]*aggregator.Import
 	JobResults map[uuid.UUID]*postgres.ImportJobResult
 	err        error
 	im         sync.Mutex
@@ -18,12 +19,12 @@ type ImportRepository struct {
 
 func NewImportRepository() *ImportRepository {
 	return &ImportRepository{
-		Imports:    make(map[uuid.UUID]*postgres.Import),
+		Imports:    make(map[uuid.UUID]*aggregator.Import),
 		JobResults: make(map[uuid.UUID]*postgres.ImportJobResult),
 	}
 }
 
-func (r *ImportRepository) First() *postgres.Import {
+func (r *ImportRepository) First() *aggregator.Import {
 	for _, i := range r.Imports {
 		return i
 	}
@@ -31,7 +32,7 @@ func (r *ImportRepository) First() *postgres.Import {
 	return nil
 }
 
-func (r *ImportRepository) Add(i *postgres.Import) {
+func (r *ImportRepository) Add(i *aggregator.Import) {
 	r.Imports[i.ID] = i
 }
 
@@ -43,7 +44,7 @@ func (r *ImportRepository) FailWith(err error) {
 	r.err = err
 }
 
-func (r *ImportRepository) SaveImport(_ context.Context, i *postgres.Import) error {
+func (r *ImportRepository) SaveImport(_ context.Context, i *aggregator.Import) error {
 	if r.err != nil {
 		return r.err
 	}
@@ -53,7 +54,7 @@ func (r *ImportRepository) SaveImport(_ context.Context, i *postgres.Import) err
 	return nil
 }
 
-func (r *ImportRepository) FindImport(_ context.Context, id uuid.UUID) (*postgres.Import, error) {
+func (r *ImportRepository) FindImport(_ context.Context, id uuid.UUID) (*aggregator.Import, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
@@ -66,17 +67,17 @@ func (r *ImportRepository) FindImport(_ context.Context, id uuid.UUID) (*postgre
 	return i, nil
 }
 
-func (r *ImportRepository) GetImports(_ context.Context) ([]*postgres.Import, error) {
+func (r *ImportRepository) GetImports(_ context.Context) ([]*aggregator.Import, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
 
-	var ii []*postgres.Import
+	var ii []*aggregator.Import
 	for _, i := range r.Imports {
 		ii = append(ii, i)
 	}
 
-	slices.SortFunc(ii, func(a, b *postgres.Import) int {
+	slices.SortFunc(ii, func(a, b *aggregator.Import) int {
 		return b.StartedAt.Compare(a.StartedAt)
 	})
 

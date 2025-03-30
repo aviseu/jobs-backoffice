@@ -58,7 +58,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.NoError(err)
 	suite.Equal(1, count)
 
-	var dbImport postgres.Import
+	var dbImport aggregator.Import
 	err = suite.DB.Get(&dbImport, "SELECT * FROM imports WHERE id = $1", i.ID())
 	suite.NoError(err)
 	suite.Equal(i.ID(), dbImport.ID)

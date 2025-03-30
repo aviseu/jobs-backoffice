@@ -9,7 +9,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/golang/protobuf/proto"
@@ -99,7 +98,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 
 	// Assert state change
 	suite.Len(ir.Imports, 1)
-	var i *postgres.Import
+	var i *aggregator.Import
 	for _, v := range ir.Imports {
 		i = v
 	}
@@ -182,7 +181,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 
 	// Assert state change
 	suite.Len(ir.Imports, 1)
-	var i *postgres.Import
+	var i *aggregator.Import
 	for _, v := range ir.Imports {
 		i = v
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"time"
 
@@ -13,11 +14,11 @@ import (
 )
 
 type ImportRepository interface {
-	SaveImport(ctx context.Context, i *postgres.Import) error
+	SaveImport(ctx context.Context, i *aggregator.Import) error
 	SaveImportJob(ctx context.Context, j *postgres.ImportJobResult) error
 
-	GetImports(ctx context.Context) ([]*postgres.Import, error)
-	FindImport(ctx context.Context, id uuid.UUID) (*postgres.Import, error)
+	GetImports(ctx context.Context) ([]*aggregator.Import, error)
+	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
 	GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*postgres.ImportJobResult, error)
 }
 
