@@ -41,7 +41,6 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	jr := testutils.NewJobRepository()
-	js := importing.NewJobService(jr, 10, 10)
 	cfg := importing.Config{
 		Arbeitnow: arbeitnow.Config{URL: server.URL},
 		Import: struct {
@@ -56,7 +55,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		oghttp.DefaultClient,
 		cfg,
 	)
-	s := importing.NewService(chr, ir, js, f, cfg, log)
+	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
 	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.New()
@@ -121,7 +120,6 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	jr := testutils.NewJobRepository()
-	js := importing.NewJobService(jr, 10, 10)
 	cfg := importing.Config{
 		Arbeitnow: arbeitnow.Config{URL: server.URL},
 		Import: struct {
@@ -136,7 +134,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		oghttp.DefaultClient,
 		cfg,
 	)
-	s := importing.NewService(chr, ir, js, f, cfg, log)
+	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
 	h := http.ImportRootHandler(s, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)

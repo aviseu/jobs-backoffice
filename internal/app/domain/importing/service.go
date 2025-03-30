@@ -2,6 +2,7 @@ package importing
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -29,28 +30,37 @@ type ImportRepository interface {
 	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
 }
 
+type JobRepository interface {
+	Save(ctx context.Context, j *aggregator.Job) error
+	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
+}
+
 type ChannelRepository interface {
 	GetActive(ctx context.Context) ([]*aggregator.Channel, error)
 	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
 }
 
 type Service struct {
-	ir  ImportRepository
-	chr ChannelRepository
-	f   *Factory
-	js  *JobService
-	log *slog.Logger
-	cfg Config
+	jr           JobRepository
+	ir           ImportRepository
+	chr          ChannelRepository
+	f            *Factory
+	log          *slog.Logger
+	cfg          Config
+	workerBuffer int
+	workerCount  int
 }
 
-func NewService(chr ChannelRepository, ir ImportRepository, js *JobService, f *Factory, cfg Config, log *slog.Logger) *Service {
+func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, f *Factory, cfg Config, buffer, workers int, log *slog.Logger) *Service {
 	return &Service{
-		chr: chr,
-		ir:  ir,
-		f:   f,
-		js:  js,
-		log: log,
-		cfg: cfg,
+		chr:          chr,
+		jr:           jr,
+		ir:           ir,
+		f:            f,
+		log:          log,
+		cfg:          cfg,
+		workerBuffer: buffer,
+		workerCount:  workers,
 	}
 }
 
@@ -63,6 +73,16 @@ func (s *Service) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, res
 		if err := s.ir.SaveImportJob(ctx, i.ID(), j); err != nil {
 			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.ID(), err).Error())
 			continue
+		}
+	}
+	wg.Done()
+}
+
+func jsworker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, results chan<- *Result, errs chan<- error) {
+	for j := range jobs {
+		if err := r.Save(ctx, j.ToDTO()); err != nil {
+			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
+			results <- NewResult(j.ID(), ResultTypeFailed, WithError(err.Error()))
 		}
 	}
 	wg.Done()
@@ -119,9 +139,85 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		go s.worker(ctx, &wg, idm, results)
 	}
 
-	if err := s.js.Sync(ctx, ch.ID, jobs, results); err != nil {
-		return fmt.Errorf("failed to sync jobs for channel %s: %w", ch.ID, err)
+	// get existing jobs
+	existing, err := s.jr.GetByChannelID(ctx, ch.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get existing jobs: %w", err)
 	}
+
+	// create job workers
+	var wgWorkers sync.WaitGroup
+	jobChan := make(chan *Job, s.workerBuffer)
+	errs := make(chan error, s.workerBuffer)
+	for w := 1; w <= s.workerCount; w++ {
+		wgWorkers.Add(1)
+		go jsworker(ctx, &wgWorkers, s.jr, jobChan, results, errs)
+	}
+
+	// create error worker
+	var syncErrs error
+	var wgError sync.WaitGroup
+	wgError.Add(1)
+	go func(errs <-chan error) {
+		for err := range errs {
+			syncErrs = errors.Join(syncErrs, err)
+		}
+		wgError.Done()
+	}(errs)
+
+	incomingJobs := make([]*Job, len(jobs))
+	for i, in := range jobs {
+		inj := NewJobFromDTO(in)
+		incomingJobs[i] = inj
+	}
+
+	// save if incoming does not exist or is different
+	for _, in := range incomingJobs {
+		found := false
+		for _, ex := range existing {
+			if ex.ID == in.ID() {
+				found = true
+				if in.IsEqual(NewJobFromDTO(ex)) {
+					results <- NewResult(in.ID(), ResultTypeNoChange)
+					goto next
+				}
+			}
+		}
+
+		in.MarkAsChanged()
+		jobChan <- in
+		if found {
+			results <- NewResult(in.ID(), ResultTypeUpdated)
+		} else {
+			results <- NewResult(in.ID(), ResultTypeNew)
+		}
+
+	next:
+	}
+
+	// save if existing does not exist in incoming
+	for _, ex := range existing {
+		exj := NewJobFromDTO(ex)
+		if ex.Status == aggregator.JobStatusInactive {
+			continue
+		}
+		for _, in := range jobs {
+			if exj.ID() == in.ID {
+				goto skip
+			}
+		}
+
+		exj.MarkAsMissing()
+		jobChan <- exj
+		results <- NewResult(exj.ID(), ResultTypeMissing)
+
+	skip:
+	}
+
+	close(jobChan)
+	wgWorkers.Wait()
+	close(errs)
+	wgError.Wait()
 
 	close(results)
 	wg.Wait()
