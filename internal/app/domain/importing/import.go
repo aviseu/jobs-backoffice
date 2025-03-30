@@ -125,13 +125,6 @@ func (i *Import) EndedAt() null.Time {
 	return i.endedAt
 }
 
-func (i *Import) addJob(jID uuid.UUID, r aggregator.ImportJobResult) {
-	i.jobs = append(i.jobs, &aggregator.ImportJob{
-		ID:     jID,
-		Result: r,
-	})
-}
-
 func (i *Import) ToDTO() *aggregator.Import {
 	return &aggregator.Import{
 		ID:        i.ID(),
