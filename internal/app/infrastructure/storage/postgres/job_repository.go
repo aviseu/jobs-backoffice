@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -16,7 +17,7 @@ func NewJobRepository(db *sqlx.DB) *JobRepository {
 	return &JobRepository{db: db}
 }
 
-func (r *JobRepository) Save(ctx context.Context, j *Job) error {
+func (r *JobRepository) Save(ctx context.Context, j *aggregator.Job) error {
 	_, err := r.db.NamedExecContext(
 		ctx,
 		`INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at)
@@ -42,8 +43,8 @@ func (r *JobRepository) Save(ctx context.Context, j *Job) error {
 	return nil
 }
 
-func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*Job, error) {
-	var results []*Job
+func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error) {
+	var results []*aggregator.Job
 	err := r.db.SelectContext(ctx, &results, "SELECT * FROM jobs WHERE channel_id = $1 ORDER BY posted_at DESC", chID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get jobs by channel id %s: %w", chID, err)

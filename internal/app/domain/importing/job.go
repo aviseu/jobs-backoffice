@@ -1,8 +1,7 @@
 package importing
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,8 +19,8 @@ type Job struct {
 	id            uuid.UUID
 	remote        bool
 	channelID     uuid.UUID
-	status        base.JobStatus
-	publishStatus base.JobPublishStatus
+	status        aggregator.JobStatus
+	publishStatus aggregator.JobPublishStatus
 }
 
 type JobOptional func(*Job)
@@ -33,18 +32,18 @@ func JobWithTimestamps(c, u time.Time) JobOptional {
 	}
 }
 
-func JobWithPublishStatus(s base.JobPublishStatus) JobOptional {
+func JobWithPublishStatus(s aggregator.JobPublishStatus) JobOptional {
 	return func(j *Job) {
 		j.publishStatus = s
 	}
 }
 
-func NewJob(id, channelID uuid.UUID, s base.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
+func NewJob(id, channelID uuid.UUID, s aggregator.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
 	j := &Job{
 		id:            id,
 		channelID:     channelID,
 		status:        s,
-		publishStatus: base.JobPublishStatusUnpublished,
+		publishStatus: aggregator.JobPublishStatusUnpublished,
 		url:           url,
 		title:         title,
 		description:   description,
@@ -107,23 +106,23 @@ func (j *Job) UpdatedAt() time.Time {
 	return j.updatedAt
 }
 
-func (j *Job) Status() base.JobStatus {
+func (j *Job) Status() aggregator.JobStatus {
 	return j.status
 }
 
-func (j *Job) PublishStatus() base.JobPublishStatus {
+func (j *Job) PublishStatus() aggregator.JobPublishStatus {
 	return j.publishStatus
 }
 
 func (j *Job) MarkAsMissing() {
-	j.status = base.JobStatusInactive
-	j.publishStatus = base.JobPublishStatusUnpublished
+	j.status = aggregator.JobStatusInactive
+	j.publishStatus = aggregator.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 
 func (j *Job) MarkAsChanged() {
-	j.status = base.JobStatusActive
-	j.publishStatus = base.JobPublishStatusUnpublished
+	j.status = aggregator.JobStatusActive
+	j.publishStatus = aggregator.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 
@@ -141,8 +140,8 @@ func (j *Job) IsEqual(other *Job) bool {
 		j.postedAt.Equal(other.postedAt)
 }
 
-func (j *Job) ToDTO() *postgres.Job {
-	return &postgres.Job{
+func (j *Job) ToDTO() *aggregator.Job {
+	return &aggregator.Job{
 		ID:            j.ID(),
 		ChannelID:     j.ChannelID(),
 		URL:           j.URL(),
@@ -159,7 +158,7 @@ func (j *Job) ToDTO() *postgres.Job {
 	}
 }
 
-func NewJobFromDTO(j *postgres.Job) *Job {
+func NewJobFromDTO(j *aggregator.Job) *Job {
 	return NewJob(
 		j.ID,
 		j.ChannelID,

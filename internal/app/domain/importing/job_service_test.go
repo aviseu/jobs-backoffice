@@ -3,9 +3,8 @@ package importing_test
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -39,19 +38,19 @@ func (suite *JobServiceSuite) Test_Sync_Success() {
 	}(results)
 
 	chID := uuid.New()
-	existingNoChange := importing.NewJob(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished))
-	existingChange := importing.NewJob(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished))
-	existingActiveMissing := importing.NewJob(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished))
-	existingInactiveMissing := importing.NewJob(uuid.New(), chID, base.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished))
+	existingNoChange := importing.NewJob(uuid.New(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished))
+	existingChange := importing.NewJob(uuid.New(), chID, aggregator.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished))
+	existingActiveMissing := importing.NewJob(uuid.New(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished))
+	existingInactiveMissing := importing.NewJob(uuid.New(), chID, aggregator.JobStatusInactive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished))
 	r.Add(existingNoChange.ToDTO())
 	r.Add(existingChange.ToDTO())
 	r.Add(existingActiveMissing.ToDTO())
 	r.Add(existingInactiveMissing.ToDTO())
 
-	incomingNoChange := importing.NewJob(existingNoChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), importing.JobWithPublishStatus(base.JobPublishStatusUnpublished))
-	incomingChange := importing.NewJob(existingChange.ID(), chID, base.JobStatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusUnpublished))
-	incomingNew := importing.NewJob(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusUnpublished))
-	incoming := []*postgres.Job{incomingNoChange.ToDTO(), incomingChange.ToDTO(), incomingNew.ToDTO()}
+	incomingNoChange := importing.NewJob(existingNoChange.ID(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, existingNoChange.PostedAt(), importing.JobWithPublishStatus(aggregator.JobPublishStatusUnpublished))
+	incomingChange := importing.NewJob(existingChange.ID(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Title Changed!", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusUnpublished))
+	incomingNew := importing.NewJob(uuid.New(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusUnpublished))
+	incoming := []*aggregator.Job{incomingNoChange.ToDTO(), incomingChange.ToDTO(), incomingNew.ToDTO()}
 
 	// Execute
 	err := s.Sync(context.Background(), chID, incoming, results)
@@ -62,20 +61,20 @@ func (suite *JobServiceSuite) Test_Sync_Success() {
 	suite.NoError(err)
 	suite.Len(r.Jobs, 5)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[existingNoChange.ID()].Status)
-	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, r.Jobs[existingNoChange.ID()].Status)
+	suite.Equal(aggregator.JobPublishStatusPublished, r.Jobs[existingNoChange.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[existingChange.ID()].Status)
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, r.Jobs[existingChange.ID()].Status)
+	suite.Equal(aggregator.JobPublishStatusUnpublished, r.Jobs[existingChange.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusInactive, r.Jobs[existingActiveMissing.ID()].Status)
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus)
+	suite.Equal(aggregator.JobStatusInactive, r.Jobs[existingActiveMissing.ID()].Status)
+	suite.Equal(aggregator.JobPublishStatusUnpublished, r.Jobs[existingActiveMissing.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusInactive, r.Jobs[existingInactiveMissing.ID()].Status)
-	suite.Equal(base.JobPublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus)
+	suite.Equal(aggregator.JobStatusInactive, r.Jobs[existingInactiveMissing.ID()].Status)
+	suite.Equal(aggregator.JobPublishStatusPublished, r.Jobs[existingInactiveMissing.ID()].PublishStatus)
 
-	suite.Equal(base.JobStatusActive, r.Jobs[incomingNew.ID()].Status)
-	suite.Equal(base.JobPublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, r.Jobs[incomingNew.ID()].Status)
+	suite.Equal(aggregator.JobPublishStatusUnpublished, r.Jobs[incomingNew.ID()].PublishStatus)
 
 	// Assert results
 	suite.Len(resultMap, 4)
@@ -101,9 +100,9 @@ func (suite *JobServiceSuite) Test_Sync_RepositoryFail() {
 	results := make(chan *importing.Result)
 
 	chID := uuid.New()
-	incoming := []*postgres.Job{
-		importing.NewJob(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished)).ToDTO(),
-		importing.NewJob(uuid.New(), chID, base.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(base.JobPublishStatusPublished)).ToDTO(),
+	incoming := []*aggregator.Job{
+		importing.NewJob(uuid.New(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished)).ToDTO(),
+		importing.NewJob(uuid.New(), chID, aggregator.JobStatusActive, "https://example.com/job/id", "Software Engineer", "Job Description", "Indeed", "Amsterdam", true, time.Now(), importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished)).ToDTO(),
 	}
 
 	// Execute

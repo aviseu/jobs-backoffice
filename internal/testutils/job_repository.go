@@ -2,24 +2,24 @@ package testutils
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"sync"
 )
 
 type JobRepository struct {
-	Jobs map[uuid.UUID]*postgres.Job
+	Jobs map[uuid.UUID]*aggregator.Job
 	err  error
 	m    sync.Mutex
 }
 
 func NewJobRepository() *JobRepository {
 	return &JobRepository{
-		Jobs: make(map[uuid.UUID]*postgres.Job),
+		Jobs: make(map[uuid.UUID]*aggregator.Job),
 	}
 }
 
-func (r *JobRepository) First() *postgres.Job {
+func (r *JobRepository) First() *aggregator.Job {
 	for _, j := range r.Jobs {
 		return j
 	}
@@ -27,7 +27,7 @@ func (r *JobRepository) First() *postgres.Job {
 	return nil
 }
 
-func (r *JobRepository) Add(j *postgres.Job) {
+func (r *JobRepository) Add(j *aggregator.Job) {
 	r.Jobs[j.ID] = j
 }
 
@@ -35,7 +35,7 @@ func (r *JobRepository) FailWith(err error) {
 	r.err = err
 }
 
-func (r *JobRepository) Save(_ context.Context, j *postgres.Job) error {
+func (r *JobRepository) Save(_ context.Context, j *aggregator.Job) error {
 	if r.err != nil {
 		return r.err
 	}
@@ -46,12 +46,12 @@ func (r *JobRepository) Save(_ context.Context, j *postgres.Job) error {
 	return nil
 }
 
-func (r *JobRepository) GetByChannelID(_ context.Context, chID uuid.UUID) ([]*postgres.Job, error) {
+func (r *JobRepository) GetByChannelID(_ context.Context, chID uuid.UUID) ([]*aggregator.Job, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
 
-	var jobs []*postgres.Job
+	var jobs []*aggregator.Job
 	for _, j := range r.Jobs {
 		if j.ChannelID == chID {
 			jobs = append(jobs, j)

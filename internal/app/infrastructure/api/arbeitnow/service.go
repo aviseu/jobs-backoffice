@@ -2,9 +2,7 @@ package arbeitnow
 
 import (
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"net/http"
 	"time"
 
@@ -31,7 +29,7 @@ func NewService(c HTTPClient, cfg Config, ch *aggregator.Channel) *Service {
 	}
 }
 
-func (s *Service) GetJobs() ([]*postgres.Job, error) {
+func (s *Service) GetJobs() ([]*aggregator.Job, error) {
 	jobs := make([]*jobEntry, 0)
 	page := 1
 	endpoint := s.baseURL + endpointJobBoard
@@ -51,12 +49,12 @@ func (s *Service) GetJobs() ([]*postgres.Job, error) {
 		page++
 	}
 
-	result := make([]*postgres.Job, 0, len(jobs))
+	result := make([]*aggregator.Job, 0, len(jobs))
 	for _, j := range jobs {
-		result = append(result, &postgres.Job{
+		result = append(result, &aggregator.Job{
 			ID:          uuid.NewSHA1(s.ch.ID, []byte(j.Slug)), // UUID V5
 			ChannelID:   s.ch.ID,
-			Status:      base.JobStatusActive,
+			Status:      aggregator.JobStatusActive,
 			URL:         j.URL,
 			Title:       j.Title,
 			Description: j.Description,

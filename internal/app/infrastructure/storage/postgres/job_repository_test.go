@@ -2,8 +2,8 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -28,7 +28,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	j := importing.NewJob(
 		id,
 		chID,
-		base.JobStatusActive,
+		aggregator.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -36,7 +36,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 		"Amsterdam",
 		true,
 		pAt,
-		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.DB)
 
@@ -47,13 +47,13 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	suite.NoError(err)
 
 	// Assert state change
-	var dbJob postgres.Job
+	var dbJob aggregator.Job
 	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
 	suite.Equal(chID, dbJob.ChannelID)
-	suite.Equal(base.JobStatusActive, dbJob.Status)
-	suite.Equal(base.JobPublishStatusPublished, dbJob.PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, dbJob.Status)
+	suite.Equal(aggregator.JobPublishStatusPublished, dbJob.PublishStatus)
 	suite.Equal("https://example.com/job/id", dbJob.URL)
 	suite.Equal("Software Engineer", dbJob.Title)
 	suite.Equal("Job Description", dbJob.Description)
@@ -73,8 +73,8 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		id,
 		chID,
-		base.JobStatusInactive,
-		base.JobPublishStatusUnpublished,
+		aggregator.JobStatusInactive,
+		aggregator.JobPublishStatusUnpublished,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -92,7 +92,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	j := importing.NewJob(
 		id,
 		chID2,
-		base.JobStatusActive,
+		aggregator.JobStatusActive,
 		"https://example.com/job/id/new",
 		"Software Engineer new",
 		"Job Description new",
@@ -100,7 +100,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 		"Amsterdam new",
 		false,
 		pAt,
-		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
 
 	r := postgres.NewJobRepository(suite.DB)
@@ -117,13 +117,13 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	suite.NoError(err)
 	suite.Equal(1, count)
 
-	var dbJob postgres.Job
+	var dbJob aggregator.Job
 	err = suite.DB.Get(&dbJob, "SELECT * FROM jobs WHERE id = $1", id)
 	suite.NoError(err)
 	suite.Equal(id, dbJob.ID)
 	suite.Equal(chID2, dbJob.ChannelID)
-	suite.Equal(base.JobStatusActive, dbJob.Status)
-	suite.Equal(base.JobPublishStatusPublished, dbJob.PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, dbJob.Status)
+	suite.Equal(aggregator.JobPublishStatusPublished, dbJob.PublishStatus)
 	suite.Equal("https://example.com/job/id/new", dbJob.URL)
 	suite.Equal("Software Engineer new", dbJob.Title)
 	suite.Equal("Job Description new", dbJob.Description)
@@ -142,7 +142,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	j := importing.NewJob(
 		id,
 		chID,
-		base.JobStatusActive,
+		aggregator.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -150,7 +150,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 		"Amsterdam",
 		true,
 		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
 	r := postgres.NewJobRepository(suite.BadDB)
 
@@ -170,8 +170,8 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID1,
 		chID1,
-		base.JobStatusInactive,
-		base.JobPublishStatusUnpublished,
+		aggregator.JobStatusInactive,
+		aggregator.JobPublishStatusUnpublished,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -187,8 +187,8 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID2,
 		chID1,
-		base.JobStatusActive,
-		base.JobPublishStatusPublished,
+		aggregator.JobStatusActive,
+		aggregator.JobPublishStatusPublished,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -205,8 +205,8 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Success() {
 	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 		jID3,
 		chID2,
-		base.JobStatusActive,
-		base.JobPublishStatusPublished,
+		aggregator.JobStatusActive,
+		aggregator.JobPublishStatusPublished,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",

@@ -4,16 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"sync"
 
 	"github.com/google/uuid"
 )
 
 type JobRepository interface {
-	Save(ctx context.Context, j *postgres.Job) error
-	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*postgres.Job, error)
+	Save(ctx context.Context, j *aggregator.Job) error
+	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
 }
 
 type JobService struct {
@@ -41,7 +40,7 @@ func worker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-cha
 	wg.Done()
 }
 
-func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*postgres.Job, results chan<- *Result) error {
+func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*aggregator.Job, results chan<- *Result) error {
 	// get existing jobs
 	existing, err := s.r.GetByChannelID(ctx, chID)
 	if err != nil {
@@ -101,7 +100,7 @@ func (s *JobService) Sync(ctx context.Context, chID uuid.UUID, incoming []*postg
 	// save if existing does not exist in incoming
 	for _, ex := range existing {
 		exj := NewJobFromDTO(ex)
-		if ex.Status == base.JobStatusInactive {
+		if ex.Status == aggregator.JobStatusInactive {
 			continue
 		}
 		for _, in := range incoming {

@@ -1,8 +1,8 @@
 package importing_test
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -26,7 +26,7 @@ func (suite *JobSuite) Test_Success() {
 	j := importing.NewJob(
 		id,
 		chID,
-		base.JobStatusActive,
+		aggregator.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -39,8 +39,8 @@ func (suite *JobSuite) Test_Success() {
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
-	suite.Equal(base.JobStatusActive, j.Status())
-	suite.Equal(base.JobPublishStatusUnpublished, j.PublishStatus())
+	suite.Equal(aggregator.JobStatusActive, j.Status())
+	suite.Equal(aggregator.JobPublishStatusUnpublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())
@@ -61,7 +61,7 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 	j := importing.NewJob(
 		id,
 		chID,
-		base.JobStatusActive,
+		aggregator.JobStatusActive,
 		"https://example.com/job/id",
 		"Software Engineer",
 		"Job Description",
@@ -73,14 +73,14 @@ func (suite *JobSuite) Test_WithTimestamps__WithPublishStatus_Success() {
 			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
 			time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC),
 		),
-		importing.JobWithPublishStatus(base.JobPublishStatusPublished),
+		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
 
 	// Assert
 	suite.Equal(id, j.ID())
 	suite.Equal(chID, j.ChannelID())
-	suite.Equal(base.JobStatusActive, j.Status())
-	suite.Equal(base.JobPublishStatusPublished, j.PublishStatus())
+	suite.Equal(aggregator.JobStatusActive, j.Status())
+	suite.Equal(aggregator.JobPublishStatusPublished, j.PublishStatus())
 	suite.Equal("https://example.com/job/id", j.URL())
 	suite.Equal("Software Engineer", j.Title())
 	suite.Equal("Job Description", j.Description())

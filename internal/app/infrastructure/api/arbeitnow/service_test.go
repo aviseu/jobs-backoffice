@@ -1,7 +1,6 @@
 package arbeitnow_test
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -49,8 +48,8 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	suite.True(jobs[0].PostedAt.Equal(time.Unix(1739357344, 0)))
 	suite.Equal("https://www.arbeitnow.com/jobs/companies/opus-one-recruitment-gmbh/bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288", jobs[0].URL)
 	suite.True(jobs[0].Remote)
-	suite.Equal(base.JobStatusActive, jobs[0].Status)
-	suite.Equal(base.JobPublishStatusUnpublished, jobs[0].PublishStatus)
+	suite.Equal(aggregator.JobStatusActive, jobs[0].Status)
+	suite.Equal(aggregator.JobPublishStatusUnpublished, jobs[0].PublishStatus)
 	suite.Equal(ch.ID(), jobs[0].ChannelID)
 
 	// Assert requests made
