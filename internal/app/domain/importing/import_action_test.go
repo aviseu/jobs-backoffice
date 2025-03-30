@@ -85,7 +85,7 @@ func (suite *ImportActionSuite) Test_Success() {
 	jr.Add(j2.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	action := importing.NewImportAction(chr, is, f)
 
@@ -108,11 +108,12 @@ func (suite *ImportActionSuite) Test_Success() {
 	suite.Equal(0, i.FailedJobs())
 
 	// Assert import results
-	suite.Len(ir.JobResults, 4)
-	suite.Equal(base.ImportJobResultNoChange, ir.JobResults[j1.ID()].Result)
-	suite.Equal(base.ImportJobResultMissing, ir.JobResults[j2.ID()].Result)
-	suite.Equal(base.ImportJobResultNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
-	suite.Equal(base.ImportJobResultNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
+	jobs := ir.ImportJobs()
+	suite.Len(jobs, 4)
+	suite.Equal(aggregator.ImportJobResultNoChange, jobs[j1.ID()].Result)
+	suite.Equal(aggregator.ImportJobResultMissing, jobs[j2.ID()].Result)
+	suite.Equal(aggregator.ImportJobResultNew, jobs[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
+	suite.Equal(aggregator.ImportJobResultNew, jobs[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
 
 	// Assert Logs
 	suite.Empty(lbuf)
@@ -155,7 +156,7 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
 	action := importing.NewImportAction(chr, is, f)
 	i := importing.NewImport(uuid.New(), uuid.New())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -183,7 +184,7 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
 	action := importing.NewImportAction(chr, is, f)
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())

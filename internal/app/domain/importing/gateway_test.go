@@ -85,7 +85,7 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	jr.Add(j2.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)
@@ -108,14 +108,15 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	suite.Equal(1, i.MissingJobs())
 	suite.Equal(0, i.FailedJobs())
 	suite.True(i.EndedAt().Time.After(time.Now().Add(-2 * time.Second)))
-	suite.Equal(base.ImportStatusCompleted, i.Status())
+	suite.Equal(aggregator.ImportStatusCompleted, i.Status())
 
 	// Assert import results
-	suite.Len(ir.JobResults, 4)
-	suite.Equal(base.ImportJobResultNoChange, ir.JobResults[j1.ID()].Result)
-	suite.Equal(base.ImportJobResultMissing, ir.JobResults[j2.ID()].Result)
-	suite.Equal(base.ImportJobResultNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
-	suite.Equal(base.ImportJobResultNew, ir.JobResults[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
+	ij := ir.ImportJobs()
+	suite.Len(ij, 4)
+	suite.Equal(aggregator.ImportJobResultNoChange, ij[j1.ID()].Result)
+	suite.Equal(aggregator.ImportJobResultMissing, ij[j2.ID()].Result)
+	suite.Equal(aggregator.ImportJobResultNew, ij[uuid.NewSHA1(ch.ID(), []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))].Result)
+	suite.Equal(aggregator.ImportJobResultNew, ij[uuid.NewSHA1(ch.ID(), []byte("fund-accountant-wertpapierfonds-munich-310570"))].Result)
 
 	// Assert Logs
 	suite.Empty(lbuf)
@@ -153,7 +154,7 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)
@@ -200,7 +201,7 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
 
 	// Execute
 	err := gw.Import(context.Background(), i)

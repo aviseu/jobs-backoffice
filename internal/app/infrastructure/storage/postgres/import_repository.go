@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/sync/errgroup"
 )
-
-var ErrImportNotFound = errors.New("import not found")
 
 type ImportRepository struct {
 	db *sqlx.DB
@@ -23,23 +23,30 @@ func NewImportRepository(db *sqlx.DB) *ImportRepository {
 func (r *ImportRepository) SaveImport(ctx context.Context, i *aggregator.Import) error {
 	_, err := r.db.NamedExecContext(
 		ctx,
-		`INSERT INTO imports (id, channel_id, status, started_at, ended_at, error, new_jobs, updated_jobs, no_change_jobs, missing_jobs, failed_jobs)
-				VALUES (:id, :channel_id, :status, :started_at, :ended_at, :error, :new_jobs, :updated_jobs, :no_change_jobs, :missing_jobs, :failed_jobs)
+		`INSERT INTO imports (id, channel_id, status, started_at, ended_at, error)
+				VALUES (:id, :channel_id, :status, :started_at, :ended_at, :error)
 				ON CONFLICT (id) DO UPDATE SET
 					channel_id = EXCLUDED.channel_id,
 					status = EXCLUDED.status,
 					started_at = EXCLUDED.started_at,
 					ended_at = EXCLUDED.ended_at,
-					error = EXCLUDED.error,
-					new_jobs = EXCLUDED.new_jobs,
-					updated_jobs = EXCLUDED.updated_jobs,
-					no_change_jobs = EXCLUDED.no_change_jobs,
-					missing_jobs = EXCLUDED.missing_jobs,
-					failed_jobs = EXCLUDED.failed_jobs`,
+					error = EXCLUDED.error`,
 		i,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to save import %s: %w", i.ID, err)
+	}
+
+	// Save import jobs
+	var eg errgroup.Group
+	for _, job := range i.Jobs {
+		eg.Go(func() error {
+			return r.SaveImportJob(ctx, i.ID, job)
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return fmt.Errorf("failed to save import jobs for import %s: %w", i.ID, err)
 	}
 
 	return nil
@@ -47,50 +54,77 @@ func (r *ImportRepository) SaveImport(ctx context.Context, i *aggregator.Import)
 
 func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error) {
 	var i aggregator.Import
-	err := r.db.GetContext(ctx, &i, "SELECT * FROM imports WHERE id = $1", id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrImportNotFound
-		}
+	var jobs []*aggregator.ImportJob
+	var eg errgroup.Group
 
-		return nil, fmt.Errorf("failed to get import %s: %w", id, err)
+	eg.Go(func() error {
+		err := r.db.GetContext(ctx, &i, "SELECT * FROM imports WHERE id = $1", id)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return infrastructure.ErrImportNotFound
+			}
+
+			return fmt.Errorf("failed to get import %s: %w", id, err)
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
+		err := r.db.SelectContext(ctx, &jobs, "SELECT job_id, result FROM import_job_results WHERE import_id = $1", id)
+		if err != nil {
+			return fmt.Errorf("failed to get jobs for import %s: %w", id, err)
+		}
+		return nil
+	})
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
 	}
 
 	return &i, nil
 }
 
 func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import, error) {
-	var result []*aggregator.Import
-	err := r.db.SelectContext(ctx, &result, "SELECT * FROM imports order by started_at desc")
+	var imports []*aggregator.Import
+	err := r.db.SelectContext(ctx, &imports, "SELECT * FROM imports order by started_at desc")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get imports: %w", err)
 	}
 
-	return result, nil
+	var eg errgroup.Group
+	for _, i := range imports {
+		eg.Go(func() error {
+			var jobs []*aggregator.ImportJob
+			err := r.db.SelectContext(ctx, &jobs, "SELECT job_id, result FROM import_job_results WHERE import_id = $1", i.ID)
+			if err != nil {
+				return fmt.Errorf("failed to get jobs for import %s: %w", i.ID, err)
+			}
+			i.Jobs = jobs
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+
+	return imports, nil
 }
 
-func (r *ImportRepository) SaveImportJob(ctx context.Context, jr *ImportJobResult) error {
-	_, err := r.db.NamedExecContext(
+func (r *ImportRepository) SaveImportJob(ctx context.Context, importID uuid.UUID, jr *aggregator.ImportJob) error {
+	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO import_job_results (import_id, job_id, result)
-				VALUES (:import_id, :job_id, :result)
+				VALUES ($1, $2, $3)
 				ON CONFLICT (import_id, job_id) DO UPDATE SET
 					result = EXCLUDED.result`,
-		jr,
+		importID,
+		jr.ID,
+		jr.Result,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to save import job result %s: %w", jr.ID, err)
 	}
 
 	return nil
-}
-
-func (r *ImportRepository) GetJobsByImportID(ctx context.Context, importID uuid.UUID) ([]*ImportJobResult, error) {
-	var result []*ImportJobResult
-	err := r.db.SelectContext(ctx, &result, "SELECT * FROM import_job_results WHERE import_id = $1", importID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get jobs for import %s: %w", importID, err)
-	}
-
-	return result, nil
 }

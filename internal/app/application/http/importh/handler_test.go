@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
@@ -67,7 +66,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	iID := uuid.New()
-	ir.Add(importing.NewImport(iID, chID).ToDTO())
+	ir.AddImport(importing.NewImport(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -105,7 +104,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(base.ImportStatusCompleted, i.Status)
+	suite.Equal(aggregator.ImportStatusCompleted, i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)
@@ -150,7 +149,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	iID := uuid.New()
-	ir.Add(importing.NewImport(iID, chID).ToDTO())
+	ir.AddImport(importing.NewImport(iID, chID).ToDTO())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -188,7 +187,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(base.ImportStatusFailed, i.Status)
+	suite.Equal(aggregator.ImportStatusFailed, i.Status)
 	suite.True(i.Error.Valid)
 	suite.Contains(i.Error.String, "failed to get jobs page 1 on channel")
 	suite.Contains(i.Error.String, "<title>An Error Occurred: Method Not Allowed</title>")

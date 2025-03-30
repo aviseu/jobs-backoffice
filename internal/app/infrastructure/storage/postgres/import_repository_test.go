@@ -2,8 +2,8 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -40,10 +40,9 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		id,
 		chID,
 		importing.ImportWithError("error"),
-		importing.ImportWithStatus(base.ImportStatusProcessing),
+		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
 		importing.ImportWithStartAt(sAt),
 		importing.ImportWithEndAt(eAt),
-		importing.ImportWithMetadata(1, 2, 3, 4, 5),
 	)
 
 	// Execute
@@ -67,11 +66,6 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.True(i.StartedAt().Equal(dbImport.StartedAt))
 	suite.True(i.EndedAt().Time.Equal(dbImport.EndedAt.Time))
 	suite.Equal(i.Error().String, dbImport.Error.String)
-	suite.Equal(i.NewJobs(), dbImport.NewJobs)
-	suite.Equal(i.UpdatedJobs(), dbImport.UpdatedJobs)
-	suite.Equal(i.NoChangeJobs(), dbImport.NoChangeJobs)
-	suite.Equal(i.MissingJobs(), dbImport.MissingJobs)
-	suite.Equal(i.FailedJobs(), dbImport.FailedJobs)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
@@ -83,10 +77,9 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 		id,
 		chID,
 		importing.ImportWithError("error"),
-		importing.ImportWithStatus(base.ImportStatusProcessing),
+		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
 		importing.ImportWithStartAt(time.Now()),
 		importing.ImportWithEndAt(time.Now()),
-		importing.ImportWithMetadata(1, 2, 3, 4, 5),
 	)
 
 	// Execute
@@ -117,10 +110,9 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 		id,
 		chID,
 		importing.ImportWithError("error"),
-		importing.ImportWithStatus(base.ImportStatusProcessing),
+		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
 		importing.ImportWithStartAt(sAt),
 		importing.ImportWithEndAt(eAt),
-		importing.ImportWithMetadata(1, 2, 3, 4, 5),
 	)
 	err = r.SaveImport(context.Background(), i.ToDTO())
 	suite.NoError(err)
@@ -136,11 +128,6 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	suite.True(i.StartedAt().Equal(i2.StartedAt))
 	suite.True(i.EndedAt().Time.Equal(i2.EndedAt.Time))
 	suite.Equal(i.Error(), i2.Error)
-	suite.Equal(i.NewJobs(), i2.NewJobs)
-	suite.Equal(i.UpdatedJobs(), i2.UpdatedJobs)
-	suite.Equal(i.NoChangeJobs(), i2.NoChangeJobs)
-	suite.Equal(i.MissingJobs(), i2.MissingJobs)
-	suite.Equal(i.FailedJobs(), i2.FailedJobs)
 }
 
 func (suite *ImportRepositorySuite) Test_FindImport_Fail() {
@@ -167,7 +154,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_NotFound() {
 	i, err := r.FindImport(context.Background(), id)
 
 	// Assert
-	suite.ErrorIs(err, postgres.ErrImportNotFound)
+	suite.ErrorIs(err, infrastructure.ErrImportNotFound)
 	suite.Nil(i)
 }
 
@@ -189,7 +176,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id1,
 		chID,
-		base.ImportStatusProcessing,
+		aggregator.ImportStatusProcessing,
 		sAt1,
 	)
 	suite.NoError(err)
@@ -199,7 +186,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id2,
 		chID,
-		base.ImportStatusProcessing,
+		aggregator.ImportStatusProcessing,
 		sAt2,
 	)
 	suite.NoError(err)
@@ -209,7 +196,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		id3,
 		chID,
-		base.ImportStatusProcessing,
+		aggregator.ImportStatusProcessing,
 		sAt3,
 	)
 	suite.NoError(err)
@@ -254,119 +241,42 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
 		iID,
 		chID,
-		base.ImportStatusProcessing,
+		aggregator.ImportStatusProcessing,
 		time.Now(),
 	)
 	suite.NoError(err)
 
 	r := postgres.NewImportRepository(suite.DB)
-	jr := importing.NewImportJobResult(uuid.New(), iID, base.ImportJobResultUpdated)
+	ij := &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}
 
 	// Execute
-	err = r.SaveImportJob(context.Background(), jr.ToDTO())
+	err = r.SaveImportJob(context.Background(), iID, ij)
 
 	// Assert
 	suite.NoError(err)
 
 	// Assert state change
 	var count int
-	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
+	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_job_results WHERE job_id = $1 and import_id = $2", ij.ID, iID)
 	suite.NoError(err)
 	suite.Equal(1, count)
 
-	var dbImportJobResult postgres.ImportJobResult
-	err = suite.DB.Get(&dbImportJobResult, "SELECT * FROM import_job_results WHERE job_id = $1 and import_id = $2", jr.JobID(), jr.ImportID())
+	var dbImportJob aggregator.ImportJob
+	err = suite.DB.Get(&dbImportJob, "SELECT job_id, result FROM import_job_results WHERE job_id = $1 and import_id = $2", ij.ID, iID)
 	suite.NoError(err)
-	suite.Equal(base.ImportJobResultUpdated, dbImportJobResult.Result)
+	suite.Equal(aggregator.ImportJobResultUpdated, dbImportJob.Result)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 	// Prepare
 	r := postgres.NewImportRepository(suite.BadDB)
-	jr := importing.NewImportJobResult(uuid.New(), uuid.New(), base.ImportJobResultUpdated)
+	ij := &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}
 
 	// Execute
-	err := r.SaveImportJob(context.Background(), jr.ToDTO())
+	err := r.SaveImportJob(context.Background(), uuid.New(), ij)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, jr.JobID().String())
-	suite.ErrorContains(err, "sql: database is closed")
-}
-
-func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Success() {
-	// Prepare
-	chID := uuid.New()
-	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
-		chID,
-		"Channel Name",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusInactive,
-	)
-	suite.NoError(err)
-
-	iID1 := uuid.New()
-	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
-		iID1,
-		chID,
-		base.ImportStatusProcessing,
-		time.Now(),
-	)
-	suite.NoError(err)
-
-	iID2 := uuid.New()
-	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
-		iID2,
-		chID,
-		base.ImportStatusProcessing,
-		time.Now(),
-	)
-	suite.NoError(err)
-
-	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
-		iID1,
-		uuid.New(),
-		base.ImportJobResultUpdated,
-	)
-	suite.NoError(err)
-	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
-		iID1,
-		uuid.New(),
-		base.ImportJobResultUpdated,
-	)
-	suite.NoError(err)
-	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
-		iID1,
-		uuid.New(),
-		base.ImportJobResultUpdated,
-	)
-	suite.NoError(err)
-	_, err = suite.DB.Exec("INSERT INTO import_job_results (import_id, job_id, result) VALUES ($1, $2, $3)",
-		iID2,
-		uuid.New(),
-		base.ImportJobResultUpdated,
-	)
-	suite.NoError(err)
-
-	r := postgres.NewImportRepository(suite.DB)
-
-	// Execute
-	jobs, err := r.GetJobsByImportID(context.Background(), iID1)
-
-	// Assert
-	suite.NoError(err)
-	suite.Len(jobs, 3)
-}
-
-func (suite *ImportRepositorySuite) Test_GetJobsByImportID_Fail() {
-	// Prepare
-	r := postgres.NewImportRepository(suite.BadDB)
-
-	// Execute
-	jobs, err := r.GetJobsByImportID(context.Background(), uuid.New())
-
-	// Assert
-	suite.Error(err)
-	suite.Nil(jobs)
+	suite.ErrorContains(err, ij.ID.String())
 	suite.ErrorContains(err, "sql: database is closed")
 }

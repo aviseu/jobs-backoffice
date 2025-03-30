@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
@@ -772,7 +771,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	suite.True(ok)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
-	suite.Equal(base.ImportStatusPending, i.Status)
+	suite.Equal(aggregator.ImportStatusPending, i.Status)
 
 	// Assert log
 	lines := testutils.LogLines(lbuf)

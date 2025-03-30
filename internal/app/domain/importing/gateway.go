@@ -3,7 +3,6 @@ package importing
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"log/slog"
@@ -39,9 +38,12 @@ func NewGateway(p Provider, js *JobService, is *ImportService, log *slog.Logger,
 
 func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *Result) {
 	for r := range results {
-		jr := NewImportJobResult(r.JobID(), i.ID(), base.ImportJobResult(r.Type()))
-		if err := g.is.SaveJobResult(ctx, jr); err != nil {
-			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", jr.JobID(), jr.ImportID(), err).Error())
+		j := &aggregator.ImportJob{
+			ID:     r.JobID(),
+			Result: aggregator.ImportJobResult(r.Type()),
+		}
+		if err := g.is.SaveJobResult(ctx, i.ID(), j); err != nil {
+			g.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.ID(), err).Error())
 			continue
 		}
 	}
@@ -49,7 +51,7 @@ func (g *Gateway) worker(ctx context.Context, wg *sync.WaitGroup, i *Import, res
 }
 
 func (g *Gateway) Import(ctx context.Context, i *Import) error {
-	if err := g.is.SetStatus(ctx, i, base.ImportStatusFetching); err != nil {
+	if err := g.is.SetStatus(ctx, i, aggregator.ImportStatusFetching); err != nil {
 		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
 	}
 
@@ -62,7 +64,7 @@ func (g *Gateway) Import(ctx context.Context, i *Import) error {
 		return err
 	}
 
-	if err := g.is.SetStatus(ctx, i, base.ImportStatusProcessing); err != nil {
+	if err := g.is.SetStatus(ctx, i, aggregator.ImportStatusProcessing); err != nil {
 		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
 	}
 
@@ -81,7 +83,7 @@ func (g *Gateway) Import(ctx context.Context, i *Import) error {
 	close(results)
 	wg.Wait()
 
-	if err := g.is.SetStatus(ctx, i, base.ImportStatusPublishing); err != nil {
+	if err := g.is.SetStatus(ctx, i, aggregator.ImportStatusPublishing); err != nil {
 		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
 	}
 

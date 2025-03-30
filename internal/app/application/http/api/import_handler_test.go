@@ -3,7 +3,6 @@ package api_test
 import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/base"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
@@ -42,23 +41,37 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	i1 := importing.NewImport(
 		id1,
 		ch.ID(),
-		importing.ImportWithStatus(base.ImportStatusPublishing),
-		importing.ImportWithMetadata(1, 2, 3, 4, 5),
+		importing.ImportWithStatus(aggregator.ImportStatusPublishing),
 		importing.ImportWithStartAt(sAt1),
 		importing.ImportWithEndAt(eAt1),
 		importing.ImportWithError("happened this error"),
 	)
-	ir.Add(i1.ToDTO())
+	ir.AddImport(i1.ToDTO())
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNew})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i1.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
 
 	id2 := uuid.New()
 	sAt2 := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
 	i2 := importing.NewImport(id2, ch.ID(), importing.ImportWithStartAt(sAt2))
-	ir.Add(i2.ToDTO())
+	ir.AddImport(i2.ToDTO())
 
 	id3 := uuid.New()
 	sAt3 := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	i3 := importing.NewImport(id3, ch.ID(), importing.ImportWithStartAt(sAt3))
-	ir.Add(i3.ToDTO())
+	ir.AddImport(i3.ToDTO())
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -123,13 +136,27 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	i := importing.NewImport(
 		id,
 		ch.ID(),
-		importing.ImportWithStatus(base.ImportStatusCompleted),
-		importing.ImportWithMetadata(1, 2, 3, 4, 5),
+		importing.ImportWithStatus(aggregator.ImportStatusCompleted),
 		importing.ImportWithStartAt(sAt),
 		importing.ImportWithEndAt(eAt),
 		importing.ImportWithError("happened this error"),
 	)
-	ir.Add(i.ToDTO())
+	ir.AddImport(i.ToDTO())
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNew})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNoChange})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultMissing})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
+	ir.AddImportJob(i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultFailed})
 
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
 	suite.NoError(err)
