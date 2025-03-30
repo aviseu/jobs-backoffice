@@ -739,12 +739,11 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
+	ps := testutils.NewPubSubService()
+	is := importing.NewService(ir, ps, log)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
 	chID := uuid.New()
 	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
@@ -788,12 +787,11 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Prepare
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
+	ps := testutils.NewPubSubService()
+	is := importing.NewService(ir, ps, log)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/schedule", nil)
 	suite.NoError(err)
@@ -805,7 +803,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"error":{"message":"channel not found: channel not found"}}`+"\n", rr.Body.String())
+	suite.Equal(`{"error":{"message":"channel not found"}}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(lbuf)
@@ -819,12 +817,11 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	lbuf, log := testutils.NewLogger()
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
-	is := importing.NewImportService(ir)
+	ps := testutils.NewPubSubService()
+	is := importing.NewService(ir, ps, log)
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	h := http.APIRootHandler(chs, chr, is, ia, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
 
 	chID := uuid.New()
 	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)

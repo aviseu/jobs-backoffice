@@ -1,9 +1,9 @@
 package importing
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"gopkg.in/guregu/null.v3"
 )
@@ -12,11 +12,10 @@ type Import struct {
 	startedAt time.Time
 	endedAt   null.Time
 	error     null.String
+	jobs      []*aggregator.ImportJob
 	status    aggregator.ImportStatus
 	id        uuid.UUID
 	channelID uuid.UUID
-
-	jobs []*aggregator.ImportJob
 }
 
 type ImportOptional func(*Import)
@@ -125,7 +124,7 @@ func (i *Import) EndedAt() null.Time {
 	return i.endedAt
 }
 
-func (i *Import) ToDTO() *aggregator.Import {
+func (i *Import) ToAggregate() *aggregator.Import {
 	return &aggregator.Import{
 		ID:        i.ID(),
 		ChannelID: i.ChannelID(),

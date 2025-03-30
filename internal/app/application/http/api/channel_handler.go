@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"log/slog"
-	"net/http"
-
 	"github.com/aviseu/jobs-backoffice/internal/errs"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -25,16 +25,16 @@ type ChannelRepository interface {
 type ChannelHandler struct {
 	chs *configuring.Service
 	chr ChannelRepository
-	ia  *importing.ScheduleImportAction
+	is  *importing.Service
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ia *importing.ScheduleImportAction, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, is *importing.Service, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
 		chr: chr,
 		log: log,
-		ia:  ia,
+		is:  is,
 	}
 }
 
@@ -225,16 +225,16 @@ func (h *ChannelHandler) ScheduleImport(w http.ResponseWriter, r *http.Request) 
 	ch, err := h.chr.Find(r.Context(), channelID)
 	if err != nil {
 		if errors.Is(err, infrastructure.ErrChannelNotFound) {
-			h.handleFail(w, fmt.Errorf("channel not found: %w", err), http.StatusNotFound)
+			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
+		h.handleError(w, fmt.Errorf("failed to find channel: %w", err))
 		return
 	}
 
 	// temporary
-	i, err := h.ia.Execute(r.Context(), configuring.NewChannelFromDTO(ch))
+	i, err := h.is.ScheduleImport(context.Background(), ch)
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to schedule import: %w", err))
 		return

@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"log/slog"
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -84,7 +84,7 @@ func run(ctx context.Context) error {
 	js := importing.NewJobService(jr, cfg.Job.Buffer, cfg.Job.Workers)
 
 	f := importing.NewFactory(js, is, ohttp.DefaultClient, cfg.Gateway, log)
-	ia := importing.NewImportAction(chr, is, f)
+	ia := importing.NewImportAction(chr, ir, is, f)
 
 	// start server
 	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(ia, log))

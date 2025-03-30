@@ -84,10 +84,10 @@ func (suite *GatewaySuite) Test_ImportChannel_Success() {
 	jr.Add(j2.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := gw.Import(context.Background(), i)
+	err := gw.Import(context.Background(), i.ToAggregate())
 
 	// Assert Jobs
 	suite.NoError(err)
@@ -153,10 +153,10 @@ func (suite *GatewaySuite) Test_ImportChannel_JobRepositoryFail() {
 	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := gw.Import(context.Background(), i)
+	err := gw.Import(context.Background(), i.ToAggregate())
 
 	// Assert Result
 	suite.Error(err)
@@ -200,10 +200,10 @@ func (suite *GatewaySuite) Test_ImportChannel_ServerFail() {
 	gw := f.Create(ch.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := gw.Import(context.Background(), i)
+	err := gw.Import(context.Background(), i.ToAggregate())
 
 	// Assert Result
 	suite.Error(err)

@@ -22,13 +22,12 @@ type ScheduleImportsActionSuite struct {
 
 func (suite *ScheduleImportsActionSuite) Test_Success() {
 	// Prepare
+	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
-	lbuf, log := testutils.NewLogger()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	s := importing.NewScheduleImportsAction(chr, ia)
+	is := importing.NewService(ir, ps, log)
+	isa := importing.NewScheduleImportsAction(chr, is)
 
 	id1 := uuid.New()
 	chr.Add(configuring.NewChannel(id1, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
@@ -37,7 +36,7 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 	chr.Add(configuring.NewChannel(uuid.New(), "channel 3", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive).ToAggregator())
 
 	// Execute
-	err := s.Execute(context.Background())
+	err := isa.Execute(context.Background())
 
 	// Assert
 	suite.NoError(err)
@@ -70,17 +69,16 @@ func (suite *ScheduleImportsActionSuite) Test_Success() {
 
 func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	// Prepare
+	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	chr.FailWith(errors.New("boom!"))
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
-	lbuf, log := testutils.NewLogger()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	s := importing.NewScheduleImportsAction(chr, ia)
+	is := importing.NewService(ir, ps, log)
+	isa := importing.NewScheduleImportsAction(chr, is)
 
 	// Execute
-	err := s.Execute(context.Background())
+	err := isa.Execute(context.Background())
 
 	// Assert
 	suite.Error(err)
@@ -91,54 +89,26 @@ func (suite *ScheduleImportsActionSuite) Test_ChannelRepositoryFail() {
 	suite.Empty(lbuf)
 }
 
-func (suite *ScheduleImportsActionSuite) Test_ImportServiceFail() {
-	// Prepare
-	chr := testutils.NewChannelRepository()
-	ir := testutils.NewImportRepository()
-	ir.FailWith(errors.New("boom!"))
-	is := importing.NewImportService(ir)
-	ps := testutils.NewPubSubService()
-	lbuf, log := testutils.NewLogger()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	s := importing.NewScheduleImportsAction(chr, ia)
-
-	id := uuid.New()
-	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
-
-	// Execute
-	err := s.Execute(context.Background())
-
-	// Assert
-	suite.Error(err)
-	suite.Contains(err.Error(), "failed to start import for channel "+id.String())
-	suite.ErrorContains(err, "boom!")
-
-	// Assert logs
-	lines := testutils.LogLines(lbuf)
-	suite.Len(lines, 1)
-	suite.Contains(lines[0], "scheduling import for channel "+id.String())
-}
-
 func (suite *ScheduleImportsActionSuite) Test_PubSubServiceFail() {
 	// Prepare
+	lbuf, log := testutils.NewLogger()
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
-	is := importing.NewImportService(ir)
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom!"))
-	lbuf, log := testutils.NewLogger()
-	ia := importing.NewScheduleImportAction(is, ps, log)
-	s := importing.NewScheduleImportsAction(chr, ia)
+	is := importing.NewService(ir, ps, log)
+	isa := importing.NewScheduleImportsAction(chr, is)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	// Execute
-	err := s.Execute(context.Background())
+	err := isa.Execute(context.Background())
 
 	// Assert
 	suite.Error(err)
-	suite.Contains(err.Error(), "ailed to publish import command for import")
+	suite.Contains(err.Error(), "failed to publish import ")
+	suite.Contains(err.Error(), id.String())
 	suite.ErrorContains(err, "boom!")
 
 	// Assert logs

@@ -2,10 +2,10 @@ package arbeitnow
 
 import (
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"net/http"
 	"time"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 )
 

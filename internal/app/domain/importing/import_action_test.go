@@ -84,9 +84,9 @@ func (suite *ImportActionSuite) Test_Success() {
 	jr.Add(j2.ToDTO())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
-	action := importing.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, ir, is, f)
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -128,7 +128,7 @@ func (suite *ImportActionSuite) Test_Execute_ImportRepositoryFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := importing.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, ir, is, f)
 	id := uuid.New()
 
 	// Execute
@@ -153,9 +153,9 @@ func (suite *ImportActionSuite) Test_Execute_ChannelServiceFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, testutils.NewHTTPClientMock(), importing.Config{}, log)
-	action := importing.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, ir, is, f)
 	i := importing.NewImport(uuid.New(), uuid.New())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())
@@ -181,9 +181,9 @@ func (suite *ImportActionSuite) Test_Execute_GatewayFail() {
 	jr := testutils.NewJobRepository()
 	js := importing.NewJobService(jr, 10, 10)
 	f := importing.NewFactory(js, is, http.DefaultClient, importing.Config{Arbeitnow: arbeitnow.Config{URL: server.URL}}, log)
-	action := importing.NewImportAction(chr, is, f)
+	action := importing.NewImportAction(chr, ir, is, f)
 	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToDTO())
+	ir.AddImport(i.ToAggregate())
 
 	// Execute
 	err := action.Execute(context.Background(), i.ID())

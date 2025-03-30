@@ -45,10 +45,10 @@ type Import struct {
 	StartedAt time.Time    `db:"started_at"`
 	EndedAt   null.Time    `db:"ended_at"`
 	Error     null.String  `db:"error"`
+	Jobs      []*ImportJob `db:"jobs"`
 	Status    ImportStatus `db:"status"`
 	ID        uuid.UUID    `db:"id"`
 	ChannelID uuid.UUID    `db:"channel_id"`
-	Jobs      []*ImportJob `db:"jobs"`
 }
 
 func (i *Import) NewJobs() int {
@@ -69,6 +69,10 @@ func (i *Import) MissingJobs() int {
 
 func (i *Import) FailedJobs() int {
 	return i.jobCount(ImportJobResultFailed)
+}
+
+func (i *Import) TotalJobs() int {
+	return len(i.Jobs)
 }
 
 func (i *Import) jobCount(result ImportJobResult) int {

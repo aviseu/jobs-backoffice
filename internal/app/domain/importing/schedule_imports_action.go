@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/google/uuid"
 )
 
@@ -13,14 +12,14 @@ type PubSubService interface {
 }
 
 type ScheduleImportsAction struct {
-	ia  *ScheduleImportAction
+	s   *Service
 	chr ChannelRepository
 }
 
-func NewScheduleImportsAction(chr ChannelRepository, ia *ScheduleImportAction) *ScheduleImportsAction {
+func NewScheduleImportsAction(chr ChannelRepository, s *Service) *ScheduleImportsAction {
 	return &ScheduleImportsAction{
 		chr: chr,
-		ia:  ia,
+		s:   s,
 	}
 }
 
@@ -30,10 +29,9 @@ func (s *ScheduleImportsAction) Execute(ctx context.Context) error {
 		return fmt.Errorf("failed to fetch active channels: %w", err)
 	}
 
-	for _, dto := range channels {
-		ch := configuring.NewChannelFromDTO(dto)
-		if _, err := s.ia.Execute(ctx, ch); err != nil {
-			return fmt.Errorf("failed to schedule import for channel %s: %w", ch.ID(), err)
+	for _, ch := range channels {
+		if _, err := s.s.ScheduleImport(ctx, ch); err != nil {
+			return fmt.Errorf("failed to schedule import for channel %s: %w", ch.ID, err)
 		}
 	}
 

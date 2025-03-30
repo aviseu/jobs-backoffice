@@ -1,27 +1,34 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
+type ImportRepository interface {
+	GetImports(ctx context.Context) ([]*aggregator.Import, error)
+	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
+}
+
 type ImportHandler struct {
-	is  *importing.ImportService
+	ir  ImportRepository
 	chr ChannelRepository
 	log *slog.Logger
 }
 
-func NewImportHandler(chr ChannelRepository, is *importing.ImportService, log *slog.Logger) *ImportHandler {
+func NewImportHandler(chr ChannelRepository, ir ImportRepository, log *slog.Logger) *ImportHandler {
 	return &ImportHandler{
 		chr: chr,
-		is:  is,
+		ir:  ir,
 		log: log,
 	}
 }
@@ -36,7 +43,7 @@ func (h *ImportHandler) Routes() http.Handler {
 }
 
 func (h *ImportHandler) ListImports(w http.ResponseWriter, r *http.Request) {
-	ii, err := h.is.GetImports(r.Context())
+	ii, err := h.ir.GetImports(r.Context())
 	if err != nil {
 		h.handleError(w, fmt.Errorf("failed to get imports: %w", err))
 		return
@@ -70,20 +77,20 @@ func (h *ImportHandler) FindImport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := h.is.FindImport(r.Context(), id)
+	i, err := h.ir.FindImport(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, importing.ErrImportNotFound) {
+		if errors.Is(err, infrastructure.ErrImportNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to get import: %w", err))
+		h.handleError(w, fmt.Errorf("failed to find import %s: %w", idStr, err))
 		return
 	}
 
-	ch, err := h.chr.Find(r.Context(), i.ChannelID())
+	ch, err := h.chr.Find(r.Context(), i.ChannelID)
 	if err != nil {
-		h.handleError(w, fmt.Errorf("failed to get channels: %w", err))
+		h.handleError(w, fmt.Errorf("failed to find channel: %w", err))
 		return
 	}
 

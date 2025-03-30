@@ -3,9 +3,10 @@ package arbeitnow
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"io"
 	"net/http"
+
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 )
 
 const ChannelHeader = "X-Channel-Id"

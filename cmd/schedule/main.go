@@ -81,12 +81,11 @@ func run(ctx context.Context) error {
 	// services
 	slog.Info("setting up services...")
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewImportService(ir)
+	is := importing.NewService(ir, ps, log)
 
 	chr := postgres.NewChannelRepository(db)
 
-	importSingle := importing.NewScheduleImportAction(is, ps, log)
-	importActive := importing.NewScheduleImportsAction(chr, importSingle)
+	importActive := importing.NewScheduleImportsAction(chr, is)
 
 	slog.Info("starting imports...")
 	if err := importActive.Execute(ctx); err != nil {

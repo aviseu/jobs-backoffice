@@ -88,11 +88,10 @@ func run(ctx context.Context) error {
 	chr := postgres.NewChannelRepository(db)
 	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewImportService(ir)
-	ia := importing.NewScheduleImportAction(is, ps, log)
+	is := importing.NewService(ir, ps, log)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, is, ia, cfg.API, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, ir, is, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

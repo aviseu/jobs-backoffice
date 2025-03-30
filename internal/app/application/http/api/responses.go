@@ -1,10 +1,9 @@
 package api
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"time"
 
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"gopkg.in/guregu/null.v3"
 )
 
@@ -93,21 +92,21 @@ type ImportResponse struct {
 	TotalJobs    int         `json:"total_jobs"`
 }
 
-func NewImportResponse(i *importing.Import, ch *aggregator.Channel) *ImportResponse {
+func NewImportResponse(i *aggregator.Import, ch *aggregator.Channel) *ImportResponse {
 	ended := null.NewString("", false)
-	if i.EndedAt().Valid {
-		ended = null.StringFrom(i.EndedAt().Time.Format(time.RFC3339))
+	if i.EndedAt.Valid {
+		ended = null.StringFrom(i.EndedAt.Time.Format(time.RFC3339))
 	}
 
 	return &ImportResponse{
-		ID:           i.ID().String(),
-		ChannelID:    i.ChannelID().String(),
+		ID:           i.ID.String(),
+		ChannelID:    i.ChannelID.String(),
 		ChannelName:  ch.Name,
 		Integration:  ch.Integration.String(),
-		Status:       i.Status().String(),
-		StartedAt:    i.StartedAt().Format(time.RFC3339),
+		Status:       i.Status.String(),
+		StartedAt:    i.StartedAt.Format(time.RFC3339),
 		EndedAt:      ended,
-		Error:        i.Error(),
+		Error:        i.Error,
 		NewJobs:      i.NewJobs(),
 		UpdatedJobs:  i.UpdatedJobs(),
 		NoChangeJobs: i.NoChangeJobs(),
@@ -121,14 +120,14 @@ type ImportsResponse struct {
 	Imports []*ImportResponse `json:"imports"`
 }
 
-func NewImportsResponse(imports []*importing.Import, channels []*aggregator.Channel) *ImportsResponse {
+func NewImportsResponse(imports []*aggregator.Import, channels []*aggregator.Channel) *ImportsResponse {
 	resp := &ImportsResponse{
 		Imports: make([]*ImportResponse, 0, len(imports)),
 	}
 
 	for _, i := range imports {
 		for _, ch := range channels {
-			if ch.ID == i.ChannelID() {
+			if ch.ID == i.ChannelID {
 				resp.Imports = append(resp.Imports, NewImportResponse(i, ch))
 				break
 			}

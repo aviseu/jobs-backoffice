@@ -46,7 +46,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	)
 
 	// Execute
-	err = r.SaveImport(context.Background(), i.ToDTO())
+	err = r.SaveImport(context.Background(), i.ToAggregate())
 
 	// Execute
 	suite.NoError(err)
@@ -83,7 +83,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 	)
 
 	// Execute
-	err := r.SaveImport(context.Background(), i.ToDTO())
+	err := r.SaveImport(context.Background(), i.ToAggregate())
 
 	// Assert
 	suite.Error(err)
@@ -114,7 +114,7 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 		importing.ImportWithStartAt(sAt),
 		importing.ImportWithEndAt(eAt),
 	)
-	err = r.SaveImport(context.Background(), i.ToDTO())
+	err = r.SaveImport(context.Background(), i.ToAggregate())
 	suite.NoError(err)
 	suite.NoError(r.SaveImportJob(context.Background(), i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))
 	suite.NoError(r.SaveImportJob(context.Background(), i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))

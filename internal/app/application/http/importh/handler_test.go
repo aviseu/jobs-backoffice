@@ -59,14 +59,14 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		},
 		log,
 	)
-	ia := importing.NewImportAction(chr, is, f)
+	ia := importing.NewImportAction(chr, ir, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.New()
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	iID := uuid.New()
-	ir.AddImport(importing.NewImport(iID, chID).ToDTO())
+	ir.AddImport(importing.NewImport(iID, chID).ToAggregate())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -142,14 +142,14 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		},
 		log,
 	)
-	ia := importing.NewImportAction(chr, is, f)
+	ia := importing.NewImportAction(chr, ir, is, f)
 	h := http.ImportRootHandler(ia, log)
 
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
 	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
 
 	iID := uuid.New()
-	ir.AddImport(importing.NewImport(iID, chID).ToDTO())
+	ir.AddImport(importing.NewImport(iID, chID).ToAggregate())
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),

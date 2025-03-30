@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
