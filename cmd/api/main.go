@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -11,7 +12,6 @@ import (
 	cpubsub "cloud.google.com/go/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -88,10 +88,10 @@ func run(ctx context.Context) error {
 	chr := postgres.NewChannelRepository(db)
 	chs := configuring.NewService(chr)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, ps, log)
 
 	// start server
-	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, ir, is, cfg.API, log))
+	server := http.SetupServer(ctx, cfg.API, http.APIRootHandler(chs, chr, ir, ss, cfg.API, log))
 	serverErrors := make(chan error, 1)
 	go func() {
 		slog.Info("starting server...")

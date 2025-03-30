@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"log/slog"
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/errs"
@@ -25,11 +25,11 @@ type ChannelRepository interface {
 type ChannelHandler struct {
 	chs *configuring.Service
 	chr ChannelRepository
-	is  *importing.Service
+	is  *scheduling.Service
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, is *importing.Service, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, is *scheduling.Service, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
 		chs: chs,
 		chr: chr,

@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"log/slog"
 	"os"
 
 	cpubsub "cloud.google.com/go/pubsub"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
@@ -82,10 +82,10 @@ func run(ctx context.Context) error {
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	ir := postgres.NewImportRepository(db)
-	is := importing.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, ps, log)
 
 	slog.Info("starting imports...")
-	if err := is.ScheduleActiveChannels(ctx); err != nil {
+	if err := ss.ScheduleActiveChannels(ctx); err != nil {
 		return fmt.Errorf("failed to import active channels: %w", err)
 	}
 

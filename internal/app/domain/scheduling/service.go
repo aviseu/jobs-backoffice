@@ -1,13 +1,19 @@
-package importing
+package scheduling
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v3"
 )
+
+type ChannelRepository interface {
+	GetActive(ctx context.Context) ([]*aggregator.Channel, error)
+}
 
 type PubSubService interface {
 	PublishImportCommand(ctx context.Context, importID uuid.UUID) error
@@ -15,10 +21,6 @@ type PubSubService interface {
 
 type ImportRepository interface {
 	SaveImport(ctx context.Context, i *aggregator.Import) error
-	SaveImportJob(ctx context.Context, importID uuid.UUID, j *aggregator.ImportJob) error
-
-	GetImports(ctx context.Context) ([]*aggregator.Import, error)
-	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
 }
 
 type Service struct {
@@ -55,14 +57,20 @@ func (s *Service) ScheduleActiveChannels(ctx context.Context) error {
 func (s *Service) ScheduleImport(ctx context.Context, ch *aggregator.Channel) (*aggregator.Import, error) {
 	s.log.Info(fmt.Sprintf("scheduling import for channel %s [%s] [name: %s]", ch.ID, ch.Integration.String(), ch.Name))
 
-	i := NewImport(uuid.New(), ch.ID)
-	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
+	i := &aggregator.Import{
+		ID:        uuid.New(),
+		ChannelID: ch.ID,
+		Status:    aggregator.ImportStatusPending,
+		StartedAt: time.Now(),
+		EndedAt:   null.NewTime(time.Now(), false),
+	}
+	if err := s.ir.SaveImport(ctx, i); err != nil {
 		return nil, fmt.Errorf("failed to save import for channel %s while starting: %w", ch.ID, err)
 	}
 
-	if err := s.ps.PublishImportCommand(ctx, i.ID()); err != nil {
-		return nil, fmt.Errorf("failed to publish import %s for channel %s: %w", i.ID(), ch.ID, err)
+	if err := s.ps.PublishImportCommand(ctx, i.ID); err != nil {
+		return nil, fmt.Errorf("failed to publish import %s for channel %s: %w", i.ID, ch.ID, err)
 	}
 
-	return i.ToAggregate(), nil
+	return i, nil
 }

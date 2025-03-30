@@ -1,10 +1,10 @@
-package importing_test
+package scheduling_test
 
 import (
 	"context"
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -27,7 +27,7 @@ func (suite *ServiceSuite) Test_ScheduleImport_Success() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),
@@ -71,7 +71,7 @@ func (suite *ServiceSuite) Test_ScheduleImport_ImportRepositoryFailed() {
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom"))
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),
@@ -108,7 +108,7 @@ func (suite *ServiceSuite) Test_ScheduleImport_PubSubFailed() {
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom"))
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),
@@ -148,7 +148,7 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_Success() {
 	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	id1 := uuid.New()
 	chr.Add(configuring.NewChannel(id1, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
@@ -195,7 +195,7 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_ChannelRepositoryFail() {
 	chr.FailWith(errors.New("boom!"))
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	// Execute
 	err := is.ScheduleActiveChannels(context.Background())
@@ -216,7 +216,7 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_ImportRepositoryFail() {
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
@@ -243,7 +243,7 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_PubSubServiceFail() {
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
 	ps.FailWith(errors.New("boom!"))
-	is := importing.NewService(ir, chr, ps, log)
+	is := scheduling.NewService(ir, chr, ps, log)
 
 	id := uuid.New()
 	chr.Add(configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())

@@ -6,7 +6,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -741,9 +741,9 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
 	chr := testutils.NewChannelRepository()
-	is := importing.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
 
 	chID := uuid.New()
 	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
@@ -789,9 +789,9 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	ir := testutils.NewImportRepository()
 	ps := testutils.NewPubSubService()
 	chr := testutils.NewChannelRepository()
-	is := importing.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/schedule", nil)
 	suite.NoError(err)
@@ -819,9 +819,9 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	ir := testutils.NewImportRepository()
 	ir.FailWith(errors.New("boom!"))
 	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, ps, log)
 	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
 
 	chID := uuid.New()
 	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)

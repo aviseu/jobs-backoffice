@@ -10,6 +10,14 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
+type ImportRepository interface {
+	SaveImport(ctx context.Context, i *aggregator.Import) error
+	SaveImportJob(ctx context.Context, importID uuid.UUID, j *aggregator.ImportJob) error
+
+	GetImports(ctx context.Context) ([]*aggregator.Import, error)
+	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
+}
+
 type ImportService struct {
 	r ImportRepository
 }

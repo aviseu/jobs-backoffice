@@ -29,10 +29,8 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	ir := testutils.NewImportRepository()
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
 
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToAggregator())
@@ -98,9 +96,7 @@ func (suite *ImportHandlerSuite) Test_List_RepositoryFail() {
 	ir.FailWith(errors.New("boom!"))
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, nil, http.Config{}, log)
 
 	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
 	suite.NoError(err)
@@ -127,9 +123,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	ir := testutils.NewImportRepository()
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, nil, http.Config{}, log)
 
 	ch := configuring.NewChannel(uuid.New(), "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
 	chr.Add(ch.ToAggregator())
@@ -184,9 +178,7 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	ir := testutils.NewImportRepository()
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, nil, http.Config{}, log)
 
 	id := uuid.New()
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
@@ -212,9 +204,7 @@ func (suite *ImportHandlerSuite) Test_Find_RepositoryFail() {
 	ir.FailWith(errors.New("boom!"))
 	chr := testutils.NewChannelRepository()
 	chs := configuring.NewService(chr)
-	ps := testutils.NewPubSubService()
-	is := importing.NewService(ir, chr, ps, log)
-	h := http.APIRootHandler(chs, chr, ir, is, http.Config{}, log)
+	h := http.APIRootHandler(chs, chr, ir, nil, http.Config{}, log)
 
 	id := uuid.New()
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)

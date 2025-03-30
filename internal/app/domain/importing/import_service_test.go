@@ -22,32 +22,19 @@ type ImportServiceSuite struct {
 
 func (suite *ImportServiceSuite) Test_Success() {
 	// Prepare
-	_, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
-	ps := testutils.NewPubSubService()
-	s := importing.NewService(ir, chr, ps, log)
 	ctx := context.Background()
-	ch := &aggregator.Channel{
-		ID:          uuid.New(),
-		Name:        "airbeitnow test",
-		Integration: aggregator.IntegrationArbeitnow,
-		Status:      aggregator.ChannelStatusActive,
+	i := &aggregator.Import{
+		ID:        uuid.New(),
+		ChannelID: uuid.New(),
+		Status:    aggregator.ImportStatusPending,
+		StartedAt: time.Now(),
 	}
-
-	// Start
-	i, err := s.ScheduleImport(ctx, ch)
-	suite.NoError(err)
-	suite.Len(ir.Imports, 1)
-	suite.NotNil(ir.Imports[i.ID])
-	suite.Equal(ch.ID, ir.Imports[i.ID].ChannelID)
-	suite.Equal(aggregator.ImportStatusPending, ir.Imports[i.ID].Status)
-	suite.True(ir.Imports[i.ID].StartedAt.After(time.Now().Add(-2 * time.Second)))
-	suite.False(ir.Imports[i.ID].EndedAt.Valid)
+	ir.Imports[i.ID] = i
 
 	// Fetch
-	err = is.SetStatus(ctx, i, aggregator.ImportStatusFetching)
+	err := is.SetStatus(ctx, i, aggregator.ImportStatusFetching)
 	suite.NoError(err)
 	suite.Equal(aggregator.ImportStatusFetching, ir.Imports[i.ID].Status)
 
@@ -94,12 +81,8 @@ func (suite *ImportServiceSuite) Test_Success() {
 
 func (suite *ImportServiceSuite) Test_Fail() {
 	// Prepare
-	_, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
 	ir := testutils.NewImportRepository()
 	is := importing.NewImportService(ir)
-	ps := testutils.NewPubSubService()
-	s := importing.NewService(ir, chr, ps, log)
 	ctx := context.Background()
 	ch := &aggregator.Channel{
 		ID:          uuid.New(),
@@ -107,14 +90,16 @@ func (suite *ImportServiceSuite) Test_Fail() {
 		Integration: aggregator.IntegrationArbeitnow,
 		Status:      aggregator.ChannelStatusActive,
 	}
-
-	// Start
-	i, err := s.ScheduleImport(ctx, ch)
-	suite.NoError(err)
-	suite.False(ir.Imports[i.ID].EndedAt.Valid)
+	i := &aggregator.Import{
+		ID:        uuid.New(),
+		ChannelID: ch.ID,
+		Status:    aggregator.ImportStatusPending,
+		StartedAt: time.Now(),
+	}
+	ir.Imports[i.ID] = i
 
 	// Fail
-	err = is.MarkAsFailed(ctx, i, errors.New("boom!"))
+	err := is.MarkAsFailed(ctx, i, errors.New("boom!"))
 	suite.NoError(err)
 	suite.Equal(aggregator.ImportStatusFailed, ir.Imports[i.ID].Status)
 	suite.True(ir.Imports[i.ID].EndedAt.Valid)
