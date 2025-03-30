@@ -54,7 +54,7 @@ func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Chann
 }
 
 func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Channel, error) {
-	dto, err := s.r.Find(ctx, cmd.ID)
+	aggr, err := s.r.Find(ctx, cmd.ID)
 	if err != nil {
 		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return nil, ErrChannelNotFound
@@ -62,7 +62,7 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Chann
 		return nil, fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromDTO(dto)
+	ch := NewChannelFromAggregator(aggr)
 
 	if err := ch.Update(cmd.Name); err != nil {
 		return nil, fmt.Errorf("failed to update channel: %w", err)
@@ -76,7 +76,7 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Chann
 }
 
 func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
-	dto, err := s.r.Find(ctx, id)
+	aggr, err := s.r.Find(ctx, id)
 	if err != nil {
 		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return ErrChannelNotFound
@@ -84,7 +84,7 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromDTO(dto)
+	ch := NewChannelFromAggregator(aggr)
 
 	ch.Activate()
 
@@ -96,7 +96,7 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 }
 
 func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
-	dto, err := s.r.Find(ctx, id)
+	aggr, err := s.r.Find(ctx, id)
 	if err != nil {
 		if errors.Is(err, infrastructure.ErrChannelNotFound) {
 			return ErrChannelNotFound
@@ -104,7 +104,7 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromDTO(dto)
+	ch := NewChannelFromAggregator(aggr)
 
 	ch.Deactivate()
 

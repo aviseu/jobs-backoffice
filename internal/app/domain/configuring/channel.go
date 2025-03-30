@@ -98,12 +98,12 @@ func (ch *Channel) ToAggregator() *aggregator.Channel {
 	}
 }
 
-func NewChannelFromDTO(dto *aggregator.Channel) *Channel {
+func NewChannelFromAggregator(ch *aggregator.Channel) *Channel {
 	return NewChannel(
-		dto.ID,
-		dto.Name,
-		dto.Integration,
-		dto.Status,
-		WithTimestamps(dto.CreatedAt, dto.UpdatedAt),
+		ch.ID,
+		ch.Name,
+		ch.Integration,
+		ch.Status,
+		WithTimestamps(ch.CreatedAt, ch.UpdatedAt),
 	)
 }

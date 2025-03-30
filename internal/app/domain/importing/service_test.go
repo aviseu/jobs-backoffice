@@ -63,7 +63,7 @@ func (suite *ServiceSuite) Test_Success() {
 		time.Unix(1739357344, 0),
 		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
-	jr.Add(j1.ToDTO())
+	jr.Add(j1.ToAggregator())
 	j2 := importing.NewJob(
 		uuid.New(),
 		ch.ID(),
@@ -77,7 +77,7 @@ func (suite *ServiceSuite) Test_Success() {
 		time.Unix(1739357344, 0),
 		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
 	)
-	jr.Add(j2.ToDTO())
+	jr.Add(j2.ToAggregator())
 
 	i := importing.NewImport(uuid.New(), ch.ID())
 	ir.AddImport(i.ToAggregate())

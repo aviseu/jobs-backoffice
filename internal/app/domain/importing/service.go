@@ -77,7 +77,7 @@ func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *Impo
 
 func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, importJobs chan<- *Result, errs chan<- error) {
 	for j := range jobs {
-		if err := r.Save(ctx, j.ToDTO()); err != nil {
+		if err := r.Save(ctx, j.ToAggregator()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
 			importJobs <- NewImportMetric(j.ID(), ResultTypeFailed, WithError(err.Error()))
 		}

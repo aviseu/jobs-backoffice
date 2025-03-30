@@ -41,7 +41,7 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err := r.Save(context.Background(), j.ToDTO())
+	err := r.Save(context.Background(), j.ToAggregator())
 
 	// Assert return
 	suite.NoError(err)
@@ -106,7 +106,7 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err = r.Save(context.Background(), j.ToDTO())
+	err = r.Save(context.Background(), j.ToAggregator())
 
 	// Assert return
 	suite.NoError(err)
@@ -155,7 +155,7 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	r := postgres.NewJobRepository(suite.BadDB)
 
 	// Execute
-	err := r.Save(context.Background(), j.ToDTO())
+	err := r.Save(context.Background(), j.ToAggregator())
 
 	// Assert return
 	suite.Error(err)

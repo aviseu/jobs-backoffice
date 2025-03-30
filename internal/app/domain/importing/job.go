@@ -140,7 +140,7 @@ func (j *Job) IsEqual(other *Job) bool {
 		j.postedAt.Equal(other.postedAt)
 }
 
-func (j *Job) ToDTO() *aggregator.Job {
+func (j *Job) ToAggregator() *aggregator.Job {
 	return &aggregator.Job{
 		ID:            j.ID(),
 		ChannelID:     j.ChannelID(),
