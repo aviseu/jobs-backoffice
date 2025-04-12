@@ -12,5 +12,10 @@ func NewLogger() (*bytes.Buffer, *slog.Logger) {
 }
 
 func LogLines(buf *bytes.Buffer) []string {
-	return strings.Split(strings.TrimSuffix(buf.String(), "\n"), "\n")
+	ss := strings.TrimSuffix(buf.String(), "\n")
+	if ss == "" {
+		return nil
+	}
+
+	return strings.Split(ss, "\n")
 }
