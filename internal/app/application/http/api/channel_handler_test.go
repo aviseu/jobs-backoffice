@@ -5,8 +5,6 @@ import (
 	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
@@ -145,10 +143,9 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 	// Prepare
-	_, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{Cors: true}, log)
+	dsl := testutils.NewDSL(
+		testutils.WithHTTPConfig(http.Config{Cors: true}),
+	)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
@@ -156,7 +153,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
@@ -168,10 +165,9 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	// Prepare
-	_, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{Cors: false}, log)
+	dsl := testutils.NewDSL(
+		testutils.WithHTTPConfig(http.Config{Cors: false}),
+	)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
@@ -179,7 +175,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
@@ -191,52 +187,45 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
+	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(cat, uat),
 		),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("GET", "/api/channels/"+ch.ID().String(), nil)
+	req, err := oghttp.NewRequest("GET", "/api/channels/"+id.String(), nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt().Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+id.String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+cat.Format(time.RFC3339)+`","updated_at":"`+uat.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+uuid.New().String(), nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
@@ -244,22 +233,19 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/invalid-uuid", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -267,23 +253,21 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ChannelHandlerSuite) Test_FindChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_FindChannel_ChannelRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL(
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+uuid.New().String(), nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -291,69 +275,62 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Error_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
-	suite.Contains(lines[0], "boom!")
+	suite.Contains(lines[0], "boom")
 }
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
+	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(cat, uat),
 		),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+id.String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
-	suite.Equal("NewChannel Name", c.Name)
-	suite.Equal(aggregator.IntegrationArbeitnow, c.Integration)
-	suite.Equal(aggregator.ChannelStatusActive, c.Status)
-	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
-	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
+	suite.Equal("NewChannel Name", ch.Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, ch.Status)
+	suite.True(ch.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
+	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+ch.ID().String()+`","name":"NewChannel Name","integration":"arbeitnow","status":"active","created_at":"`+ch.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+c.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+id.String()+`","name":"NewChannel Name","integration":"arbeitnow","status":"active","created_at":"`+cat.Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+uuid.New().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
@@ -361,22 +338,19 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/invalid-uuid", strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -384,34 +358,26 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelActivated(),
 		),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":""}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+id.String(), strings.NewReader(`{"name":""}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -419,40 +385,36 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"failed to update channel: name is required\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
+	suite.Len(dsl.Channels(), 1)
+	c := dsl.FirstChannel()
 	suite.Equal("channel 1", c.Name)
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_ChannelRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
+	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(cat, uat),
 		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+ch.ID().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+id.String(), strings.NewReader(`{"name":"NewChannel Name"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -460,46 +422,37 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Error_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
-	suite.Equal("channel 1", c.Name)
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
+	suite.Equal("channel 1", ch.Name)
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
-	suite.Contains(lines[0], "boom!")
+	suite.Contains(lines[0], "boom")
 }
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusInactive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelDeactivated(),
 		),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/activate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
+	suite.Len(dsl.Channels(), 1)
+	c := dsl.FirstChannel()
 	suite.Equal(aggregator.ChannelStatusActive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
@@ -509,22 +462,19 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	suite.Empty(rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/activate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
@@ -532,22 +482,19 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/activate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -555,35 +502,26 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_ActivateChannel_ChannelRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusInactive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelDeactivated(),
 		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/activate", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/activate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -591,46 +529,37 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Error_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
+	suite.Len(dsl.Channels(), 1)
+	c := dsl.FirstChannel()
 	suite.Equal(aggregator.ChannelStatusInactive, c.Status)
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
-	suite.Contains(lines[0], "boom!")
+	suite.Contains(lines[0], "boom")
 }
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelActivated(),
 		),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/deactivate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
+	suite.Len(dsl.Channels(), 1)
+	c := dsl.FirstChannel()
 	suite.Equal(aggregator.ChannelStatusInactive, c.Status)
 	suite.True(c.CreatedAt.Equal(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)))
 	suite.True(c.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
@@ -640,22 +569,19 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	suite.Empty(rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/deactivate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
@@ -663,22 +589,19 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	suite.Equal("{\"error\":{\"message\":\"channel not found\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/deactivate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -686,35 +609,26 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
+func (suite *ChannelHandlerSuite) Test_DeactivateChannel_ChannelRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch := configuring.NewChannel(
-		uuid.New(),
-		"channel 1",
-		aggregator.IntegrationArbeitnow,
-		aggregator.ChannelStatusActive,
-		configuring.WithTimestamps(
-			time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-			time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelActivated(),
 		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
-	r.Add(ch.ToAggregator())
 
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/deactivate", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/deactivate", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -722,81 +636,70 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Error_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	c := r.First()
-	suite.Equal(aggregator.ChannelStatusActive, c.Status)
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
+	suite.Equal(aggregator.ChannelStatusActive, ch.Status)
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
-	suite.Contains(lines[0], "boom!")
+	suite.Contains(lines[0], "boom")
 }
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	ir := testutils.NewImportRepository()
-	ps := testutils.NewPubSubService()
-	chr := testutils.NewChannelRepository()
-	ss := scheduling.NewService(ir, chr, ps, log)
-	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelActivated(),
+		),
+	)
 
-	chID := uuid.New()
-	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToAggregator())
-
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/schedule", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	var resp api.ImportResponse
 	err = json.NewDecoder(rr.Body).Decode(&resp)
 	suite.NoError(err)
-	suite.Equal(ch.ID().String(), resp.ChannelID)
+	suite.Equal(id.String(), resp.ChannelID)
 	iID := uuid.MustParse(resp.ID)
 
 	// Assert state change
-	suite.Len(ir.Imports, 1)
-	i, ok := ir.Imports[iID]
-	suite.True(ok)
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
 	suite.Equal(iID, i.ID)
-	suite.Equal(chID, i.ChannelID)
+	suite.Equal(id, i.ChannelID)
 	suite.Equal(aggregator.ImportStatusPending, i.Status)
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"INFO"`)
-	suite.Contains(lines[0], "scheduling import for channel "+chID.String())
+	suite.Contains(lines[0], "scheduling import for channel "+id.String())
 
 	// Assert pubsub
-	suite.Len(ps.ImportIDs, 1)
-	suite.Equal(i.ID, ps.ImportIDs[0])
+	suite.Len(dsl.PublishedImports(), 1)
+	suite.Equal(i.ID, dsl.PublishedImports()[0])
 }
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	ir := testutils.NewImportRepository()
-	ps := testutils.NewPubSubService()
-	chr := testutils.NewChannelRepository()
-	ss := scheduling.NewService(ir, chr, ps, log)
-	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/schedule", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusNotFound, rr.Code)
@@ -804,33 +707,28 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	suite.Equal(`{"error":{"message":"channel not found"}}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf)
+	suite.Empty(dsl.LogLines())
 
 	// Assert pubsub
-	suite.Len(ps.ImportIDs, 0)
+	suite.Len(dsl.PublishedImports(), 0)
 }
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	ir := testutils.NewImportRepository()
-	ir.FailWith(errors.New("boom!"))
-	ps := testutils.NewPubSubService()
-	ss := scheduling.NewService(ir, chr, ps, log)
-	chs := configuring.NewService(chr)
-	h := http.APIRootHandler(chs, chr, ir, ss, http.Config{}, log)
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+		testutils.WithImportRepositoryError(errors.New("boom")),
+	)
 
-	chID := uuid.New()
-	ch := configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToAggregator())
-
-	req, err := oghttp.NewRequest("PUT", "/api/channels/"+ch.ID().String()+"/schedule", nil)
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/schedule", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -838,14 +736,14 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	suite.Equal(`{"error":{"message":"Internal Server Error"}}`+"\n", rr.Body.String())
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 2)
 	suite.Contains(lines[0], `"level":"INFO"`)
-	suite.Contains(lines[0], "scheduling import for channel "+chID.String())
+	suite.Contains(lines[0], "scheduling import for channel "+id.String())
 	suite.Contains(lines[1], `"level":"ERROR"`)
 	suite.Contains(lines[1], "failed to schedule import")
-	suite.Contains(lines[1], "boom!")
+	suite.Contains(lines[1], "boom")
 
 	// Assert pubsub
-	suite.Len(ps.ImportIDs, 0)
+	suite.Empty(dsl.PublishedImports())
 }

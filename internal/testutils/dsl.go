@@ -43,7 +43,8 @@ type DSL struct {
 	ImportHandler      *api.ImportHandler
 	IntegrationHandler *api.IntegrationHandler
 
-	APIServer oghttp.Handler
+	APIServer  oghttp.Handler
+	HTTPConfig *http.Config
 }
 
 type DSLOptions func(*DSL)
@@ -89,6 +90,12 @@ func WithArbeitnowEnabled() DSLOptions {
 			arbeitnow.Config{URL: dsl.AirbeitnowServer.URL},
 			ch,
 		)
+	}
+}
+
+func WithHTTPConfig(cfg http.Config) DSLOptions {
+	return func(dsl *DSL) {
+		dsl.HTTPConfig = &cfg
 	}
 }
 
@@ -205,8 +212,12 @@ func NewDSL(opts ...DSLOptions) *DSL {
 		dsl.ChannelHandler = api.NewChannelHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.SchedulingService, dsl.Logger)
 	}
 
+	if dsl.HTTPConfig == nil {
+		dsl.HTTPConfig = &http.Config{}
+	}
+
 	if dsl.APIServer == nil {
-		dsl.APIServer = http.APIRootHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.ImportRepository, dsl.SchedulingService, http.Config{}, dsl.Logger)
+		dsl.APIServer = http.APIRootHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.ImportRepository, dsl.SchedulingService, *dsl.HTTPConfig, dsl.Logger)
 	}
 
 	return dsl
