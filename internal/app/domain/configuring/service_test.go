@@ -23,15 +23,14 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_Create_Success() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL()
 	cmd := configuring.NewCreateChannelCommand(
 		"Channel Name",
 		"arbeitnow",
 	)
 
 	// Execute
-	ch, err := s.Create(context.Background(), cmd)
+	ch, err := dsl.ConfiguringService.Create(context.Background(), cmd)
 
 	// Assert result
 	suite.NoError(err)
@@ -42,20 +41,21 @@ func (suite *ServiceSuite) Test_Create_Success() {
 	suite.True(ch.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
+	suite.Len(dsl.Channels(), 1)
+	suite.Equal("Channel Name", dsl.FirstChannel().Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, dsl.FirstChannel().Integration)
 }
 
 func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL()
 	cmd := configuring.NewCreateChannelCommand(
 		"",
 		"bad_integration",
 	)
 
 	// Execute
-	_, err := s.Create(context.Background(), cmd)
+	_, err := dsl.ConfiguringService.Create(context.Background(), cmd)
 
 	// Assert
 	suite.Error(err)
@@ -67,36 +67,41 @@ func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 
 func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL(
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
 	cmd := configuring.NewCreateChannelCommand(
 		"Channel Name",
 		"arbeitnow",
 	)
 
 	// Execute
-	_, err := s.Create(context.Background(), cmd)
+	_, err := dsl.ConfiguringService.Create(context.Background(), cmd)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "boom")
 	suite.False(errs.IsValidationError(err))
 }
 
 func (suite *ServiceSuite) Test_Update_Success() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
-	ch := configuring.NewChannel(id, "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(cat, uat))
-	r.Add(ch.ToAggregator())
-	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
+
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(cat, uat),
+		),
+	)
+	cmd := configuring.NewUpdateChannelCommand(id, "channel 2")
 
 	// Execute
-	res, err := s.Update(context.Background(), cmd)
+	res, err := dsl.ConfiguringService.Update(context.Background(), cmd)
 
 	// Assert result
 	suite.NoError(err)
@@ -110,21 +115,21 @@ func (suite *ServiceSuite) Test_Update_Success() {
 	// Assert state change
 	suite.NoError(err)
 	suite.Equal(id, res.ID())
-	suite.Equal("channel 2", r.First().Name)
-	suite.Equal(aggregator.IntegrationArbeitnow, r.First().Integration)
-	suite.Equal(aggregator.ChannelStatusActive, r.First().Status)
-	suite.True(cat.Equal(r.First().CreatedAt))
-	suite.True(res.UpdatedAt().Equal(r.First().UpdatedAt))
+	ch := dsl.FirstChannel()
+	suite.Equal("channel 2", ch.Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, ch.Status)
+	suite.True(cat.Equal(ch.CreatedAt))
+	suite.True(res.UpdatedAt().Equal(ch.UpdatedAt))
 }
 
 func (suite *ServiceSuite) Test_Update_NotFound() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL()
 	cmd := configuring.NewUpdateChannelCommand(uuid.New(), "channel 2")
 
 	// Execute
-	_, err := s.Update(context.Background(), cmd)
+	_, err := dsl.ConfiguringService.Update(context.Background(), cmd)
 
 	// Assert
 	suite.Error(err)
@@ -132,34 +137,38 @@ func (suite *ServiceSuite) Test_Update_NotFound() {
 	suite.True(errs.IsValidationError(err))
 }
 
-func (suite *ServiceSuite) Test_Update_Error() {
+func (suite *ServiceSuite) Test_Update_ChannelRepositoryFail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToAggregator())
-	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "channel 2")
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
+	cmd := configuring.NewUpdateChannelCommand(id, "channel 2")
 
 	// Execute
-	_, err := s.Update(context.Background(), cmd)
+	_, err := dsl.ConfiguringService.Update(context.Background(), cmd)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "boom")
 	suite.False(errs.IsValidationError(err))
 }
 
 func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToAggregator())
-	cmd := configuring.NewUpdateChannelCommand(ch.ID(), "")
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+	)
+	cmd := configuring.NewUpdateChannelCommand(id, "")
 
 	// Execute
-	_, err := s.Update(context.Background(), cmd)
+	_, err := dsl.ConfiguringService.Update(context.Background(), cmd)
 
 	// Assert
 	suite.Error(err)
@@ -169,26 +178,28 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 
 func (suite *ServiceSuite) Test_Activate_Success() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
-	r.Add(ch.ToAggregator())
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelDeactivated(),
+		),
+	)
 
 	// Execute
-	err := s.Activate(context.Background(), ch.ID())
+	err := dsl.ConfiguringService.Activate(context.Background(), id)
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(aggregator.ChannelStatusActive, r.First().Status)
+	suite.Equal(aggregator.ChannelStatusActive, dsl.FirstChannel().Status)
 }
 
 func (suite *ServiceSuite) Test_Activate_NotFound() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL()
 
 	// Execute
-	err := s.Activate(context.Background(), uuid.New())
+	err := dsl.ConfiguringService.Activate(context.Background(), uuid.New())
 
 	// Assert
 	suite.Error(err)
@@ -196,45 +207,50 @@ func (suite *ServiceSuite) Test_Activate_NotFound() {
 	suite.True(errs.IsValidationError(err))
 }
 
-func (suite *ServiceSuite) Test_Activate_Error() {
+func (suite *ServiceSuite) Test_Activate_ChannelRepositoryFail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusInactive)
-	r.Add(ch.ToAggregator())
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelDeactivated(),
+		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
 
 	// Execute
-	err := s.Activate(context.Background(), ch.ID())
+	err := dsl.ConfiguringService.Activate(context.Background(), id)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "boom")
 	suite.False(errs.IsValidationError(err))
 }
 
 func (suite *ServiceSuite) Test_Deactivate_Success() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToAggregator())
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelActivated(),
+		),
+	)
 
 	// Execute
-	err := s.Deactivate(context.Background(), ch.ID())
+	err := dsl.ConfiguringService.Deactivate(context.Background(), id)
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(aggregator.ChannelStatusInactive, r.First().Status)
+	suite.Equal(aggregator.ChannelStatusInactive, dsl.FirstChannel().Status)
 }
 
 func (suite *ServiceSuite) Test_Deactivate_NotFound() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
+	dsl := testutils.NewDSL()
 
 	// Execute
-	err := s.Deactivate(context.Background(), uuid.New())
+	err := dsl.ConfiguringService.Deactivate(context.Background(), uuid.New())
 
 	// Assert
 	suite.Error(err)
@@ -242,19 +258,22 @@ func (suite *ServiceSuite) Test_Deactivate_NotFound() {
 	suite.True(errs.IsValidationError(err))
 }
 
-func (suite *ServiceSuite) Test_Deactivate_Error() {
+func (suite *ServiceSuite) Test_Deactivate_ChannelRepositoryFail() {
 	// Prepare
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	ch := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	r.Add(ch.ToAggregator())
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelActivated(),
+		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
 
 	// Execute
-	err := s.Deactivate(context.Background(), ch.ID())
+	err := dsl.ConfiguringService.Deactivate(context.Background(), id)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "boom")
 	suite.False(errs.IsValidationError(err))
 }

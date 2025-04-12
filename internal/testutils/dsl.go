@@ -115,6 +115,13 @@ func WithChannelActivated() WithChannelOptions {
 	}
 }
 
+func WithChannelTimestamps(cat, uat time.Time) WithChannelOptions {
+	return func(ch *aggregator.Channel) {
+		ch.CreatedAt = cat
+		ch.UpdatedAt = uat
+	}
+}
+
 func WithChannel(opts ...WithChannelOptions) DSLOptions {
 	return func(dsl *DSL) {
 		if dsl.ChannelRepository == nil {
