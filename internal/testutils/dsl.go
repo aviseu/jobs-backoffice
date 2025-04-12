@@ -2,6 +2,8 @@ package testutils
 
 import (
 	"bytes"
+	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
+	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
@@ -9,7 +11,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
 	"log/slog"
-	"net/http"
+	oghttp "net/http"
 	"net/http/httptest"
 	"time"
 )
@@ -35,6 +37,13 @@ type DSL struct {
 	Factory            *importing.Factory
 	ImportService      *importing.Service
 	SchedulingService  *scheduling.Service
+
+	// Application
+	ChannelHandler     *api.ChannelHandler
+	ImportHandler      *api.ImportHandler
+	IntegrationHandler *api.IntegrationHandler
+
+	APIServer oghttp.Handler
 }
 
 type DSLOptions func(*DSL)
@@ -69,7 +78,7 @@ func WithPubSubServiceError(err error) DSLOptions {
 func WithArbeitnowEnabled() DSLOptions {
 	return func(dsl *DSL) {
 		dsl.AirbeitnowServer = NewArbeitnowServer()
-		dsl.RequestLogger = NewRequestLogger(http.DefaultClient)
+		dsl.RequestLogger = NewRequestLogger(oghttp.DefaultClient)
 
 		var ch *aggregator.Channel
 		if dsl.ChannelRepository != nil && len(dsl.Channels()) > 0 {
@@ -192,6 +201,13 @@ func NewDSL(opts ...DSLOptions) *DSL {
 	if dsl.SchedulingService == nil {
 		dsl.SchedulingService = scheduling.NewService(dsl.ImportRepository, dsl.ChannelRepository, dsl.PubSubService, dsl.Logger)
 	}
+	if dsl.ChannelHandler == nil {
+		dsl.ChannelHandler = api.NewChannelHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.SchedulingService, dsl.Logger)
+	}
+
+	if dsl.APIServer == nil {
+		dsl.APIServer = http.APIRootHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.ImportRepository, dsl.SchedulingService, http.Config{}, dsl.Logger)
+	}
 
 	return dsl
 }
@@ -203,6 +219,10 @@ func (dsl *DSL) Channels() []*aggregator.Channel {
 	}
 
 	return channels
+}
+
+func (dsl *DSL) Channel(id uuid.UUID) *aggregator.Channel {
+	return dsl.ChannelRepository.Channels[id]
 }
 
 func (dsl *DSL) FirstChannel() *aggregator.Channel {

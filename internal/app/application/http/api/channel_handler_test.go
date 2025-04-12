@@ -28,24 +28,18 @@ type ChannelHandlerSuite struct {
 
 func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert state change
-	suite.Len(r.Channels, 1)
-	var ch *aggregator.Channel
-	for _, c := range r.Channels {
-		ch = c
-	}
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
 	suite.Equal("Channel Name", ch.Name)
 	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
 	suite.Equal(aggregator.ChannelStatusInactive, ch.Status)
@@ -58,22 +52,19 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	suite.Equal(`{"id":"`+ch.ID.String()+`","name":"Channel Name","integration":"arbeitnow","status":"inactive","created_at":"`+ch.CreatedAt.Format(time.RFC3339)+`","updated_at":"`+ch.UpdatedAt.Format(time.RFC3339)+`"}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"","integration":"bad_integration"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
@@ -81,26 +72,24 @@ func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"failed to find integration bad_integration: invalid integration\\nname is required\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Empty(r.Channels)
+	suite.Empty(dsl.Channels())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ChannelHandlerSuite) Test_Create_RepositoryFail_Fail() {
+func (suite *ChannelHandlerSuite) Test_Create_ChannelRepositoryFail_Fail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	r.FailWith(errors.New("boom!"))
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL(
+		testutils.WithChannelRepositoryError(errors.New("boom!")),
+	)
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
@@ -108,10 +97,10 @@ func (suite *ChannelHandlerSuite) Test_Create_RepositoryFail_Fail() {
 	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
 
 	// Assert state change
-	suite.Empty(r.Channels)
+	suite.Empty(dsl.Channels())
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "failed to create channel: boom!")
@@ -119,30 +108,39 @@ func (suite *ChannelHandlerSuite) Test_Create_RepositoryFail_Fail() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
-
-	ch1 := configuring.NewChannel(uuid.New(), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)))
-	r.Add(ch1.ToAggregator())
-	ch2 := configuring.NewChannel(uuid.New(), "channel 2", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive, configuring.WithTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)))
-	r.Add(ch2.ToAggregator())
+	id1 := uuid.New()
+	id2 := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id1),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)),
+		),
+		testutils.WithChannel(
+			testutils.WithChannelID(id2),
+			testutils.WithChannelName("channel 2"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelDeactivated(),
+			testutils.WithChannelTimestamps(time.Date(2025, 1, 1, 0, 3, 0, 0, time.UTC), time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)),
+		),
+	)
 
 	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"channels":[{"id":"`+ch1.ID().String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+ch1.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch1.UpdatedAt().Format(time.RFC3339)+`"},{"id":"`+ch2.ID().String()+`","name":"channel 2","integration":"arbeitnow","status":"active","created_at":"`+ch2.CreatedAt().Format(time.RFC3339)+`","updated_at":"`+ch2.UpdatedAt().Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
+	suite.Equal(`{"channels":[{"id":"`+id1.String()+`","name":"channel 1","integration":"arbeitnow","status":"active","created_at":"`+dsl.Channel(id1).CreatedAt.Format(time.RFC3339)+`","updated_at":"`+dsl.Channel(id1).UpdatedAt.Format(time.RFC3339)+`"},{"id":"`+id2.String()+`","name":"channel 2","integration":"arbeitnow","status":"inactive","created_at":"`+dsl.Channel(id2).CreatedAt.Format(time.RFC3339)+`","updated_at":"`+dsl.Channel(id2).UpdatedAt.Format(time.RFC3339)+`"}]}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {

@@ -23,15 +23,15 @@ type ChannelRepository interface {
 }
 
 type ChannelHandler struct {
-	chs *configuring.Service
+	gs  *configuring.Service
 	chr ChannelRepository
 	ss  *scheduling.Service
 	log *slog.Logger
 }
 
-func NewChannelHandler(chs *configuring.Service, chr ChannelRepository, ss *scheduling.Service, log *slog.Logger) *ChannelHandler {
+func NewChannelHandler(gs *configuring.Service, chr ChannelRepository, ss *scheduling.Service, log *slog.Logger) *ChannelHandler {
 	return &ChannelHandler{
-		chs: chs,
+		gs:  gs,
 		chr: chr,
 		log: log,
 		ss:  ss,
@@ -61,7 +61,7 @@ func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := configuring.NewCreateChannelCommand(req.Name, req.Integration)
-	ch, err := h.chs.Create(r.Context(), cmd)
+	ch, err := h.gs.Create(r.Context(), cmd)
 	if err != nil {
 		if errs.IsValidationError(err) {
 			h.handleFail(w, err, http.StatusBadRequest)
@@ -141,7 +141,7 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := configuring.NewUpdateChannelCommand(id, req.Name)
-	ch, err := h.chs.Update(r.Context(), cmd)
+	ch, err := h.gs.Update(r.Context(), cmd)
 	if err != nil {
 		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
@@ -174,7 +174,7 @@ func (h *ChannelHandler) ActivateChannel(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := h.chs.Activate(r.Context(), id); err != nil {
+	if err := h.gs.Activate(r.Context(), id); err != nil {
 		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
@@ -196,7 +196,7 @@ func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.chs.Deactivate(r.Context(), id); err != nil {
+	if err := h.gs.Deactivate(r.Context(), id); err != nil {
 		if errors.Is(err, configuring.ErrChannelNotFound) {
 			h.handleFail(w, err, http.StatusNotFound)
 			return
