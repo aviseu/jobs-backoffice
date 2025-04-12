@@ -1,8 +1,6 @@
 package api_test
 
 import (
-	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/stretchr/testify/suite"
 	oghttp "net/http"
@@ -20,17 +18,14 @@ type IntegrationHandlerSuite struct {
 
 func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	r := testutils.NewChannelRepository()
-	s := configuring.NewService(r)
-	h := http.APIRootHandler(s, r, nil, nil, http.Config{}, log)
+	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)
 	suite.NoError(err)
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.APIServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
@@ -38,5 +33,5 @@ func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	suite.Equal(`{"integrations":["arbeitnow"]}`+"\n", rr.Body.String())
 
 	// Assert log
-	suite.Empty(lbuf.String())
+	suite.Empty(dsl.LogLines())
 }
