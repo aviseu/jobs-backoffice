@@ -26,7 +26,6 @@ type DSL struct {
 	Config           *importing.Config
 
 	// Infrastructure
-	AirbeitnowService *arbeitnow.Service
 	JobRepository     *JobRepository
 	ChannelRepository *ChannelRepository
 	ImportRepository  *ImportRepository
@@ -39,8 +38,9 @@ type DSL struct {
 	SchedulingService  *scheduling.Service
 
 	// Application
-	APIServer  oghttp.Handler
-	HTTPConfig *http.Config
+	APIServer    oghttp.Handler
+	ImportServer oghttp.Handler
+	HTTPConfig   *http.Config
 }
 
 type DSLOptions func(*DSL)
@@ -76,16 +76,12 @@ func WithArbeitnowEnabled() DSLOptions {
 	return func(dsl *DSL) {
 		dsl.AirbeitnowServer = NewArbeitnowServer()
 		dsl.RequestLogger = NewRequestLogger(oghttp.DefaultClient)
+		dsl.HTTPClient = dsl.RequestLogger
 
-		var ch *aggregator.Channel
-		if dsl.ChannelRepository != nil && len(dsl.Channels()) > 0 {
-			ch = dsl.Channels()[0]
+		if dsl.Config == nil {
+			dsl.Config = dsl.defaultConfig()
+			dsl.Config.Arbeitnow.URL = dsl.AirbeitnowServer.URL
 		}
-		dsl.AirbeitnowService = arbeitnow.NewService(
-			dsl.RequestLogger,
-			arbeitnow.Config{URL: dsl.AirbeitnowServer.URL},
-			ch,
-		)
 	}
 }
 
@@ -263,15 +259,7 @@ func NewDSL(opts ...DSLOptions) *DSL {
 		dsl.HTTPClient = NewHTTPClientMock()
 	}
 	if dsl.Config == nil {
-		dsl.Config = &importing.Config{
-			Import: struct {
-				ResultBufferSize int `split_words:"true" default:"10"`
-				ResultWorkers    int `split_words:"true" default:"10"`
-			}{
-				ResultBufferSize: 10,
-				ResultWorkers:    10,
-			},
-		}
+		dsl.Config = dsl.defaultConfig()
 	}
 	if dsl.Factory == nil {
 		dsl.Factory = importing.NewFactory(dsl.HTTPClient, *dsl.Config)
@@ -297,7 +285,23 @@ func NewDSL(opts ...DSLOptions) *DSL {
 		dsl.APIServer = http.APIRootHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.ImportRepository, dsl.SchedulingService, *dsl.HTTPConfig, dsl.Logger)
 	}
 
+	if dsl.ImportServer == nil {
+		dsl.ImportServer = http.ImportRootHandler(dsl.ImportService, dsl.Logger)
+	}
+
 	return dsl
+}
+
+func (dsl *DSL) defaultConfig() *importing.Config {
+	return &importing.Config{
+		Import: struct {
+			ResultBufferSize int `split_words:"true" default:"10"`
+			ResultWorkers    int `split_words:"true" default:"10"`
+		}{
+			ResultBufferSize: 10,
+			ResultWorkers:    10,
+		},
+	}
 }
 
 func (dsl *DSL) Channels() []*aggregator.Channel {

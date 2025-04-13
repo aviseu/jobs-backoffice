@@ -3,11 +3,7 @@ package importh_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/golang/protobuf/proto"
@@ -36,33 +32,21 @@ type pubSubMessage struct {
 
 func (suite *HandlerSuite) Test_Import_Success() {
 	// Prepare
-	server := testutils.NewArbeitnowServer()
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	ir := testutils.NewImportRepository()
-	jr := testutils.NewJobRepository()
-	cfg := importing.Config{
-		Arbeitnow: arbeitnow.Config{URL: server.URL},
-		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-		},
-	}
-	f := importing.NewFactory(
-		oghttp.DefaultClient,
-		cfg,
-	)
-	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
-	h := http.ImportRootHandler(s, log)
-
 	chID := uuid.New()
-	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
-
 	iID := uuid.New()
-	ir.AddImport(importing.NewImport(iID, chID).ToAggregate())
+
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
+	)
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -85,25 +69,22 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.ImportServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Empty(rr.Body.String())
 
 	// Assert state change
-	suite.Len(ir.Imports, 1)
-	var i *aggregator.Import
-	for _, v := range ir.Imports {
-		i = v
-	}
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
 	suite.Equal(aggregator.ImportStatusCompleted, i.Status)
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 3)
 	suite.Contains(lines[0], `"level":"INFO"`)
 	suite.Contains(lines[0], "received message!")
@@ -115,33 +96,20 @@ func (suite *HandlerSuite) Test_Import_Success() {
 
 func (suite *HandlerSuite) Test_Import_ServerFail() {
 	// Prepare
-	server := testutils.NewArbeitnowServer()
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	ir := testutils.NewImportRepository()
-	jr := testutils.NewJobRepository()
-	cfg := importing.Config{
-		Arbeitnow: arbeitnow.Config{URL: server.URL},
-		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-		},
-	}
-	f := importing.NewFactory(
-		oghttp.DefaultClient,
-		cfg,
-	)
-	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
-	h := http.ImportRootHandler(s, log)
-
-	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
-	chr.Add(configuring.NewChannel(chID, "Channel Name", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive).ToAggregator())
-
 	iID := uuid.New()
-	ir.AddImport(importing.NewImport(iID, chID).ToAggregate())
+	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
+	)
 
 	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
 		ImportId: iID.String(),
@@ -164,18 +132,15 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	rr := httptest.NewRecorder()
 
 	// Execute
-	h.ServeHTTP(rr, req)
+	dsl.ImportServer.ServeHTTP(rr, req)
 
 	// Assert response
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("skipped message\n", rr.Body.String())
 
 	// Assert state change
-	suite.Len(ir.Imports, 1)
-	var i *aggregator.Import
-	for _, v := range ir.Imports {
-		i = v
-	}
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
 	suite.NotNil(i)
 	suite.Equal(iID, i.ID)
 	suite.Equal(chID, i.ChannelID)
@@ -185,7 +150,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	suite.Contains(i.Error.String, "<title>An Error Occurred: Method Not Allowed</title>")
 
 	// Assert log
-	lines := testutils.LogLines(lbuf)
+	lines := dsl.LogLines()
 	suite.Len(lines, 3)
 	suite.Contains(lines[0], `"level":"INFO"`)
 	suite.Contains(lines[0], "received message!")
