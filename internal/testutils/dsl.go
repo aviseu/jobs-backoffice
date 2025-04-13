@@ -9,6 +9,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v3"
 	"log/slog"
 	oghttp "net/http"
 	"net/http/httptest"
@@ -151,6 +152,90 @@ func WithChannel(opts ...WithChannelOptions) DSLOptions {
 		}
 		dsl.ChannelRepository.Add(
 			ch,
+		)
+	}
+}
+
+type WithImportOptions func(i *aggregator.Import)
+
+func WithImportChannelID(chID uuid.UUID) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.ChannelID = chID
+	}
+}
+
+func WithImportID(id uuid.UUID) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.ID = id
+	}
+}
+
+func WithImportError(err string) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.Error = null.StringFrom(err)
+	}
+}
+
+func WithoutImportError() WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.Error = null.NewString("", false)
+	}
+}
+
+func WithImportStatus(status aggregator.ImportStatus) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.Status = status
+	}
+}
+
+func WithImportStartedAt(startedAt time.Time) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.StartedAt = startedAt
+	}
+}
+
+func WithImportEndedAt(endedAt time.Time) WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.EndedAt = null.NewTime(endedAt, true)
+	}
+}
+
+func WithoutImportEndedAt() WithImportOptions {
+	return func(i *aggregator.Import) {
+		i.EndedAt = null.NewTime(time.Now(), false)
+	}
+}
+
+func WithImportJobs(result aggregator.ImportJobResult, count int) WithImportOptions {
+	return func(i *aggregator.Import) {
+		for j := 0; j < count; j++ {
+			i.Jobs = append(i.Jobs, &aggregator.ImportJob{
+				ID:     uuid.New(),
+				Result: result,
+			})
+		}
+	}
+}
+
+func WithImport(opts ...WithImportOptions) DSLOptions {
+	return func(dsl *DSL) {
+		if dsl.ImportRepository == nil {
+			dsl.ImportRepository = NewImportRepository()
+		}
+		i := &aggregator.Import{
+			StartedAt: time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
+			EndedAt:   null.NewTime(time.Now(), false),
+			Error:     null.NewString("", false),
+			Jobs:      make([]*aggregator.ImportJob, 0),
+			Status:    aggregator.ImportStatusPending,
+			ID:        uuid.New(),
+			ChannelID: uuid.New(),
+		}
+		for _, opt := range opts {
+			opt(i)
+		}
+		dsl.ImportRepository.AddImport(
+			i,
 		)
 	}
 }
