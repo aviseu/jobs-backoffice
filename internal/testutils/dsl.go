@@ -3,7 +3,6 @@ package testutils
 import (
 	"bytes"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
-	"github.com/aviseu/jobs-backoffice/internal/app/application/http/api"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/scheduling"
@@ -39,10 +38,6 @@ type DSL struct {
 	SchedulingService  *scheduling.Service
 
 	// Application
-	ChannelHandler     *api.ChannelHandler
-	ImportHandler      *api.ImportHandler
-	IntegrationHandler *api.IntegrationHandler
-
 	APIServer  oghttp.Handler
 	HTTPConfig *http.Config
 }
@@ -207,9 +202,6 @@ func NewDSL(opts ...DSLOptions) *DSL {
 	}
 	if dsl.SchedulingService == nil {
 		dsl.SchedulingService = scheduling.NewService(dsl.ImportRepository, dsl.ChannelRepository, dsl.PubSubService, dsl.Logger)
-	}
-	if dsl.ChannelHandler == nil {
-		dsl.ChannelHandler = api.NewChannelHandler(dsl.ConfiguringService, dsl.ChannelRepository, dsl.SchedulingService, dsl.Logger)
 	}
 
 	if dsl.HTTPConfig == nil {
