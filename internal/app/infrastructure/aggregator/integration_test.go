@@ -40,3 +40,7 @@ func (suite *IntegrationSuite) Test_ListIntegrations_Success() {
 	suite.Len(list, 1)
 	suite.Equal(aggregator.IntegrationArbeitnow, list[0])
 }
+
+func (suite *IntegrationSuite) Test_Integration_Success() {
+	suite.Equal("arbeitnow", aggregator.IntegrationArbeitnow.String())
+}
