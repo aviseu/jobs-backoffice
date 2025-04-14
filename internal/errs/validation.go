@@ -14,10 +14,6 @@ func (e *ValidationError) Error() string {
 	return e.err.Error()
 }
 
-func (e *ValidationError) Is(target error) bool {
-	return errors.Is(e.err, target)
-}
-
 func IsValidationError(err error) bool {
 	var target *ValidationError
 	return errors.As(err, &target)
