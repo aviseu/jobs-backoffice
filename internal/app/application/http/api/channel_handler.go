@@ -54,7 +54,7 @@ func (h *ChannelHandler) Routes() http.Handler {
 }
 
 func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
-	var req CreateChannelRequest
+	var req createChannelRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
 		return
@@ -134,7 +134,7 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req UpdateChannelRequest
+	var req updateChannelRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
 		return

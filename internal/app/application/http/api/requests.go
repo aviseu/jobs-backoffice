@@ -1,10 +1,10 @@
 package api
 
-type CreateChannelRequest struct {
+type createChannelRequest struct {
 	Name        string `json:"name"`
 	Integration string `json:"integration"`
 }
 
-type UpdateChannelRequest struct {
+type updateChannelRequest struct {
 	Name string `json:"name"`
 }
