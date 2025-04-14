@@ -36,3 +36,26 @@ func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	// Assert log
 	suite.Empty(dsl.LogLines())
 }
+
+func (suite *IntegrationHandlerSuite) Test_ListIntegrations_BadResponseWriter() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert response
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert log
+	log := dsl.LogLines()
+	suite.Len(log, 2)
+	suite.Contains(log[0], `"level":"ERROR"`)
+	suite.Contains(log[0], `"msg":"failed to encode response: bad response writer"`)
+	suite.Contains(log[1], `"level":"ERROR"`)
+	suite.Contains(log[1], `"msg":"bad response writer"`)
+}
