@@ -63,6 +63,11 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message
 		return
 	}
+	if err := proto.Unmarshal(msg.Message.Data, &data); err != nil {
+		h.log.Error(fmt.Errorf("failed to unmarshal pubsub message: %w", err).Error())
+		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message
+		return
+	}
 
 	importID, err := uuid.Parse(data.ImportId)
 	if err != nil {
