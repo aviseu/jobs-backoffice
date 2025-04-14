@@ -28,5 +28,5 @@ func (s *Service) PublishImportCommand(ctx context.Context, importID uuid.UUID) 
 		ImportId: importID.String(),
 	}
 
-	return s.importClient.Publish(ctx, &msg)
+	return s.importClient.publish(ctx, &msg)
 }

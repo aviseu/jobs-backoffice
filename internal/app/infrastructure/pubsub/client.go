@@ -21,7 +21,7 @@ func newClient(topic *pubsub.Topic, timeout time.Duration) *client {
 	}
 }
 
-func (c *client) Publish(ctx context.Context, msg proto.Message) error {
+func (c *client) publish(ctx context.Context, msg proto.Message) error {
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %w", err)
