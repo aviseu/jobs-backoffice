@@ -2,13 +2,13 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/guregu/null.v3"
 	"testing"
 	"time"
 )
@@ -36,36 +36,36 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := importing.NewImport(
-		id,
-		chID,
-		importing.ImportWithError("error"),
-		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
-		importing.ImportWithStartAt(sAt),
-		importing.ImportWithEndAt(eAt),
-	)
+	i := &aggregator.Import{
+		ID:        id,
+		ChannelID: chID,
+		Error:     null.StringFrom("error"),
+		Status:    aggregator.ImportStatusProcessing,
+		StartedAt: sAt,
+		EndedAt:   null.TimeFrom(eAt),
+	}
 
 	// Execute
-	err = r.SaveImport(context.Background(), i.ToAggregate())
+	err = r.SaveImport(context.Background(), i)
 
 	// Execute
 	suite.NoError(err)
 
 	// Assert state change
 	var count int
-	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM imports WHERE id = $1", i.ID())
+	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM imports WHERE id = $1", i.ID)
 	suite.NoError(err)
 	suite.Equal(1, count)
 
 	var dbImport aggregator.Import
-	err = suite.DB.Get(&dbImport, "SELECT * FROM imports WHERE id = $1", i.ID())
+	err = suite.DB.Get(&dbImport, "SELECT * FROM imports WHERE id = $1", i.ID)
 	suite.NoError(err)
-	suite.Equal(i.ID(), dbImport.ID)
-	suite.Equal(i.ChannelID(), dbImport.ChannelID)
-	suite.Equal(i.Status(), dbImport.Status)
-	suite.True(i.StartedAt().Equal(dbImport.StartedAt))
-	suite.True(i.EndedAt().Time.Equal(dbImport.EndedAt.Time))
-	suite.Equal(i.Error().String, dbImport.Error.String)
+	suite.Equal(i.ID, dbImport.ID)
+	suite.Equal(i.ChannelID, dbImport.ChannelID)
+	suite.Equal(i.Status, dbImport.Status)
+	suite.True(i.StartedAt.Equal(dbImport.StartedAt))
+	suite.True(i.EndedAt.Time.Equal(dbImport.EndedAt.Time))
+	suite.Equal(i.Error.String, dbImport.Error.String)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
@@ -73,17 +73,15 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
 	r := postgres.NewImportRepository(suite.BadDB)
 	id := uuid.New()
 	chID := uuid.New()
-	i := importing.NewImport(
-		id,
-		chID,
-		importing.ImportWithError("error"),
-		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
-		importing.ImportWithStartAt(time.Now()),
-		importing.ImportWithEndAt(time.Now()),
-	)
+	i := &aggregator.Import{
+		ID:        id,
+		ChannelID: chID,
+		Error:     null.StringFrom("error"),
+		Status:    aggregator.ImportStatusProcessing,
+	}
 
 	// Execute
-	err := r.SaveImport(context.Background(), i.ToAggregate())
+	err := r.SaveImport(context.Background(), i)
 
 	// Assert
 	suite.Error(err)
@@ -106,35 +104,35 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
-	i := importing.NewImport(
-		id,
-		chID,
-		importing.ImportWithError("error"),
-		importing.ImportWithStatus(aggregator.ImportStatusProcessing),
-		importing.ImportWithStartAt(sAt),
-		importing.ImportWithEndAt(eAt),
-	)
-	err = r.SaveImport(context.Background(), i.ToAggregate())
+	i := &aggregator.Import{
+		ID:        id,
+		ChannelID: chID,
+		Error:     null.StringFrom("error"),
+		Status:    aggregator.ImportStatusProcessing,
+		StartedAt: sAt,
+		EndedAt:   null.TimeFrom(eAt),
+	}
+	err = r.SaveImport(context.Background(), i)
 	suite.NoError(err)
-	suite.NoError(r.SaveImportJob(context.Background(), i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))
-	suite.NoError(r.SaveImportJob(context.Background(), i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))
-	suite.NoError(r.SaveImportJob(context.Background(), i.ID(), &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNew}))
+	suite.NoError(r.SaveImportJob(context.Background(), i.ID, &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))
+	suite.NoError(r.SaveImportJob(context.Background(), i.ID, &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultUpdated}))
+	suite.NoError(r.SaveImportJob(context.Background(), i.ID, &aggregator.ImportJob{ID: uuid.New(), Result: aggregator.ImportJobResultNew}))
 
 	// Execute
-	i2, err := r.FindImport(context.Background(), i.ID())
+	i2, err := r.FindImport(context.Background(), i.ID)
 
 	// Assert
 	suite.NoError(err)
-	suite.Equal(i.ID(), i2.ID)
-	suite.Equal(i.ChannelID(), i2.ChannelID)
-	suite.Equal(i.Status(), i2.Status)
-	suite.True(i.StartedAt().Equal(i2.StartedAt))
-	suite.True(i.EndedAt().Time.Equal(i2.EndedAt.Time))
-	suite.Equal(i.Error(), i2.Error)
+	suite.Equal(i.ID, i2.ID)
+	suite.Equal(i.ChannelID, i2.ChannelID)
+	suite.Equal(i.Status, i2.Status)
+	suite.True(i.StartedAt.Equal(i2.StartedAt))
+	suite.True(i.EndedAt.Time.Equal(i2.EndedAt.Time))
+	suite.Equal(i.Error, i2.Error)
 	suite.Equal(3, len(i2.Jobs))
 }
 
-func (suite *ImportRepositorySuite) Test_FindImport_Fail() {
+func (suite *ImportRepositorySuite) Test_FindImport_BadConnectionFail() {
 	// Prepare
 	r := postgres.NewImportRepository(suite.BadDB)
 	id := uuid.New()
