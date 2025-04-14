@@ -24,6 +24,7 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_Create_Success() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 	cmd := configuring.NewCreateChannelCommand(
 		"Channel Name",
@@ -49,6 +50,7 @@ func (suite *ServiceSuite) Test_Create_Success() {
 
 func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 	cmd := configuring.NewCreateChannelCommand(
 		"",
@@ -68,6 +70,7 @@ func (suite *ServiceSuite) Test_Create_Validation_Fail() {
 
 func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
@@ -87,6 +90,7 @@ func (suite *ServiceSuite) Test_Create_RepositoryFail_Fail() {
 
 func (suite *ServiceSuite) Test_Update_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
@@ -126,6 +130,7 @@ func (suite *ServiceSuite) Test_Update_Success() {
 
 func (suite *ServiceSuite) Test_Update_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 	cmd := configuring.NewUpdateChannelCommand(uuid.New(), "channel 2")
 
@@ -140,6 +145,7 @@ func (suite *ServiceSuite) Test_Update_NotFound() {
 
 func (suite *ServiceSuite) Test_Update_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -160,6 +166,7 @@ func (suite *ServiceSuite) Test_Update_ChannelRepositoryFail() {
 
 func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -179,6 +186,7 @@ func (suite *ServiceSuite) Test_Update_Validation_Fail() {
 
 func (suite *ServiceSuite) Test_Activate_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -197,6 +205,7 @@ func (suite *ServiceSuite) Test_Activate_Success() {
 
 func (suite *ServiceSuite) Test_Activate_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	// Execute
@@ -210,6 +219,7 @@ func (suite *ServiceSuite) Test_Activate_NotFound() {
 
 func (suite *ServiceSuite) Test_Activate_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -230,6 +240,7 @@ func (suite *ServiceSuite) Test_Activate_ChannelRepositoryFail() {
 
 func (suite *ServiceSuite) Test_Deactivate_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -248,6 +259,7 @@ func (suite *ServiceSuite) Test_Deactivate_Success() {
 
 func (suite *ServiceSuite) Test_Deactivate_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	// Execute
@@ -261,6 +273,7 @@ func (suite *ServiceSuite) Test_Deactivate_NotFound() {
 
 func (suite *ServiceSuite) Test_Deactivate_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(

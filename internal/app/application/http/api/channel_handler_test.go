@@ -27,6 +27,7 @@ type ChannelHandlerSuite struct {
 
 func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
@@ -56,6 +57,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 
 func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"","integration":"bad_integration"}`))
@@ -79,6 +81,7 @@ func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 
 func (suite *ChannelHandlerSuite) Test_Create_ChannelRepositoryFail_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannelRepositoryError(errors.New("boom!")),
 	)
@@ -107,6 +110,7 @@ func (suite *ChannelHandlerSuite) Test_Create_ChannelRepositoryFail_Fail() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id1 := uuid.New()
 	id2 := uuid.New()
 	dsl := testutils.NewDSL(
@@ -144,6 +148,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_Success() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithHTTPConfig(http.Config{Cors: true}),
 	)
@@ -166,6 +171,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithCors_Success() {
 
 func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithHTTPConfig(http.Config{Cors: false}),
 	)
@@ -188,6 +194,7 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
@@ -219,6 +226,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/"+uuid.New().String(), nil)
@@ -239,6 +247,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_NotFound() {
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/channels/invalid-uuid", nil)
@@ -259,6 +268,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 
 func (suite *ChannelHandlerSuite) Test_FindChannel_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
@@ -284,6 +294,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_ChannelRepositoryFail() {
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
@@ -324,6 +335,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+uuid.New().String(), strings.NewReader(`{"name":"NewChannel Name"}`))
@@ -344,6 +356,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PATCH", "/api/channels/invalid-uuid", strings.NewReader(`{"name":"NewChannel Name"}`))
@@ -364,6 +377,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -396,6 +410,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Validation_Fail() {
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
 	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
@@ -436,6 +451,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_ChannelRepositoryFail() {
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -468,6 +484,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/activate", nil)
@@ -488,6 +505,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_NotFound() {
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/activate", nil)
@@ -508,6 +526,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -543,6 +562,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_ChannelRepositoryFail() {
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -575,6 +595,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_Success() {
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/deactivate", nil)
@@ -595,6 +616,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_NotFound() {
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/deactivate", nil)
@@ -615,6 +637,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 
 func (suite *ChannelHandlerSuite) Test_DeactivateChannel_ChannelRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -650,6 +673,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_ChannelRepositoryFail()
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -693,6 +717,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Prepare
+	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("PUT", "/api/channels/"+uuid.New().String()+"/schedule", nil)
@@ -716,6 +741,7 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 	// Prepare
+	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
