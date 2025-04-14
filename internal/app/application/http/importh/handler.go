@@ -10,8 +10,8 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
 	"github.com/go-chi/chi/v5"
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 )
 
 type Handler struct {
