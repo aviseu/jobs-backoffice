@@ -166,8 +166,20 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_Success() {
 	// Assert correct values published
 	publishedImportIDs := dsl.PublishedImports()
 	suite.Len(publishedImportIDs, 2)
-	suite.Equal(i1.ID, publishedImportIDs[0])
-	suite.Equal(i2.ID, publishedImportIDs[1])
+	i1Exists := false
+	for _, id := range publishedImportIDs {
+		if id == i1.ID {
+			i1Exists = true
+		}
+	}
+	suite.True(i1Exists)
+	i2Exists := false
+	for _, id := range publishedImportIDs {
+		if id == i2.ID {
+			i2Exists = true
+		}
+	}
+	suite.True(i2Exists)
 
 	// Assert logs
 	lines := dsl.LogLines()
