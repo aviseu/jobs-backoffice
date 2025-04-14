@@ -3,14 +3,10 @@ package importing_test
 import (
 	"context"
 	"errors"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
-	"net/http"
 	"testing"
 	"time"
 )
@@ -156,115 +152,78 @@ func (suite *ServiceSuite) Test_Success() {
 
 func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	ir := testutils.NewImportRepository()
-	ir.FailWith(errors.New("boom!"))
-	jr := testutils.NewJobRepository()
-	c := testutils.NewHTTPClientMock()
-	cfg := importing.Config{
-		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-		},
-	}
-	f := importing.NewFactory(
-		c,
-		cfg,
+	dsl := testutils.NewDSL(
+		testutils.WithImportRepositoryError(errors.New("boom")),
 	)
-	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
 	id := uuid.New()
 
 	// Execute
-	err := s.Import(context.Background(), id)
+	err := dsl.ImportService.Import(context.Background(), id)
 
 	// Assert
 	suite.Error(err)
 	suite.ErrorContains(err, "failed to find import "+id.String())
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "boom")
 
 	// Assert Logs
-	suite.Empty(lbuf)
+	suite.Empty(dsl.LogLines())
 }
 
-func (suite *ServiceSuite) Test_Execute_ChannelServiceFail() {
+func (suite *ServiceSuite) Test_Execute_ChannelRepositoryFail() {
 	// Prepare
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	chr.FailWith(errors.New("boom!"))
-	ir := testutils.NewImportRepository()
-	jr := testutils.NewJobRepository()
-	c := testutils.NewHTTPClientMock()
-	cfg := importing.Config{
-		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-		},
-	}
-	f := importing.NewFactory(
-		c,
-		cfg,
+	chID := uuid.New()
+	iID := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
 	)
-	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
-	i := importing.NewImport(uuid.New(), uuid.New())
-	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := s.Import(context.Background(), i.ID())
+	err := dsl.ImportService.Import(context.Background(), iID)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "failed to find channel "+i.ChannelID().String())
-	suite.ErrorContains(err, "boom!")
+	suite.ErrorContains(err, "failed to find channel "+chID.String())
+	suite.ErrorContains(err, "boom")
 
 	// Assert Logs
-	suite.Empty(lbuf)
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 	// Prepare
-	server := testutils.NewArbeitnowServer()
-	lbuf, log := testutils.NewLogger()
-	chr := testutils.NewChannelRepository()
-	ch := configuring.NewChannel(uuid.MustParse(testutils.ArbeitnowMethodNotFound), "channel 1", aggregator.IntegrationArbeitnow, aggregator.ChannelStatusActive)
-	chr.Add(ch.ToAggregator())
-	ir := testutils.NewImportRepository()
-	jr := testutils.NewJobRepository()
-	c := http.DefaultClient
-	cfg := importing.Config{
-		Arbeitnow: arbeitnow.Config{
-			URL: server.URL,
-		},
-		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-		},
-	}
-	f := importing.NewFactory(
-		c,
-		cfg,
+	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
+	iID := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
 	)
-	s := importing.NewService(chr, ir, jr, f, cfg, 10, 10, log)
-	i := importing.NewImport(uuid.New(), ch.ID())
-	ir.AddImport(i.ToAggregate())
 
 	// Execute
-	err := s.Import(context.Background(), i.ID())
+	err := dsl.ImportService.Import(context.Background(), iID)
 
 	// Assert
 	suite.Error(err)
-	suite.ErrorContains(err, "failed to get jobs page 1 on channel "+ch.ID().String())
+	suite.ErrorContains(err, "failed to get jobs page 1 on channel "+chID.String())
 	suite.ErrorContains(err, "<title>An Error Occurred: Method Not Allowed</title>")
 
 	// Assert Logs
-	suite.Empty(lbuf)
+	suite.Empty(dsl.LogLines())
 }
