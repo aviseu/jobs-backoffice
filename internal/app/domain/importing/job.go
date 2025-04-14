@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Job struct {
+type job struct {
 	postedAt      time.Time
 	createdAt     time.Time
 	updatedAt     time.Time
@@ -23,27 +23,12 @@ type Job struct {
 	publishStatus aggregator.JobPublishStatus
 }
 
-type JobOptional func(*Job)
-
-func JobWithTimestamps(c, u time.Time) JobOptional {
-	return func(j *Job) {
-		j.createdAt = c
-		j.updatedAt = u
-	}
-}
-
-func JobWithPublishStatus(s aggregator.JobPublishStatus) JobOptional {
-	return func(j *Job) {
-		j.publishStatus = s
-	}
-}
-
-func NewJob(id, channelID uuid.UUID, s aggregator.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, opts ...JobOptional) *Job {
-	j := &Job{
+func newJob(id, channelID uuid.UUID, s aggregator.JobStatus, url, title, description, source, location string, remote bool, postedAt time.Time, publishStatus aggregator.JobPublishStatus, createdAt, updatedAt time.Time) *job {
+	return &job{
 		id:            id,
 		channelID:     channelID,
 		status:        s,
-		publishStatus: aggregator.JobPublishStatusUnpublished,
+		publishStatus: publishStatus,
 		url:           url,
 		title:         title,
 		description:   description,
@@ -51,83 +36,25 @@ func NewJob(id, channelID uuid.UUID, s aggregator.JobStatus, url, title, descrip
 		location:      location,
 		remote:        remote,
 		postedAt:      postedAt,
-		createdAt:     time.Now(),
-		updatedAt:     time.Now(),
+		createdAt:     createdAt,
+		updatedAt:     updatedAt,
 	}
-
-	for _, opt := range opts {
-		opt(j)
-	}
-
-	return j
 }
 
-func (j *Job) ID() uuid.UUID {
-	return j.id
-}
-
-func (j *Job) ChannelID() uuid.UUID {
-	return j.channelID
-}
-
-func (j *Job) URL() string {
-	return j.url
-}
-
-func (j *Job) Title() string {
-	return j.title
-}
-
-func (j *Job) Description() string {
-	return j.description
-}
-
-func (j *Job) Source() string {
-	return j.source
-}
-
-func (j *Job) Location() string {
-	return j.location
-}
-
-func (j *Job) Remote() bool {
-	return j.remote
-}
-
-func (j *Job) PostedAt() time.Time {
-	return j.postedAt
-}
-
-func (j *Job) CreatedAt() time.Time {
-	return j.createdAt
-}
-
-func (j *Job) UpdatedAt() time.Time {
-	return j.updatedAt
-}
-
-func (j *Job) Status() aggregator.JobStatus {
-	return j.status
-}
-
-func (j *Job) PublishStatus() aggregator.JobPublishStatus {
-	return j.publishStatus
-}
-
-func (j *Job) MarkAsMissing() {
+func (j *job) markAsMissing() {
 	j.status = aggregator.JobStatusInactive
 	j.publishStatus = aggregator.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 
-func (j *Job) MarkAsChanged() {
+func (j *job) markAsChanged() {
 	j.status = aggregator.JobStatusActive
 	j.publishStatus = aggregator.JobPublishStatusUnpublished
 	j.updatedAt = time.Now()
 }
 
-func (j *Job) IsEqual(other *Job) bool {
-	// ignore publish status
+func (j *job) IsEqual(other *job) bool {
+	// ignore publish status, created at and updated at
 	return j.status == other.status &&
 		j.id == other.id &&
 		j.channelID == other.channelID &&
@@ -140,26 +67,26 @@ func (j *Job) IsEqual(other *Job) bool {
 		j.postedAt.Equal(other.postedAt)
 }
 
-func (j *Job) ToAggregator() *aggregator.Job {
+func (j *job) toAggregator() *aggregator.Job {
 	return &aggregator.Job{
-		ID:            j.ID(),
-		ChannelID:     j.ChannelID(),
-		URL:           j.URL(),
-		Title:         j.Title(),
-		Description:   j.Description(),
-		Source:        j.Source(),
-		Location:      j.Location(),
-		Remote:        j.Remote(),
-		PostedAt:      j.PostedAt(),
-		CreatedAt:     j.CreatedAt(),
-		UpdatedAt:     j.UpdatedAt(),
-		Status:        j.Status(),
-		PublishStatus: j.PublishStatus(),
+		ID:            j.id,
+		ChannelID:     j.channelID,
+		URL:           j.url,
+		Title:         j.title,
+		Description:   j.description,
+		Source:        j.source,
+		Location:      j.location,
+		Remote:        j.remote,
+		PostedAt:      j.postedAt,
+		CreatedAt:     j.createdAt,
+		UpdatedAt:     j.updatedAt,
+		Status:        j.status,
+		PublishStatus: j.publishStatus,
 	}
 }
 
-func NewJobFromAggregator(j *aggregator.Job) *Job {
-	return NewJob(
+func newJobFromAggregator(j *aggregator.Job) *job {
+	return newJob(
 		j.ID,
 		j.ChannelID,
 		j.Status,
@@ -170,7 +97,8 @@ func NewJobFromAggregator(j *aggregator.Job) *Job {
 		j.Location,
 		j.Remote,
 		j.PostedAt,
-		JobWithTimestamps(j.CreatedAt, j.UpdatedAt),
-		JobWithPublishStatus(j.PublishStatus),
+		j.PublishStatus,
+		j.CreatedAt,
+		j.UpdatedAt,
 	)
 }

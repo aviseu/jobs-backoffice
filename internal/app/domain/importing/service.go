@@ -75,11 +75,11 @@ func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *Impo
 	wg.Done()
 }
 
-func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *Job, importJobs chan<- *Result, errs chan<- error) {
+func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *job, importJobs chan<- *Result, errs chan<- error) {
 	for j := range jobs {
-		if err := r.Save(ctx, j.ToAggregator()); err != nil {
-			errs <- fmt.Errorf("failed to save job %s: %w", j.ID(), err)
-			importJobs <- NewImportMetric(j.ID(), ResultTypeFailed, WithError(err.Error()))
+		if err := r.Save(ctx, j.toAggregator()); err != nil {
+			errs <- fmt.Errorf("failed to save job %s: %w", j.id, err)
+			importJobs <- NewImportMetric(j.id, ResultTypeFailed, WithError(err.Error()))
 		}
 	}
 	wg.Done()
@@ -130,9 +130,9 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 
 	// Convert aggregator jobs into domain jobs
-	incomingJobs := make([]*Job, len(pJobs))
+	incomingJobs := make([]*job, len(pJobs))
 	for i, job := range pJobs {
-		incomingJobs[i] = NewJobFromAggregator(job)
+		incomingJobs[i] = newJobFromAggregator(job)
 	}
 
 	// *******************************************************
@@ -153,7 +153,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 
 	// Create worker group for saving Jobs in the database
 	var jobsWG sync.WaitGroup
-	jobsToSave := make(chan *Job, s.workerBuffer)
+	jobsToSave := make(chan *job, s.workerBuffer)
 	errs := make(chan error, s.workerBuffer)
 	for w := 1; w <= s.workerCount; w++ {
 		jobsWG.Add(1)
@@ -178,30 +178,30 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 
 	// Convert aggregator jobs into domain jobs
-	existingJobs := make([]*Job, len(dbJobs))
+	existingJobs := make([]*job, len(dbJobs))
 	for i, job := range dbJobs {
-		existingJobs[i] = NewJobFromAggregator(job)
+		existingJobs[i] = newJobFromAggregator(job)
 	}
 
 	// Save incoming job if different or new
 	for _, incoming := range incomingJobs {
 		found := false
 		for _, existing := range existingJobs {
-			if incoming.ID() == existing.ID() {
+			if incoming.id == existing.id {
 				found = true
 				if incoming.IsEqual(existing) {
-					metrics <- NewImportMetric(incoming.ID(), ResultTypeNoChange)
+					metrics <- NewImportMetric(incoming.id, ResultTypeNoChange)
 					goto next
 				}
 			}
 		}
 
-		incoming.MarkAsChanged()
+		incoming.markAsChanged()
 		jobsToSave <- incoming
 		if found {
-			metrics <- NewImportMetric(incoming.ID(), ResultTypeUpdated)
+			metrics <- NewImportMetric(incoming.id, ResultTypeUpdated)
 		} else {
-			metrics <- NewImportMetric(incoming.ID(), ResultTypeNew)
+			metrics <- NewImportMetric(incoming.id, ResultTypeNew)
 		}
 
 	next:
@@ -209,18 +209,18 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 
 	// Mark as missing if exists but didn't income
 	for _, existing := range existingJobs {
-		if existing.Status() == aggregator.JobStatusInactive {
+		if existing.status == aggregator.JobStatusInactive {
 			continue
 		}
 		for _, incoming := range incomingJobs {
-			if existing.ID() == incoming.ID() {
+			if existing.id == incoming.id {
 				goto skip
 			}
 		}
 
-		existing.MarkAsMissing()
+		existing.markAsMissing()
 		jobsToSave <- existing
-		metrics <- NewImportMetric(existing.ID(), ResultTypeMissing)
+		metrics <- NewImportMetric(existing.id, ResultTypeMissing)
 
 	skip:
 	}
