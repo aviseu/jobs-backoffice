@@ -37,6 +37,8 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.NoError(err)
 
 	r := postgres.NewImportRepository(suite.DB)
+	j1ID := uuid.New()
+	j2ID := uuid.New()
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
@@ -47,6 +49,10 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		Status:    aggregator.ImportStatusProcessing,
 		StartedAt: sAt,
 		EndedAt:   null.TimeFrom(eAt),
+		Jobs: []*aggregator.ImportJob{
+			{ID: j1ID, Result: aggregator.ImportJobResultNew},
+			{ID: j2ID, Result: aggregator.ImportJobResultFailed},
+		},
 	}
 
 	// Execute
@@ -70,6 +76,25 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.True(i.StartedAt.Equal(dbImport.StartedAt))
 	suite.True(i.EndedAt.Time.Equal(dbImport.EndedAt.Time))
 	suite.Equal(i.Error.String, dbImport.Error.String)
+
+	var dbImportJobs []*aggregator.ImportJob
+	err = suite.DB.Select(&dbImportJobs, "SELECT job_id, result FROM import_job_results WHERE import_id = $1", i.ID)
+	suite.NoError(err)
+	suite.Len(dbImportJobs, 2)
+	j1Found := false
+	j2Found := false
+	for _, j := range dbImportJobs {
+		if j.ID == j1ID {
+			j1Found = true
+			suite.Equal(aggregator.ImportJobResultNew, j.Result)
+		}
+		if j.ID == j2ID {
+			j2Found = true
+			suite.Equal(aggregator.ImportJobResultFailed, j.Result)
+		}
+	}
+	suite.True(j1Found)
+	suite.True(j2Found)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
