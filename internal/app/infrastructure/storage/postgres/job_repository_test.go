@@ -2,7 +2,6 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
@@ -25,23 +24,25 @@ func (suite *JobRepositorySuite) Test_Save_New_Success() {
 	id := uuid.New()
 	chID := uuid.New()
 	pAt := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
-	j := importing.NewJob(
-		id,
-		chID,
-		aggregator.JobStatusActive,
-		"https://example.com/job/id",
-		"Software Engineer",
-		"Job Description",
-		"Indeed",
-		"Amsterdam",
-		true,
-		pAt,
-		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
-	)
+	j := &aggregator.Job{
+		ID:            id,
+		ChannelID:     chID,
+		URL:           "https://example.com/job/id",
+		Title:         "Software Engineer",
+		Description:   "Job Description",
+		Source:        "Indeed",
+		Location:      "Amsterdam",
+		Remote:        true,
+		PostedAt:      pAt,
+		Status:        aggregator.JobStatusActive,
+		PublishStatus: aggregator.JobPublishStatusPublished,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err := r.Save(context.Background(), j.ToAggregator())
+	err := r.Save(context.Background(), j)
 
 	// Assert return
 	suite.NoError(err)
@@ -89,24 +90,26 @@ func (suite *JobRepositorySuite) Test_Save_Existing_Success() {
 
 	pAt := time.Date(2025, 1, 1, 0, 4, 0, 0, time.UTC)
 	chID2 := uuid.New()
-	j := importing.NewJob(
-		id,
-		chID2,
-		aggregator.JobStatusActive,
-		"https://example.com/job/id/new",
-		"Software Engineer new",
-		"Job Description new",
-		"Indeed new",
-		"Amsterdam new",
-		false,
-		pAt,
-		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
-	)
+	j := &aggregator.Job{
+		ID:            id,
+		ChannelID:     chID2,
+		Status:        aggregator.JobStatusActive,
+		URL:           "https://example.com/job/id/new",
+		Title:         "Software Engineer new",
+		Description:   "Job Description new",
+		Source:        "Indeed new",
+		Location:      "Amsterdam new",
+		Remote:        false,
+		PostedAt:      pAt,
+		PublishStatus: aggregator.JobPublishStatusPublished,
+		CreatedAt:     cAt,
+		UpdatedAt:     time.Now(),
+	}
 
 	r := postgres.NewJobRepository(suite.DB)
 
 	// Execute
-	err = r.Save(context.Background(), j.ToAggregator())
+	err = r.Save(context.Background(), j)
 
 	// Assert return
 	suite.NoError(err)
@@ -139,23 +142,25 @@ func (suite *JobRepositorySuite) Test_Save_Error() {
 	// Prepare
 	id := uuid.New()
 	chID := uuid.New()
-	j := importing.NewJob(
-		id,
-		chID,
-		aggregator.JobStatusActive,
-		"https://example.com/job/id",
-		"Software Engineer",
-		"Job Description",
-		"Indeed",
-		"Amsterdam",
-		true,
-		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
-		importing.JobWithPublishStatus(aggregator.JobPublishStatusPublished),
-	)
+	j := &aggregator.Job{
+		ID:            id,
+		ChannelID:     chID,
+		Status:        aggregator.JobStatusActive,
+		URL:           "https://example.com/job/id",
+		Title:         "Software Engineer",
+		Description:   "Job Description",
+		Source:        "Indeed",
+		Location:      "Amsterdam",
+		Remote:        true,
+		PostedAt:      time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		PublishStatus: aggregator.JobPublishStatusPublished,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
 	r := postgres.NewJobRepository(suite.BadDB)
 
 	// Execute
-	err := r.Save(context.Background(), j.ToAggregator())
+	err := r.Save(context.Background(), j)
 
 	// Assert return
 	suite.Error(err)

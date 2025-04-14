@@ -7,6 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
+	"strings"
 	"testing"
 	"time"
 )
@@ -184,8 +185,18 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_Success() {
 	// Assert logs
 	lines := dsl.LogLines()
 	suite.Len(lines, 2)
-	suite.Contains(lines[0], "scheduling import for channel "+id1.String())
-	suite.Contains(lines[1], "scheduling import for channel "+id2.String())
+	id1Logged := false
+	id2Logged := false
+	for _, line := range lines {
+		if strings.Contains(line, "scheduling import for channel "+id1.String()) {
+			id1Logged = true
+		}
+		if strings.Contains(line, "scheduling import for channel "+id2.String()) {
+			id2Logged = true
+		}
+	}
+	suite.True(id1Logged)
+	suite.True(id2Logged)
 }
 
 func (suite *ServiceSuite) Test_ScheduleActiveChannels_ChannelRepositoryFail() {
