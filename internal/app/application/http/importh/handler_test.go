@@ -15,6 +15,7 @@ import (
 )
 
 func TestHandler(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(HandlerSuite))
 }
 

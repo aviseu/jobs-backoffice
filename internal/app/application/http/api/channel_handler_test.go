@@ -17,6 +17,7 @@ import (
 )
 
 func TestChannelHandler(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(ChannelHandlerSuite))
 }
 

@@ -13,6 +13,7 @@ import (
 )
 
 func TestService(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(ServiceSuite))
 }
 

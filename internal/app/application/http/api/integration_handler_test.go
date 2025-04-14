@@ -9,6 +9,7 @@ import (
 )
 
 func TestIntegrationHandler(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(IntegrationHandlerSuite))
 }
 

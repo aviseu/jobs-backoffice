@@ -2,7 +2,7 @@ lint:
 	C:\ProgramData\chocolatey\bin\golangci-lint.exe run
 
 test:
-	go test -v ./...
+	go test ./... -parallel 10
 
 start:
 	docker-compose up -d

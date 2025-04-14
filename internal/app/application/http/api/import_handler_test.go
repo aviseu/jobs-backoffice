@@ -13,6 +13,7 @@ import (
 )
 
 func TestImportHandler(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(ImportHandlerSuite))
 }
 

@@ -7,6 +7,7 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(IntegrationSuite))
 }
 

@@ -8,6 +8,7 @@ import (
 )
 
 func TestValidation(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(ValidationSuite))
 }
 
