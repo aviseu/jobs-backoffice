@@ -236,6 +236,108 @@ func WithImport(opts ...WithImportOptions) DSLOptions {
 	}
 }
 
+type WithJobOptions func(i *aggregator.Job)
+
+func WithJobID(id uuid.UUID) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.ID = id
+	}
+}
+
+func WithJobChannelID(chID uuid.UUID) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.ChannelID = chID
+	}
+}
+
+func WithJobStatus(status aggregator.JobStatus) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Status = status
+	}
+}
+
+func WithJobPublishStatus(status aggregator.JobPublishStatus) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.PublishStatus = status
+	}
+}
+
+func WithJobURL(url string) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.URL = url
+	}
+}
+
+func WithJobTitle(title string) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Title = title
+	}
+}
+
+func WithJobDescription(description string) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Description = description
+	}
+}
+
+func WithJobSource(source string) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Source = source
+	}
+}
+
+func WithJobLocation(location string) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Location = location
+	}
+}
+
+func WithJobRemote(isRemote bool) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.Remote = isRemote
+	}
+}
+
+func WithJobPostedAt(postedAt time.Time) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.PostedAt = postedAt
+	}
+}
+
+func WithJobTimestamps(cat, uat time.Time) WithJobOptions {
+	return func(j *aggregator.Job) {
+		j.CreatedAt = cat
+		j.UpdatedAt = uat
+	}
+}
+
+func WithJob(opts ...WithJobOptions) DSLOptions {
+	return func(dsl *DSL) {
+		if dsl.JobRepository == nil {
+			dsl.JobRepository = NewJobRepository()
+		}
+		j := &aggregator.Job{
+			ID:            uuid.New(),
+			ChannelID:     uuid.New(),
+			Status:        aggregator.JobStatusActive,
+			PublishStatus: aggregator.JobPublishStatusPublished,
+			URL:           "https://www.arbeitnow.com/jobs/companies/opus-one-recruitment-gmbh/bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288",
+			Title:         "Bankkauffrau im Bereich Zahlungsverkehr und Kontolöschung (m/w/d)",
+			Description:   "<p>Unser Kunde ist im Bereich Vermögensverwaltung und Fondmanagement ein führender Finanzdienstleister mit Sitz in München. Als zuverlässiger Partner unabhängiger Vermögensberater und ausgewählter institutioneller Kunden verfügt das Unternehmen über ein Verwaltungsvolumen mehrerer Mrd. EUR. Mit derzeit über 40 Mitarbeitern befasst sich das Unternehmen um alle Vermögensbelange seines Kunden. Nachhaltige Qualität und Kundenzufriedenheit stehen im Mittelpunkt des Unternehmens.</p>\n<p>Wir freuen uns auf Ihre Bewerbung als</p>\n<p><strong>Bankkauffrau im Bereich Zahlungsverkehr und Kontolöschung (m/w/d)</strong></p>\n<h2>Aufgaben</h2>\n<ul>\n<li>Überprüfung und Dokumentation von Daueraufträgen sowie (Dauer)-Lastschriften.</li>\n<li>Abwicklung des Zahlungsverkehrs im In- und Ausland.</li>\n<li>Bearbeitung von Nachlasskonten im Zusammenhang mit der Kontolöschung.</li>\n<li>Erfassung interner Kostenrechnungen und Kundenbuchungen.</li>\n<li>Überprüfung und Erfassung von Kontolöschungen. </li>\n<li>Durchführung von Tests für bestehende und neu einzuführende Prozesse.</li>\n</ul>\n<h2>Qualifikation</h2>\n<ul>\n<li>Abgeschlossene Ausbildung als Bankkaufmann (m/w/d) oder vergleichbare kaufmännische Qualifikation.</li>\n<li>Expertise im nationalen und internationalen Zahlungsverkehr.</li>\n<li>Kenntnisse in der Kundenstammdatenpflege.</li>\n<li>Fähigkeit zur selbstständigen Arbeit sowie analytische Herangehensweise</li>\n<li>Anwendungssicher in MS Office, insbesondere Excel von Vorteil.</li>\n<li>Hohes Maß an sorgfältiger und präziser Arbeitsweise</li>\n</ul>\n<h2>Benefits</h2>\n<ul>\n<li>Sie bewerben sich einmal bei uns und wir übernehmen die Suche nach einem passenden Job für Sie</li>\n<li>Zugang zum sog. verdeckten Stellenmarkt (nicht ausgeschriebene Stellen) </li>\n<li>Persönliches Interview mit anschließendem individuellem Karrierecoaching </li>\n<li>Eine Vielzahl an Stellen, die kurzfristig besetzt werden müssen </li>\n<li>Persönliche Kontakte zu Entscheidern und hilfreiche Informationen </li>\n<li>Beratung zum Arbeitsvertrag des neuen Arbeitgebers </li>\n<li>Selbstverständlich behandeln wir Ihre persönlichen Daten und Bewerbungsunterlagen absolut vertraulich und diskret</li>\n<li>Unsere Leistung ist für Sie als Bewerber (m/w/d) absolut kostenlos</li>\n</ul>\n<p>Wir freuen uns darauf, Dich kennen zu lernen! Sende Deine aussagekräftigen Bewerbungsunterlagen (mit Angaben zu Deinem Gehaltswunsch sowie Deinem nächstmöglichen Eintrittstermin).</p>\n<p>Gemeinsam finden wir heraus, ob diese Position die Richtige für Dich ist und ob wir Dir außerdem noch andere Perspektiven anbieten können.</p>\n<p><strong>DEIN ANSPRECHPARTNER:</strong></p>\n<p>Frau Elwira Dabrowska | Tel.: 089/890 648 1039</p>\n<p>Find <a href=\"https://www.arbeitnow.com/\">Jobs in Germany</a> on Arbeitnow</a>",
+			Source:        aggregator.IntegrationArbeitnow.String(),
+			Location:      "Munich",
+			Remote:        true,
+			PostedAt:      time.Unix(1739357344, 0),
+			CreatedAt:     time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+			UpdatedAt:     time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		}
+		for _, opt := range opts {
+			opt(j)
+		}
+		dsl.JobRepository.Add(j)
+	}
+}
+
 func NewDSL(opts ...DSLOptions) *DSL {
 	dsl := &DSL{}
 
@@ -344,6 +446,32 @@ func (dsl *DSL) FirstImport() *aggregator.Import {
 
 func (dsl *DSL) PublishedImports() []uuid.UUID {
 	return dsl.PubSubService.ImportIDs
+}
+
+func (dsl *DSL) ImportJobs() []*aggregator.ImportJob {
+	var jobs []*aggregator.ImportJob
+	for _, i := range dsl.ImportRepository.ImportJobs() {
+		jobs = append(jobs, i)
+	}
+
+	return jobs
+}
+
+func (dsl *DSL) ImportJob(id uuid.UUID) *aggregator.ImportJob {
+	return dsl.ImportRepository.ImportJobs()[id]
+}
+
+func (dsl *DSL) Jobs() []*aggregator.Job {
+	var jobs []*aggregator.Job
+	for _, i := range dsl.JobRepository.Jobs {
+		jobs = append(jobs, i)
+	}
+
+	return jobs
+}
+
+func (dsl *DSL) Job(id uuid.UUID) *aggregator.Job {
+	return dsl.JobRepository.Jobs[id]
 }
 
 func (dsl *DSL) LogLines() []string {
