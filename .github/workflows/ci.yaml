@@ -53,4 +53,14 @@ jobs:
         run: go get ./...
 
       - name: Run tests
-        run: go test -race -parallel 10 ./...
+        run: go test -race -parallel 10 -covermode=atomic -coverprofile=coverage.out ./...
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
