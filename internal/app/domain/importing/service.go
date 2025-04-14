@@ -61,14 +61,14 @@ func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, f 
 	}
 }
 
-func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *Import, results <-chan *Result) {
+func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *importEntry, results <-chan *Result) {
 	for r := range results {
 		j := &aggregator.ImportJob{
 			ID:     r.JobID(),
 			Result: aggregator.ImportJobResult(r.Type()),
 		}
-		if err := s.ir.SaveImportJob(ctx, i.ID(), j); err != nil {
-			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.ID(), err).Error())
+		if err := s.ir.SaveImportJob(ctx, i.id, j); err != nil {
+			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.id, err).Error())
 			continue
 		}
 	}
@@ -95,12 +95,12 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	if err != nil {
 		return fmt.Errorf("failed to find import %s: %w", importID, err)
 	}
-	i := NewImportFromAggregator(importAggr)
+	i := newImportFromAggregator(importAggr)
 
 	// Find related channel
-	ch, err := s.chr.Find(ctx, i.ChannelID())
+	ch, err := s.chr.Find(ctx, i.channelID)
 	if err != nil {
-		return fmt.Errorf("failed to find channel %s: %w", i.ChannelID(), err)
+		return fmt.Errorf("failed to find channel %s: %w", i.channelID, err)
 	}
 
 	// Create provider that will fetch jobs from external API
@@ -113,8 +113,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Import status: fetching
 	// *******************************************************
 	i.markAsFetching()
-	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status fetching for import %s: %w", i.ID(), err)
+	if err := s.ir.SaveImport(ctx, i.toAggregate()); err != nil {
+		return fmt.Errorf("failed to set status fetching for import %s: %w", i.id, err)
 	}
 
 	// Fetch jobs from external API
@@ -122,8 +122,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	if err != nil {
 		err := fmt.Errorf("failed to import channel %s: %w", ch.ID, err)
 		i.markAsFailed(err)
-		if err2 := s.ir.SaveImport(ctx, i.ToAggregate()); err2 != nil {
-			return fmt.Errorf("failed to mark import %s as failed: %w: %w", i.ID(), err2, err)
+		if err2 := s.ir.SaveImport(ctx, i.toAggregate()); err2 != nil {
+			return fmt.Errorf("failed to mark import %s as failed: %w: %w", i.id, err2, err)
 		}
 
 		return err
@@ -139,8 +139,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Import status: processing
 	// *******************************************************
 	i.markAsProcessing()
-	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status processing for import %s: %w", i.ID(), err)
+	if err := s.ir.SaveImport(ctx, i.toAggregate()); err != nil {
+		return fmt.Errorf("failed to set status processing for import %s: %w", i.id, err)
 	}
 
 	// Create worker group for saving metrics (ImportJobs)
@@ -237,8 +237,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Import status: publishing
 	// *******************************************************
 	i.markAsPublishing()
-	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to set status publishing for import %s: %w", i.ID(), err)
+	if err := s.ir.SaveImport(ctx, i.toAggregate()); err != nil {
+		return fmt.Errorf("failed to set status publishing for import %s: %w", i.id, err)
 	}
 
 	// Publish (eventually)
@@ -247,8 +247,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Import status: completed
 	// *******************************************************
 	i.markAsCompleted()
-	if err := s.ir.SaveImport(ctx, i.ToAggregate()); err != nil {
-		return fmt.Errorf("failed to mark import %s as completed: %w", i.ID(), err)
+	if err := s.ir.SaveImport(ctx, i.toAggregate()); err != nil {
+		return fmt.Errorf("failed to mark import %s as completed: %w", i.id, err)
 	}
 
 	return nil

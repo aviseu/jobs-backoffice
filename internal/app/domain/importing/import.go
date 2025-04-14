@@ -8,172 +8,69 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-type Import struct {
+type importEntry struct {
 	startedAt time.Time
 	endedAt   null.Time
 	error     null.String
-	jobs      []*aggregator.ImportJob
 	status    aggregator.ImportStatus
 	id        uuid.UUID
 	channelID uuid.UUID
 }
 
-type ImportOptional func(*Import)
-
-func ImportWithStatus(s aggregator.ImportStatus) ImportOptional {
-	return func(i *Import) {
-		i.status = s
-	}
-}
-
-func ImportWithError(err string) ImportOptional {
-	return func(i *Import) {
-		i.error = null.StringFrom(err)
-	}
-}
-
-func ImportWithStartAt(s time.Time) ImportOptional {
-	return func(i *Import) {
-		i.startedAt = s
-	}
-}
-
-func ImportWithEndAt(e time.Time) ImportOptional {
-	return func(i *Import) {
-		i.endedAt = null.TimeFrom(e)
-	}
-}
-
-func ImportWithJobs(jobs []*aggregator.ImportJob) ImportOptional {
-	return func(i *Import) {
-		i.jobs = jobs
-	}
-}
-
-func NewImport(id, channelID uuid.UUID, opts ...ImportOptional) *Import {
-	i := &Import{
+func newImportEntry(id, channelID uuid.UUID, status aggregator.ImportStatus, startedAt time.Time, endedAt null.Time, err null.String) *importEntry {
+	i := &importEntry{
 		id:        id,
 		channelID: channelID,
-		status:    aggregator.ImportStatusPending,
-		startedAt: time.Now(),
-		endedAt:   null.NewTime(time.Now(), false),
-	}
-
-	for _, opt := range opts {
-		opt(i)
+		status:    status,
+		startedAt: startedAt,
+		endedAt:   endedAt,
+		error:     err,
 	}
 
 	return i
 }
 
-func (i *Import) ID() uuid.UUID {
-	return i.id
-}
-
-func (i *Import) ChannelID() uuid.UUID {
-	return i.channelID
-}
-
-func (i *Import) Status() aggregator.ImportStatus {
-	return i.status
-}
-
-func (i *Import) Error() null.String {
-	return i.error
-}
-
-func (i *Import) NewJobs() int {
-	return i.jobCount(aggregator.ImportJobResultNew)
-}
-
-func (i *Import) UpdatedJobs() int {
-	return i.jobCount(aggregator.ImportJobResultUpdated)
-}
-
-func (i *Import) NoChangeJobs() int {
-	return i.jobCount(aggregator.ImportJobResultNoChange)
-}
-
-func (i *Import) MissingJobs() int {
-	return i.jobCount(aggregator.ImportJobResultMissing)
-}
-
-func (i *Import) FailedJobs() int {
-	return i.jobCount(aggregator.ImportJobResultFailed)
-}
-
-func (i *Import) jobCount(result aggregator.ImportJobResult) int {
-	var count int
-	for _, j := range i.jobs {
-		if j.Result == result {
-			count++
-		}
-	}
-	return count
-}
-
-func (i *Import) TotalJobs() int {
-	return len(i.jobs)
-}
-
-func (i *Import) StartedAt() time.Time {
-	return i.startedAt
-}
-
-func (i *Import) EndedAt() null.Time {
-	return i.endedAt
-}
-
-func (i *Import) ToAggregate() *aggregator.Import {
-	return &aggregator.Import{
-		ID:        i.ID(),
-		ChannelID: i.ChannelID(),
-		StartedAt: i.StartedAt(),
-		EndedAt:   i.EndedAt(),
-		Error:     i.Error(),
-		Status:    i.Status(),
-	}
-}
-
-func (i *Import) markAsFailed(err error) {
+func (i *importEntry) markAsFailed(err error) {
 	i.status = aggregator.ImportStatusFailed
 	i.endedAt = null.TimeFrom(time.Now())
 	i.error = null.StringFrom(err.Error())
 }
 
-func (i *Import) markAsFetching() {
+func (i *importEntry) markAsFetching() {
 	i.status = aggregator.ImportStatusFetching
 }
 
-func (i *Import) markAsProcessing() {
+func (i *importEntry) markAsProcessing() {
 	i.status = aggregator.ImportStatusProcessing
 }
 
-func (i *Import) markAsPublishing() {
+func (i *importEntry) markAsPublishing() {
 	i.status = aggregator.ImportStatusPublishing
 }
 
-func (i *Import) markAsCompleted() {
+func (i *importEntry) markAsCompleted() {
 	i.status = aggregator.ImportStatusCompleted
 	i.endedAt = null.TimeFrom(time.Now())
 }
 
-func NewImportFromAggregator(i *aggregator.Import) *Import {
-	opts := []ImportOptional{
-		ImportWithStartAt(i.StartedAt),
-		ImportWithStatus(i.Status),
-		ImportWithJobs(i.Jobs),
+func (i *importEntry) toAggregate() *aggregator.Import {
+	return &aggregator.Import{
+		ID:        i.id,
+		ChannelID: i.channelID,
+		StartedAt: i.startedAt,
+		EndedAt:   i.endedAt,
+		Error:     i.error,
+		Status:    i.status,
 	}
-	if i.Error.Valid {
-		opts = append(opts, ImportWithError(i.Error.String))
-	}
-	if i.EndedAt.Valid {
-		opts = append(opts, ImportWithEndAt(i.EndedAt.Time))
-	}
+}
 
-	return NewImport(
+func newImportFromAggregator(i *aggregator.Import) *importEntry {
+	return newImportEntry(
 		i.ID,
 		i.ChannelID,
-		opts...,
+		i.Status,
+		i.StartedAt,
+		i.EndedAt,
+		i.Error,
 	)
 }
