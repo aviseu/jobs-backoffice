@@ -33,7 +33,6 @@ type DSL struct {
 
 	// Domains
 	ConfiguringService *configuring.Service
-	Factory            *importing.Factory
 	ImportService      *importing.Service
 	SchedulingService  *scheduling.Service
 
@@ -363,14 +362,11 @@ func NewDSL(opts ...DSLOptions) *DSL {
 	if dsl.Config == nil {
 		dsl.Config = dsl.defaultConfig()
 	}
-	if dsl.Factory == nil {
-		dsl.Factory = importing.NewFactory(dsl.HTTPClient, *dsl.Config)
-	}
 	if dsl.Logger == nil {
 		dsl.LogBuffer, dsl.Logger = NewLogger()
 	}
 	if dsl.ImportService == nil {
-		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.Factory, *dsl.Config, dsl.Config.Import.ResultBufferSize, dsl.Config.Import.ResultWorkers, dsl.Logger)
+		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.HTTPClient, *dsl.Config, dsl.Config.Import.ResultBufferSize, dsl.Config.Import.ResultWorkers, dsl.Logger)
 	}
 	if dsl.PubSubService == nil {
 		dsl.PubSubService = NewPubSubService()

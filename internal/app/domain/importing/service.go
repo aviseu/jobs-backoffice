@@ -8,6 +8,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
 	"log/slog"
+	"net/http"
 	"sync"
 )
 
@@ -37,23 +38,27 @@ type ChannelRepository interface {
 	Find(ctx context.Context, id uuid.UUID) (*aggregator.Channel, error)
 }
 
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type Service struct {
 	jr           JobRepository
 	ir           ImportRepository
 	chr          ChannelRepository
-	f            *Factory
+	f            *factory
 	log          *slog.Logger
 	cfg          Config
 	workerBuffer int
 	workerCount  int
 }
 
-func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, f *Factory, cfg Config, buffer, workers int, log *slog.Logger) *Service {
+func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c HTTPClient, cfg Config, buffer, workers int, log *slog.Logger) *Service {
 	return &Service{
 		chr:          chr,
 		jr:           jr,
 		ir:           ir,
-		f:            f,
+		f:            newFactory(c, cfg),
 		log:          log,
 		cfg:          cfg,
 		workerBuffer: buffer,
@@ -104,7 +109,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 
 	// Create provider that will fetch jobs from external API
-	p, err := s.f.Create(ch)
+	p, err := s.f.create(ch)
 	if err != nil {
 		return fmt.Errorf("failed to create provider for channel %s: %w", ch.ID, err)
 	}

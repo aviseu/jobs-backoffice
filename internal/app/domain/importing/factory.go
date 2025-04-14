@@ -2,33 +2,27 @@ package importing
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )
 
-type Provider interface {
+type provider interface {
 	GetJobs() ([]*aggregator.Job, error)
 }
 
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
-type Factory struct {
+type factory struct {
 	c   HTTPClient
 	cfg Config
 }
 
-func NewFactory(c HTTPClient, cfg Config) *Factory {
-	return &Factory{
+func newFactory(c HTTPClient, cfg Config) *factory {
+	return &factory{
 		cfg: cfg,
 		c:   c,
 	}
 }
 
-func (f *Factory) Create(ch *aggregator.Channel) (Provider, error) {
+func (f *factory) create(ch *aggregator.Channel) (provider, error) {
 	if ch.Integration == aggregator.IntegrationArbeitnow {
 		return arbeitnow.NewService(f.c, f.cfg.Arbeitnow, ch), nil
 	}
