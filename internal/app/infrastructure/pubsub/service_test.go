@@ -29,7 +29,6 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_PublishImport_Success() {
 	// Prepare
-	suite.T().Parallel()
 	ctx := context.Background()
 	s := pubsub.NewService(suite.ImportTopic, pubsub.Config{Timeout: 1 * time.Second})
 	importID := uuid.New()
@@ -63,7 +62,6 @@ func (suite *ServiceSuite) Test_PublishImport_Success() {
 
 func (suite *ServiceSuite) Test_PublishImport_ConnectionFailed() {
 	// Prepare
-	suite.T().Parallel()
 	ctx := context.Background()
 	s := pubsub.NewService(suite.BadImportTopic, pubsub.Config{Timeout: 1 * time.Second})
 	importID := uuid.New()

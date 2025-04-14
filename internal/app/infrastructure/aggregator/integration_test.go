@@ -17,7 +17,6 @@ type IntegrationSuite struct {
 
 func (suite *IntegrationSuite) Test_ParseIntegration_Success() {
 	// Execute
-	suite.T().Parallel()
 	i, ok := aggregator.ParseIntegration("arbeitnow")
 
 	// Assert
@@ -27,7 +26,6 @@ func (suite *IntegrationSuite) Test_ParseIntegration_Success() {
 
 func (suite *IntegrationSuite) Test_ParseIntegration_Error() {
 	// Execute
-	suite.T().Parallel()
 	_, ok := aggregator.ParseIntegration("invalid")
 
 	// Assert
@@ -36,7 +34,6 @@ func (suite *IntegrationSuite) Test_ParseIntegration_Error() {
 
 func (suite *IntegrationSuite) Test_ListIntegrations_Success() {
 	// Execute
-	suite.T().Parallel()
 	list := aggregator.ListIntegrations()
 
 	// Assert

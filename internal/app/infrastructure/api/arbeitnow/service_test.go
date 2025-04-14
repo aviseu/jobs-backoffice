@@ -24,7 +24,6 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_GetJobs_Success() {
 	// Prepare
-	suite.T().Parallel()
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
 	ch := &aggregator.Channel{
@@ -67,7 +66,6 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 
 func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	// Prepare
-	suite.T().Parallel()
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
 	ch := &aggregator.Channel{

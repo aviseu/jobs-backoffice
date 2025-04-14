@@ -22,7 +22,6 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_Success() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	j1ID := uuid.NewSHA1(chID, []byte("bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288"))
 	j2ID := uuid.New()
@@ -154,7 +153,6 @@ func (suite *ServiceSuite) Test_Success() {
 
 func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithImportRepositoryError(errors.New("boom")),
 	)
@@ -174,7 +172,6 @@ func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
 
 func (suite *ServiceSuite) Test_Execute_ChannelRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	iID := uuid.New()
 	dsl := testutils.NewDSL(
@@ -205,7 +202,6 @@ func (suite *ServiceSuite) Test_Execute_ChannelRepositoryFail() {
 
 func (suite *ServiceSuite) Test_Execute_GatewayFail() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
 	iID := uuid.New()
 	dsl := testutils.NewDSL(

@@ -23,7 +23,6 @@ type ImportHandlerSuite struct {
 
 func (suite *ImportHandlerSuite) Test_List_Success() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	id1 := uuid.New()
 	id2 := uuid.New()
@@ -80,7 +79,6 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 
 func (suite *ImportHandlerSuite) Test_List_ImportRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
@@ -126,7 +124,6 @@ func (suite *ImportHandlerSuite) Test_List_ImportRepositoryFail() {
 
 func (suite *ImportHandlerSuite) Test_Find_Success() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
@@ -168,7 +165,6 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 
 func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/imports/"+uuid.New().String(), nil)
@@ -189,7 +185,6 @@ func (suite *ImportHandlerSuite) Test_Find_NotFound() {
 
 func (suite *ImportHandlerSuite) Test_Find_ImportRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	id := uuid.New()
 	dsl := testutils.NewDSL(

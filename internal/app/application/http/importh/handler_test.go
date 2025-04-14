@@ -33,7 +33,6 @@ type pubSubMessage struct {
 
 func (suite *HandlerSuite) Test_Import_Success() {
 	// Prepare
-	suite.T().Parallel()
 	chID := uuid.New()
 	iID := uuid.New()
 
@@ -98,7 +97,6 @@ func (suite *HandlerSuite) Test_Import_Success() {
 
 func (suite *HandlerSuite) Test_Import_ServerFail() {
 	// Prepare
-	suite.T().Parallel()
 	iID := uuid.New()
 	chID := uuid.MustParse(testutils.ArbeitnowMethodNotFound)
 	dsl := testutils.NewDSL(

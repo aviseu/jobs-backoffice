@@ -23,7 +23,6 @@ type ServiceSuite struct {
 
 func (suite *ServiceSuite) Test_ScheduleImport_Success() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
 			testutils.WithChannelActivated(),
@@ -62,7 +61,6 @@ func (suite *ServiceSuite) Test_ScheduleImport_Success() {
 
 func (suite *ServiceSuite) Test_ScheduleImport_ImportRepositoryFailed() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
 			testutils.WithChannelActivated(),
@@ -94,7 +92,6 @@ func (suite *ServiceSuite) Test_ScheduleImport_ImportRepositoryFailed() {
 
 func (suite *ServiceSuite) Test_ScheduleImport_PubSubFailed() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
 			testutils.WithChannelActivated(),
@@ -131,7 +128,6 @@ func (suite *ServiceSuite) Test_ScheduleImport_PubSubFailed() {
 
 func (suite *ServiceSuite) Test_ScheduleActiveChannels_Success() {
 	// Prepare
-	suite.T().Parallel()
 	id1 := uuid.New()
 	id2 := uuid.New()
 
@@ -206,7 +202,6 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_Success() {
 
 func (suite *ServiceSuite) Test_ScheduleActiveChannels_ChannelRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
 			testutils.WithChannelActivated(),
@@ -234,7 +229,6 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_ChannelRepositoryFail() {
 
 func (suite *ServiceSuite) Test_ScheduleActiveChannels_ImportRepositoryFail() {
 	// Prepare
-	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(
@@ -261,7 +255,6 @@ func (suite *ServiceSuite) Test_ScheduleActiveChannels_ImportRepositoryFail() {
 
 func (suite *ServiceSuite) Test_ScheduleActiveChannels_PubSubServiceFail() {
 	// Prepare
-	suite.T().Parallel()
 	id := uuid.New()
 	dsl := testutils.NewDSL(
 		testutils.WithChannel(

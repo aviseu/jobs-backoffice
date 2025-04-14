@@ -19,7 +19,6 @@ type IntegrationHandlerSuite struct {
 
 func (suite *IntegrationHandlerSuite) Test_ListIntegrations_Success() {
 	// Prepare
-	suite.T().Parallel()
 	dsl := testutils.NewDSL()
 
 	req, err := oghttp.NewRequest("GET", "/api/integrations", nil)

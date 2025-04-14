@@ -18,7 +18,6 @@ type ValidationSuite struct {
 
 func (suite *ValidationSuite) Test_Create_Success() {
 	// Prepare
-	suite.T().Parallel()
 	err := errs.NewValidationError(errors.New("Name is required"))
 
 	// Assert
