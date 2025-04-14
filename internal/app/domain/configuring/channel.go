@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Channel struct {
+type channel struct {
 	createdAt   time.Time
 	updatedAt   time.Time
 	name        string
@@ -16,17 +16,17 @@ type Channel struct {
 	id          uuid.UUID
 }
 
-type Optional func(*Channel)
+type optional func(*channel)
 
-func WithTimestamps(c, u time.Time) Optional {
-	return func(ch *Channel) {
+func withTimestamps(c, u time.Time) optional {
+	return func(ch *channel) {
 		ch.createdAt = c
 		ch.updatedAt = u
 	}
 }
 
-func NewChannel(id uuid.UUID, name string, i aggregator.Integration, s aggregator.ChannelStatus, opts ...Optional) *Channel {
-	ch := &Channel{
+func newChannel(id uuid.UUID, name string, i aggregator.Integration, s aggregator.ChannelStatus, opts ...optional) *channel {
+	ch := &channel{
 		id:          id,
 		name:        name,
 		integration: i,
@@ -42,31 +42,7 @@ func NewChannel(id uuid.UUID, name string, i aggregator.Integration, s aggregato
 	return ch
 }
 
-func (ch *Channel) ID() uuid.UUID {
-	return ch.id
-}
-
-func (ch *Channel) Name() string {
-	return ch.name
-}
-
-func (ch *Channel) Integration() aggregator.Integration {
-	return ch.integration
-}
-
-func (ch *Channel) Status() aggregator.ChannelStatus {
-	return ch.status
-}
-
-func (ch *Channel) CreatedAt() time.Time {
-	return ch.createdAt
-}
-
-func (ch *Channel) UpdatedAt() time.Time {
-	return ch.updatedAt
-}
-
-func (ch *Channel) Update(name string) error {
+func (ch *channel) update(name string) error {
 	if name == "" {
 		return ErrNameIsRequired
 	}
@@ -77,17 +53,17 @@ func (ch *Channel) Update(name string) error {
 	return nil
 }
 
-func (ch *Channel) Activate() {
+func (ch *channel) activate() {
 	ch.status = aggregator.ChannelStatusActive
 	ch.updatedAt = time.Now()
 }
 
-func (ch *Channel) Deactivate() {
+func (ch *channel) deactivate() {
 	ch.status = aggregator.ChannelStatusInactive
 	ch.updatedAt = time.Now()
 }
 
-func (ch *Channel) ToAggregator() *aggregator.Channel {
+func (ch *channel) toAggregator() *aggregator.Channel {
 	return &aggregator.Channel{
 		ID:          ch.id,
 		Name:        ch.name,
@@ -98,12 +74,12 @@ func (ch *Channel) ToAggregator() *aggregator.Channel {
 	}
 }
 
-func NewChannelFromAggregator(ch *aggregator.Channel) *Channel {
-	return NewChannel(
+func newChannelFromAggregator(ch *aggregator.Channel) *channel {
+	return newChannel(
 		ch.ID,
 		ch.Name,
 		ch.Integration,
 		ch.Status,
-		WithTimestamps(ch.CreatedAt, ch.UpdatedAt),
+		withTimestamps(ch.CreatedAt, ch.UpdatedAt),
 	)
 }

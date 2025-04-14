@@ -34,11 +34,11 @@ func (suite *ServiceSuite) Test_Create_Success() {
 
 	// Assert result
 	suite.NoError(err)
-	suite.Equal("Channel Name", ch.Name())
-	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration())
-	suite.Equal(aggregator.ChannelStatusInactive, ch.Status())
-	suite.True(ch.CreatedAt().After(time.Now().Add(-2 * time.Second)))
-	suite.True(ch.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal("Channel Name", ch.Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusInactive, ch.Status)
+	suite.True(ch.CreatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert state change
 	suite.Len(dsl.Channels(), 1)
@@ -105,22 +105,22 @@ func (suite *ServiceSuite) Test_Update_Success() {
 
 	// Assert result
 	suite.NoError(err)
-	suite.Equal(id, res.ID())
-	suite.Equal("channel 2", res.Name())
-	suite.Equal(aggregator.IntegrationArbeitnow, res.Integration())
-	suite.Equal(aggregator.ChannelStatusActive, res.Status())
-	suite.True(cat.Equal(res.CreatedAt()))
-	suite.True(res.UpdatedAt().After(time.Now().Add(-2 * time.Second)))
+	suite.Equal(id, res.ID)
+	suite.Equal("channel 2", res.Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, res.Integration)
+	suite.Equal(aggregator.ChannelStatusActive, res.Status)
+	suite.True(cat.Equal(res.CreatedAt))
+	suite.True(res.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
 
 	// Assert state change
 	suite.NoError(err)
-	suite.Equal(id, res.ID())
+	suite.Equal(id, res.ID)
 	ch := dsl.FirstChannel()
 	suite.Equal("channel 2", ch.Name)
 	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
 	suite.Equal(aggregator.ChannelStatusActive, ch.Status)
 	suite.True(cat.Equal(ch.CreatedAt))
-	suite.True(res.UpdatedAt().Equal(ch.UpdatedAt))
+	suite.True(res.UpdatedAt.Equal(ch.UpdatedAt))
 }
 
 func (suite *ServiceSuite) Test_Update_NotFound() {

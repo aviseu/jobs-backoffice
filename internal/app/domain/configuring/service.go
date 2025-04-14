@@ -23,7 +23,7 @@ func NewService(r Repository) *Service {
 	return &Service{r: r}
 }
 
-func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Channel, error) {
+func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*aggregator.Channel, error) {
 	var errs error
 
 	i, ok := aggregator.ParseIntegration(cmd.Integration)
@@ -39,21 +39,21 @@ func (s *Service) Create(ctx context.Context, cmd *CreateChannelCommand) (*Chann
 		return nil, errs
 	}
 
-	ch := NewChannel(
+	ch := newChannel(
 		uuid.New(),
 		cmd.Name,
 		i,
 		aggregator.ChannelStatusInactive,
 	)
 
-	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
+	if err := s.r.Save(ctx, ch.toAggregator()); err != nil {
 		return nil, fmt.Errorf("failed to create channel: %w", err)
 	}
 
-	return ch, nil
+	return ch.toAggregator(), nil
 }
 
-func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Channel, error) {
+func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*aggregator.Channel, error) {
 	aggr, err := s.r.Find(ctx, cmd.ID)
 	if err != nil {
 		if errors.Is(err, infrastructure.ErrChannelNotFound) {
@@ -62,17 +62,17 @@ func (s *Service) Update(ctx context.Context, cmd *UpdateChannelCommand) (*Chann
 		return nil, fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromAggregator(aggr)
+	ch := newChannelFromAggregator(aggr)
 
-	if err := ch.Update(cmd.Name); err != nil {
+	if err := ch.update(cmd.Name); err != nil {
 		return nil, fmt.Errorf("failed to update channel: %w", err)
 	}
 
-	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
+	if err := s.r.Save(ctx, ch.toAggregator()); err != nil {
 		return nil, fmt.Errorf("failed to update channel: %w", err)
 	}
 
-	return ch, nil
+	return ch.toAggregator(), nil
 }
 
 func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
@@ -84,11 +84,11 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromAggregator(aggr)
+	ch := newChannelFromAggregator(aggr)
 
-	ch.Activate()
+	ch.activate()
 
-	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
+	if err := s.r.Save(ctx, ch.toAggregator()); err != nil {
 		return fmt.Errorf("failed to activate channel: %w", err)
 	}
 
@@ -104,11 +104,11 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("failed to find channel: %w", err)
 	}
 
-	ch := NewChannelFromAggregator(aggr)
+	ch := newChannelFromAggregator(aggr)
 
-	ch.Deactivate()
+	ch.deactivate()
 
-	if err := s.r.Save(ctx, ch.ToAggregator()); err != nil {
+	if err := s.r.Save(ctx, ch.toAggregator()); err != nil {
 		return fmt.Errorf("failed to activate channel: %w", err)
 	}
 
