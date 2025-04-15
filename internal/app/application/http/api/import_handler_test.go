@@ -122,6 +122,90 @@ func (suite *ImportHandlerSuite) Test_List_ImportRepositoryFail() {
 	suite.Contains(lines[0], "failed to get imports: boom")
 }
 
+func (suite *ImportHandlerSuite) Test_List_ChannelRepositoryFail() {
+	// Prepare
+	dsl := testutils.NewDSL(
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"error":{"message":"Internal Server Error"}}`+"\n", rr.Body.String())
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "failed to get channels: boom")
+}
+
+func (suite *ImportHandlerSuite) Test_List_BadResponseWriterFail() {
+	// Prepare
+	chID := uuid.New()
+	id1 := uuid.New()
+	id2 := uuid.New()
+	id3 := uuid.New()
+
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelName("Channel Name"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(id1),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusCompleted),
+			testutils.WithImportStartedAt(time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC)),
+			testutils.WithImportEndedAt(time.Date(2020, 1, 1, 0, 0, 4, 0, time.UTC)),
+			testutils.WithImportError("happened this error"),
+			testutils.WithImportJobs(aggregator.ImportJobResultNew, 1),
+			testutils.WithImportJobs(aggregator.ImportJobResultUpdated, 2),
+			testutils.WithImportJobs(aggregator.ImportJobResultNoChange, 3),
+			testutils.WithImportJobs(aggregator.ImportJobResultMissing, 4),
+			testutils.WithImportJobs(aggregator.ImportJobResultFailed, 5),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(id2),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+			testutils.WithImportStartedAt(time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(id3),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+			testutils.WithImportStartedAt(time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)),
+		),
+	)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports", nil)
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert log
+	log := dsl.LogLines()
+	suite.Len(log, 2)
+	suite.Contains(log[0], `"level":"ERROR"`)
+	suite.Contains(log[0], `"msg":"failed to encode response: bad response writer"`)
+	suite.Contains(log[1], `"level":"ERROR"`)
+	suite.Contains(log[1], `"msg":"bad response writer"`)
+}
+
 func (suite *ImportHandlerSuite) Test_Find_Success() {
 	// Prepare
 	chID := uuid.New()
