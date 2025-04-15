@@ -158,3 +158,111 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 	suite.Contains(lines[1], `"level":"INFO"`)
 	suite.Contains(lines[1], "processing import "+iID.String())
 }
+
+func (suite *HandlerSuite) Test_Import_BadPubSubMessageFail() {
+	// Prepare
+	chID := uuid.New()
+	iID := uuid.New()
+
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
+	)
+
+	req, err := oghttp.NewRequest("POST", "/import", bytes.NewBuffer([]byte("foobar")))
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.ImportServer.ServeHTTP(rr, req)
+
+	// Assert response
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("skipped message\n", rr.Body.String())
+
+	// Assert state change
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
+	suite.NotNil(i)
+	suite.Equal(iID, i.ID)
+	suite.Equal(chID, i.ChannelID)
+	suite.Equal(aggregator.ImportStatusPending, i.Status)
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"INFO"`)
+	suite.Contains(lines[0], "received message!")
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], "failed to json decode request body")
+}
+
+func (suite *HandlerSuite) Test_Import_ProtoDecodeFail() {
+	// Prepare
+	chID := uuid.New()
+	iID := uuid.New()
+
+	dsl := testutils.NewDSL(
+		testutils.WithArbeitnowEnabled(),
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(iID),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusPending),
+		),
+	)
+
+	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
+		ImportId: "foobar",
+	})
+	suite.NoError(err)
+	msg := &pubSubMessage{
+		Message: struct {
+			Data []byte `json:"data,omitempty"`
+			ID   string `json:"id"`
+		}{
+			Data: data,
+			ID:   "1",
+		},
+	}
+	msgJson, err := json.Marshal(msg)
+	suite.NoError(err)
+
+	req, err := oghttp.NewRequest("POST", "/import", bytes.NewBuffer(msgJson))
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.ImportServer.ServeHTTP(rr, req)
+
+	// Assert response
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("skipped message\n", rr.Body.String())
+
+	// Assert state change
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
+	suite.NotNil(i)
+	suite.Equal(iID, i.ID)
+	suite.Equal(chID, i.ChannelID)
+	suite.Equal(aggregator.ImportStatusPending, i.Status)
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"INFO"`)
+	suite.Contains(lines[0], "received message!")
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], "failed to convert import id foobar to uuid: invalid UUID length")
+}

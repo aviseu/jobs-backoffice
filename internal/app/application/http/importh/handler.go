@@ -49,6 +49,7 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
 		h.log.Error(fmt.Errorf("failed to json decode request body: %w", err).Error())
 		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message
+		return
 	}
 	defer func(body io.ReadCloser) {
 		err := body.Close()
