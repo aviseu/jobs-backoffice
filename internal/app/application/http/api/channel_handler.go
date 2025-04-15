@@ -56,7 +56,7 @@ func (h *ChannelHandler) Routes() http.Handler {
 func (h *ChannelHandler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 	var req createChannelRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to parse uuid %s: %w", idStr, err), http.StatusBadRequest)
 		return
 	}
 
@@ -113,14 +113,14 @@ func (h *ChannelHandler) FindChannel(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to find post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to find channel %s: %w", idStr, err))
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	resp := NewChannelResponse(p)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to encode channel %s: %w", idStr, err))
 		return
 	}
 }
@@ -130,13 +130,13 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to parse uuid %s: %w", idStr, err), http.StatusBadRequest)
 		return
 	}
 
 	var req updateChannelRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.handleFail(w, fmt.Errorf("failed to decode post: %w", err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to decode request: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -153,14 +153,14 @@ func (h *ChannelHandler) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to update post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to update channel %s: %w", idStr, err))
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	resp := NewChannelResponse(ch)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		h.handleError(w, fmt.Errorf("failed to encode post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to encode channel %s: %w", idStr, err))
 		return
 	}
 }
@@ -170,7 +170,7 @@ func (h *ChannelHandler) ActivateChannel(w http.ResponseWriter, r *http.Request)
 
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to parse uuid %s: %w", idStr, err), http.StatusBadRequest)
 		return
 	}
 
@@ -180,7 +180,7 @@ func (h *ChannelHandler) ActivateChannel(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to activate post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to activate channel %s: %w", idStr, err))
 		return
 	}
 
@@ -192,7 +192,7 @@ func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Reques
 
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		h.handleFail(w, fmt.Errorf("failed to parse post uuid %s: %w", idStr, err), http.StatusBadRequest)
+		h.handleFail(w, fmt.Errorf("failed to parse uuid %s: %w", idStr, err), http.StatusBadRequest)
 		return
 	}
 
@@ -202,7 +202,7 @@ func (h *ChannelHandler) DeactivateChannel(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		h.handleError(w, fmt.Errorf("failed to deactivate post %s: %w", idStr, err))
+		h.handleError(w, fmt.Errorf("failed to deactivate channel %s: %w", idStr, err))
 		return
 	}
 

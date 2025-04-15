@@ -54,6 +54,61 @@ func (suite *ChannelHandlerSuite) Test_Create_Success() {
 	suite.Empty(dsl.LogLines())
 }
 
+func (suite *ChannelHandlerSuite) Test_Create_InvalidRequestBody_Fail() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`foobar---`))
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to decode request: invalid character 'o' in literal false (expecting 'a')\"}}\n", rr.Body.String())
+
+	// Assert state change
+	suite.Empty(dsl.Channels())
+
+	// Assert log
+	suite.Empty(dsl.LogLines())
+}
+
+func (suite *ChannelHandlerSuite) Test_Create_BadResponseWriter_Fail() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("POST", "/api/channels", strings.NewReader(`{"name":"Channel Name","integration":"arbeitnow"}`))
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert state change
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
+	suite.Equal("Channel Name", ch.Name)
+	suite.Equal(aggregator.IntegrationArbeitnow, ch.Integration)
+	suite.Equal(aggregator.ChannelStatusInactive, ch.Status)
+	suite.True(ch.CreatedAt.After(time.Now().Add(-2 * time.Second)))
+	suite.True(ch.UpdatedAt.After(time.Now().Add(-2 * time.Second)))
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], `"msg":"failed to encode response: bad response writer"`)
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], `"msg":"bad response writer"`)
+}
+
 func (suite *ChannelHandlerSuite) Test_Create_Validation_Fail() {
 	// Prepare
 	dsl := testutils.NewDSL()
@@ -186,6 +241,54 @@ func (suite *ChannelHandlerSuite) Test_GetChannels_WithoutCors_Success() {
 	suite.Empty(rr.Header().Get("Vary"))
 }
 
+func (suite *ChannelHandlerSuite) Test_GetChannels_ChannelRepositoryFail() {
+	// Prepare
+	dsl := testutils.NewDSL(
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
+
+	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "boom")
+}
+
+func (suite *ChannelHandlerSuite) Test_GetChannels_BadResponseWriter_Fail() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("GET", "/api/channels", nil)
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], `"msg":"failed to encode response: bad response writer"`)
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], `"msg":"bad response writer"`)
+}
+
 func (suite *ChannelHandlerSuite) Test_FindChannel_Success() {
 	// Prepare
 	id := uuid.New()
@@ -251,7 +354,7 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_InvalidID() {
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"failed to parse uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -280,6 +383,34 @@ func (suite *ChannelHandlerSuite) Test_FindChannel_ChannelRepositoryFail() {
 	suite.Len(lines, 1)
 	suite.Contains(lines[0], `"level":"ERROR"`)
 	suite.Contains(lines[0], "boom")
+}
+
+func (suite *ChannelHandlerSuite) Test_FindChannel_BadResponseWriter() {
+	// Prepare
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+	)
+
+	req, err := oghttp.NewRequest("GET", "/api/channels/"+id.String(), nil)
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], `"msg":"failed to encode channel `+id.String()+`: bad response writer"`)
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], `"msg":"bad response writer"`)
 }
 
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
@@ -322,6 +453,42 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_Success() {
 	suite.Empty(dsl.LogLines())
 }
 
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidRequest() {
+	// Prepare
+	id := uuid.New()
+	cat := time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC)
+	uat := time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC)
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+			testutils.WithChannelName("channel 1"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+			testutils.WithChannelActivated(),
+			testutils.WithChannelTimestamps(cat, uat),
+		),
+	)
+
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+id.String(), strings.NewReader(`foobar--`))
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"failed to decode request: invalid character 'o' in literal false (expecting 'a')\"}}\n", rr.Body.String())
+
+	// Assert state change
+	suite.Len(dsl.Channels(), 1)
+	ch := dsl.FirstChannel()
+	suite.Equal("channel 1", ch.Name)
+
+	// Assert log
+	suite.Empty(dsl.LogLines())
+}
+
 func (suite *ChannelHandlerSuite) Test_UpdateChannel_NotFound() {
 	// Prepare
 	dsl := testutils.NewDSL()
@@ -356,7 +523,7 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_InvalidID() {
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"failed to parse uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -434,6 +601,34 @@ func (suite *ChannelHandlerSuite) Test_UpdateChannel_ChannelRepositoryFail() {
 	suite.Contains(lines[0], "boom")
 }
 
+func (suite *ChannelHandlerSuite) Test_UpdateChannel_BadResponseWriter() {
+	// Prepare
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+	)
+
+	req, err := oghttp.NewRequest("PATCH", "/api/channels/"+id.String(), strings.NewReader(`{"name":"NewChannel Name"}`))
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 2)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], `"msg":"failed to encode channel `+id.String()+`: bad response writer"`)
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], `"msg":"bad response writer"`)
+}
+
 func (suite *ChannelHandlerSuite) Test_ActivateChannel_Success() {
 	// Prepare
 	id := uuid.New()
@@ -500,7 +695,7 @@ func (suite *ChannelHandlerSuite) Test_ActivateChannel_InvalidID() {
 	// Assert
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"failed to parse uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -607,7 +802,7 @@ func (suite *ChannelHandlerSuite) Test_DeactivateChannel_InvalidID() {
 	// Assert response
 	suite.Equal(oghttp.StatusBadRequest, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal("{\"error\":{\"message\":\"failed to parse post uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
+	suite.Equal("{\"error\":{\"message\":\"failed to parse uuid invalid-uuid: invalid UUID length: 12\"}}\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -691,6 +886,52 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_Success() {
 	suite.Equal(i.ID, dsl.PublishedImports()[0])
 }
 
+func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotProvided() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels//schedule", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"missing channel id\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(dsl.LogLines())
+
+	// Assert pubsub
+	suite.Len(dsl.PublishedImports(), 0)
+}
+
+func (suite *ChannelHandlerSuite) Test_ScheduleImport_InvalidChannelID() {
+	// Prepare
+	dsl := testutils.NewDSL()
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/invalid-uuid/schedule", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusBadRequest, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"invalid channel id: invalid UUID length: 12\"}}\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(dsl.LogLines())
+
+	// Assert pubsub
+	suite.Len(dsl.PublishedImports(), 0)
+}
+
 func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 	// Prepare
 	dsl := testutils.NewDSL()
@@ -709,6 +950,38 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelNotFound() {
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
+
+	// Assert pubsub
+	suite.Len(dsl.PublishedImports(), 0)
+}
+
+func (suite *ChannelHandlerSuite) Test_ScheduleImport_ChannelRepositoryFail() {
+	// Prepare
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+		testutils.WithChannelRepositoryError(errors.New("boom")),
+	)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/schedule", nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal("{\"error\":{\"message\":\"Internal Server Error\"}}\n", rr.Body.String())
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 1)
+	suite.Contains(lines[0], `"level":"ERROR"`)
+	suite.Contains(lines[0], "boom")
 
 	// Assert pubsub
 	suite.Len(dsl.PublishedImports(), 0)
@@ -747,4 +1020,41 @@ func (suite *ChannelHandlerSuite) Test_ScheduleImport_ImportRepositoryFail() {
 
 	// Assert pubsub
 	suite.Empty(dsl.PublishedImports())
+}
+
+func (suite *ChannelHandlerSuite) Test_ScheduleImport_BadResponseWriter() {
+	// Prepare
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(id),
+		),
+	)
+
+	req, err := oghttp.NewRequest("PUT", "/api/channels/"+id.String()+"/schedule", nil)
+	suite.NoError(err)
+	rr := testutils.NewBadResponseWriter()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusInternalServerError, rr.Code)
+
+	// Assert state change
+	suite.Len(dsl.Imports(), 1)
+	i := dsl.FirstImport()
+	suite.Equal(id, i.ChannelID)
+	suite.Equal(aggregator.ImportStatusPending, i.Status)
+	suite.True(i.StartedAt.After(time.Now().Add(-2 * time.Second)))
+
+	// Assert log
+	lines := dsl.LogLines()
+	suite.Len(lines, 3)
+	suite.Contains(lines[0], `"level":"INFO"`)
+	suite.Contains(lines[0], "scheduling import for channel "+id.String())
+	suite.Contains(lines[1], `"level":"ERROR"`)
+	suite.Contains(lines[1], `"msg":"failed to encode response: bad response writer"`)
+	suite.Contains(lines[2], `"level":"ERROR"`)
+	suite.Contains(lines[2], `"msg":"bad response writer"`)
 }
