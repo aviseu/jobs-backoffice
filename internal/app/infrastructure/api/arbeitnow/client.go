@@ -40,7 +40,7 @@ func (c *client) JobBoard(endpoint string, ch *aggregator.Channel) (*jobBoardRes
 
 	var jobsResponse jobBoardResponse
 	if err := json.NewDecoder(resp.Body).Decode(&jobsResponse); err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
+		return nil, fmt.Errorf("failed to decode response body: %w: %s", err, resp.Body)
 	}
 
 	return &jobsResponse, nil

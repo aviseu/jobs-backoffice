@@ -1,10 +1,14 @@
 package arbeitnow_test
 
 import (
+	"errors"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"io"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -64,7 +68,7 @@ func (suite *ServiceSuite) Test_GetJobs_Success() {
 	suite.NotEmpty(c.Logs[1].Response)
 }
 
-func (suite *ServiceSuite) Test_GetJobs_Failed() {
+func (suite *ServiceSuite) Test_GetJobs_BadRequestFailed() {
 	// Prepare
 	server := testutils.NewArbeitnowServer()
 	defer server.Close()
@@ -86,4 +90,88 @@ func (suite *ServiceSuite) Test_GetJobs_Failed() {
 	suite.ErrorContains(err, `<h2>The server returned a "405 Method Not Allowed".</h2>`)
 	suite.ErrorContains(err, "failed to request with http code 405 and body:")
 	suite.ErrorContains(err, "failed to get jobs page 1 on channel 3fae894d-3484-4274-b337-fcd35a9f135c")
+}
+
+func (suite *ServiceSuite) Test_GetJobs_ClientError() {
+	// Prepare
+	chID := uuid.New()
+	ch := &aggregator.Channel{
+		ID:          chID,
+		Name:        "arbeitnow integration",
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
+	}
+	m := testutils.NewHTTPClientMock()
+	c := testutils.NewRequestLogger(m)
+	s := arbeitnow.NewService(c, arbeitnow.Config{}, ch)
+
+	m.On("Do", mock.Anything).Return(nil, errors.New("something bad happened")).Once()
+
+	// Execute
+	jobs, err := s.GetJobs()
+
+	// Assert result
+	suite.Nil(jobs)
+	suite.Error(err)
+	suite.ErrorContains(err, "failed to get jobs page 1 on channel "+chID.String())
+	suite.ErrorContains(err, "failed to get jobBoard: something bad happened")
+}
+
+func (suite *ServiceSuite) Test_GetJobs_InvalidResponse() {
+	// Prepare
+	chID := uuid.New()
+	ch := &aggregator.Channel{
+		ID:          chID,
+		Name:        "arbeitnow integration",
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
+	}
+	m := testutils.NewHTTPClientMock()
+	c := testutils.NewRequestLogger(m)
+	s := arbeitnow.NewService(c, arbeitnow.Config{}, ch)
+
+	m.On("Do", mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusOK,
+		Status:     http.StatusText(http.StatusOK),
+		Body:       io.NopCloser(strings.NewReader("<html><title>An Error Occurred</title></html>")),
+	}, nil).Once()
+
+	// Execute
+	jobs, err := s.GetJobs()
+
+	// Assert result
+	suite.Nil(jobs)
+	suite.Error(err)
+	suite.ErrorContains(err, "failed to get jobs page 1 on channel "+chID.String())
+	suite.ErrorContains(err, "failed to decode response body")
+	suite.ErrorContains(err, "<html><title>An Error Occurred</title></html>")
+}
+
+func (suite *ServiceSuite) Test_GetJobs_FailedResponseWithoutBody() {
+	// Prepare
+	chID := uuid.New()
+	ch := &aggregator.Channel{
+		ID:          chID,
+		Name:        "arbeitnow integration",
+		Integration: aggregator.IntegrationArbeitnow,
+		Status:      aggregator.ChannelStatusActive,
+	}
+	m := testutils.NewHTTPClientMock()
+	c := testutils.NewRequestLogger(m)
+	s := arbeitnow.NewService(c, arbeitnow.Config{}, ch)
+
+	m.On("Do", mock.Anything).Return(&http.Response{
+		StatusCode: http.StatusInternalServerError,
+		Status:     http.StatusText(http.StatusInternalServerError),
+		Body:       io.NopCloser(strings.NewReader("")),
+	}, nil).Once()
+
+	// Execute
+	jobs, err := s.GetJobs()
+
+	// Assert result
+	suite.Nil(jobs)
+	suite.Error(err)
+	suite.ErrorContains(err, "failed to get jobs page 1 on channel "+chID.String())
+	suite.ErrorContains(err, "failed to request with http code 500 and no body")
 }
