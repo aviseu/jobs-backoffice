@@ -9,6 +9,10 @@ resource "google_pubsub_subscription" "subscription" {
   push_config {
     push_endpoint = var.subscription_push_endpoint
 
+    oidc_token {
+      service_account_email = var.subscription_push_service_account
+    }
+
     attributes = {
       x-goog-version = "v1"
     }
