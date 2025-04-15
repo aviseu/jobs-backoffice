@@ -8,9 +8,3 @@ terraform {
     }
   }
 }
-
-provider "google" {
-  project         = "aviseu-jobs"
-  region          = "europe-west4"
-  request_timeout = "60s"
-}
