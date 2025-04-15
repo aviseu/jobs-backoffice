@@ -119,7 +119,7 @@ module "importsSubscription" {
   topic_name = module.importsTopic.topic_name
   subscription_name = "imports-subscription"
   subscription_push_endpoint = module.import.service_url
-  message_retention_duration = "10s"
+  message_retention_duration = "600s"
 }
 
 module "schedule" {
