@@ -1,5 +1,5 @@
 module "database" {
-  source          = "github.com/aviseu/terraform//modules/cloud_sql_database?ref=v1.2.2"
+  source          = "github.com/aviseu/terraform//modules/cloud_sql_database?ref=v1.2.3"
   instance_name   = "jobs-db"
   connection_name = "aviseu-jobs:europe-west4:jobs-db"
   database_name   = "backoffice"
@@ -9,21 +9,21 @@ module "database" {
 module "dsn" {
   depends_on = [module.database]
 
-  source      = "github.com/aviseu/terraform//modules/secret?ref=v1.2.2"
+  source      = "github.com/aviseu/terraform//modules/secret?ref=v1.2.3"
   project_id  = "aviseu-jobs"
   secret_name = "backoffice-dsn"
   secret_data = module.database.dsn
 }
 
 module "importsTopic" {
-  source     = "github.com/aviseu/terraform//modules/pubsub_topic?ref=v1.2.2"
+  source     = "github.com/aviseu/terraform//modules/pubsub_topic?ref=v1.2.3"
   project_id = "aviseu-jobs"
   topic_name = "imports"
 }
 
 module "frontend" {
   service_name            = "frontend"
-  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.2"
+  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.3"
   project_id              = "aviseu-jobs"
   region                  = "europe-west4"
   container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-frontend"
@@ -38,7 +38,7 @@ module "api" {
   depends_on = [module.database, module.dsn]
 
   service_name            = "api"
-  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.2"
+  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.3"
   project_id              = "aviseu-jobs"
   region                  = "europe-west4"
   container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-api"
@@ -76,7 +76,7 @@ module "import" {
   depends_on = [module.database, module.dsn, module.importsTopic]
 
   service_name            = "import"
-  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.2"
+  source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.3"
   project_id              = "aviseu-jobs"
   region                  = "europe-west4"
   container_image         = "europe-west4-docker.pkg.dev/aviseu-jobs/jobs/jobs-backoffice-import"
@@ -115,7 +115,7 @@ module "import" {
 }
 
 module "importsSubscription" {
-  source     = "./modules/pubsub_subscriber"
+  source     = "github.com/aviseu/terraform//modules/pubsub_subscriber?ref=v1.2.3"
   project_id = "aviseu-jobs"
   topic_name = module.importsTopic.topic_name
   subscription_name = "imports-subscription"
@@ -128,7 +128,7 @@ module "schedule" {
   depends_on = [module.database, module.dsn, module.importsTopic]
 
   job_name             = "schedule"
-  source               = "github.com/aviseu/terraform//modules/cloud_run_job?ref=v1.2.2"
+  source               = "github.com/aviseu/terraform//modules/cloud_run_job?ref=v1.2.3"
   project_id           = "aviseu-jobs"
   region               = "europe-west4"
   trigger_region       = "europe-west3"
