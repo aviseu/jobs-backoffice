@@ -97,7 +97,6 @@ module "import" {
     "DB_MAXOPENCONNS"                   = "5"
     "DB_MAXIDLECONNS"                   = "5"
     "PUBSUB_PROJECT_ID"                 = "aviseu-jobs"
-    "PUBSUB_IMPORT_TOPIC_ID"            = "imports"
     "PUBSUB_JOB_TOPIC_ID"               = "jobs"
     "IMPORT_MAX_CONNECTIONS"            = "1"
     "GATEWAY_IMPORT_RESULT_BUFFER_SIZE" = "10"
