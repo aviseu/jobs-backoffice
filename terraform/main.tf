@@ -21,6 +21,12 @@ module "importsTopic" {
   topic_name = "imports"
 }
 
+module "jobsTopic" {
+  source     = "github.com/aviseu/terraform//modules/pubsub_topic?ref=v1.2.3"
+  project_id = "aviseu-jobs"
+  topic_name = "jobs"
+}
+
 module "frontend" {
   service_name            = "frontend"
   source                  = "github.com/aviseu/terraform//modules/cloud_run_service?ref=v1.2.3"
