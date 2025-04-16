@@ -86,11 +86,13 @@ func (suite *HandlerSuite) Test_Import_Success() {
 
 	// Assert log
 	lines := dsl.LogLines()
-	suite.Len(lines, 3)
+	suite.Len(lines, 4)
 	suite.Contains(lines[0], `"level":"INFO"`)
 	suite.Contains(lines[0], "received message!")
 	suite.Contains(lines[1], `"level":"INFO"`)
 	suite.Contains(lines[1], "processing import "+iID.String())
+	suite.Contains(lines[2], `"level":"INFO"`)
+	suite.Contains(lines[2], "published 3 jobs for import "+iID.String())
 	suite.Contains(lines[2], `"level":"INFO"`)
 	suite.Contains(lines[2], "completed import "+iID.String())
 }
