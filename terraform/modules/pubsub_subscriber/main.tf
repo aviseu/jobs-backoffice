@@ -17,4 +17,8 @@ resource "google_pubsub_subscription" "subscription" {
       x-goog-version = "v1"
     }
   }
+
+  expiration_policy {
+    ttl = ""
+  }
 }

@@ -119,7 +119,7 @@ module "importsSubscription" {
   project_id = "aviseu-jobs"
   topic_name = module.importsTopic.topic_name
   subscription_name = "imports-subscription"
-  subscription_push_endpoint = module.import.service_url
+  subscription_push_endpoint = "${module.import.service_url}/import"
   message_retention_duration = "600s"
   subscription_push_service_account = module.import.service_account_email
 }
