@@ -98,11 +98,11 @@ module "import" {
     "DB_MAXIDLECONNS"                   = "5"
     "PUBSUB_PROJECT_ID"                 = "aviseu-jobs"
     "PUBSUB_IMPORT_TOPIC_ID"            = "imports"
+    "PUBSUB_JOB_TOPIC_ID"               = "jobs"
     "IMPORT_MAX_CONNECTIONS"            = "1"
-    "JOB_WORKERS"                       = "2"
-    "JOB_BUFFER"                        = "10"
     "GATEWAY_IMPORT_RESULT_BUFFER_SIZE" = "10"
     "GATEWAY_IMPORT_RESULT_WORKERS"     = "2"
+    "GATEWAY_IMPORT_PUBLISH_WORKERS"    = "10"
   }
 
   sql_instances = length(module.database.connection_name) > 0 ? [
