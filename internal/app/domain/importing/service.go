@@ -261,7 +261,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Publish jobs to pubsub
 	var wgPublish sync.WaitGroup
 	publishJobs := make(chan *aggregator.Job, s.workerBuffer)
-
+	publishCount := 0
 	for w := 1; w <= s.publishWorkerCount; w++ {
 		wgPublish.Add(1)
 		go func(jobs <-chan *aggregator.Job) {
@@ -282,6 +282,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 					s.log.Error(fmt.Errorf("failed to save job %s: %w", j.ID, err).Error())
 					continue
 				}
+				publishCount++
 			}
 			wgPublish.Done()
 		}(publishJobs)
@@ -292,6 +293,8 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 	close(publishJobs)
 	wgPublish.Wait()
+
+	s.log.Info(fmt.Sprintf("published %d jobs for import %s", publishCount, i.id))
 
 	// *******************************************************
 	// Import status: completed

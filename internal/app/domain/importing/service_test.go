@@ -153,7 +153,10 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.NotNil(dsl.PublishedJob(jNew2ID)) // new
 
 	// Assert Logs
-	suite.Empty(dsl.LogLines())
+	logs := dsl.LogLines()
+	suite.Len(logs, 1)
+	suite.Contains(logs[0], `"level":"INFO"`)
+	suite.Contains(logs[0], "published 2 jobs for import "+iID.String())
 }
 
 func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {
