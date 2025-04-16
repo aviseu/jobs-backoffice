@@ -93,8 +93,8 @@ func (suite *HandlerSuite) Test_Import_Success() {
 	suite.Contains(lines[1], "processing import "+iID.String())
 	suite.Contains(lines[2], `"level":"INFO"`)
 	suite.Contains(lines[2], "published 3 jobs for import "+iID.String())
-	suite.Contains(lines[2], `"level":"INFO"`)
-	suite.Contains(lines[2], "completed import "+iID.String())
+	suite.Contains(lines[3], `"level":"INFO"`)
+	suite.Contains(lines[3], "completed import "+iID.String())
 }
 
 func (suite *HandlerSuite) Test_Import_ServerFail() {
