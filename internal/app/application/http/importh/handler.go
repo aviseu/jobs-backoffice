@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
+	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
@@ -58,7 +58,7 @@ func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	var data jobs.ExecuteImportChannel
+	var data imports.ExecuteImportChannel
 	if err := proto.Unmarshal(msg.Message.Data, &data); err != nil {
 		h.log.Error(fmt.Errorf("failed to unmarshal pubsub message: %w", err).Error())
 		http.Error(w, "skipped message", http.StatusOK) // 200 will ack message

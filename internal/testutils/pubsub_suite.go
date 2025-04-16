@@ -19,19 +19,23 @@ type PubSubSuite struct {
 
 	container testcontainers.Container
 
-	badClient      *pubsub.Client
-	BadImportTopic *pubsub.Topic
+	client    *pubsub.Client
+	badClient *pubsub.Client
 
-	client             *pubsub.Client
 	ImportTopic        *pubsub.Topic
+	BadImportTopic     *pubsub.Topic
 	ImportSubscription *pubsub.Subscription
+
+	JobTopic        *pubsub.Topic
+	BadJobTopic     *pubsub.Topic
+	JobSubscription *pubsub.Subscription
 }
 
 func (suite *PubSubSuite) SetupSuite() {
-	suite.container, suite.client, suite.ImportTopic, suite.badClient, suite.BadImportTopic, suite.ImportSubscription = suite.createDependencies(context.Background())
+	suite.container, suite.client, suite.badClient, suite.ImportTopic, suite.BadImportTopic, suite.ImportSubscription, suite.JobTopic, suite.BadJobTopic, suite.JobSubscription = suite.createDependencies(context.Background())
 }
 
-func (suite *PubSubSuite) createDependencies(ctx context.Context) (testcontainers.Container, *pubsub.Client, *pubsub.Topic, *pubsub.Client, *pubsub.Topic, *pubsub.Subscription) {
+func (suite *PubSubSuite) createDependencies(ctx context.Context) (testcontainers.Container, *pubsub.Client, *pubsub.Client, *pubsub.Topic, *pubsub.Topic, *pubsub.Subscription, *pubsub.Topic, *pubsub.Topic, *pubsub.Subscription) {
 	req := testcontainers.ContainerRequest{
 		Image:        "google/cloud-sdk:emulators",
 		ExposedPorts: []string{"8085/tcp"},
@@ -62,14 +66,6 @@ func (suite *PubSubSuite) createDependencies(ctx context.Context) (testcontainer
 	)
 	suite.NoError(err)
 
-	importTopic, err := client.CreateTopic(ctx, "import-test-topic")
-	suite.NoError(err)
-
-	importSubscription, err := client.CreateSubscription(ctx, "import-test-sub", pubsub.SubscriptionConfig{
-		Topic: importTopic,
-	})
-	suite.NoError(err)
-
 	badClient, err := pubsub.NewClient(
 		ctx,
 		"test-project",
@@ -81,11 +77,31 @@ func (suite *PubSubSuite) createDependencies(ctx context.Context) (testcontainer
 	)
 	suite.NoError(err)
 
+	importTopic, err := client.CreateTopic(ctx, "import-test-topic")
+	suite.NoError(err)
+
 	badImportTopic, err := badClient.CreateTopic(ctx, "import-bad-test-topic")
 	suite.NoError(err)
+
+	importSubscription, err := client.CreateSubscription(ctx, "import-test-sub", pubsub.SubscriptionConfig{
+		Topic: importTopic,
+	})
+	suite.NoError(err)
+
+	jobTopic, err := client.CreateTopic(ctx, "job-test-topic")
+	suite.NoError(err)
+
+	badJobTopic, err := badClient.CreateTopic(ctx, "job-bad-test-topic")
+	suite.NoError(err)
+
+	jobSubscription, err := client.CreateSubscription(ctx, "job-test-sub", pubsub.SubscriptionConfig{
+		Topic: jobTopic,
+	})
+	suite.NoError(err)
+
 	suite.NoError(badClient.Close())
 
-	return c, client, importTopic, badClient, badImportTopic, importSubscription
+	return c, client, badClient, importTopic, badImportTopic, importSubscription, jobTopic, badJobTopic, jobSubscription
 }
 
 func (suite *PubSubSuite) TearDownSuite() {

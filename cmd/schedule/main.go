@@ -76,13 +76,13 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to build pubsub client for project %s: %w", cfg.PubSub.ProjectID, err)
 	}
 
-	ps := pubsub.NewService(client.Topic(cfg.PubSub.ImportTopicID), cfg.PubSub.Client)
+	pis := pubsub.NewImportService(client.Topic(cfg.PubSub.ImportTopicID), cfg.PubSub.Client)
 
 	// services
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	ir := postgres.NewImportRepository(db)
-	ss := scheduling.NewService(ir, chr, ps, log)
+	ss := scheduling.NewService(ir, chr, pis, log)
 
 	slog.Info("starting imports...")
 	if err := ss.ScheduleActiveChannels(ctx); err != nil {

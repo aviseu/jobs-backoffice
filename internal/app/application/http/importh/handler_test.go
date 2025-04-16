@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
+	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/proto"
@@ -49,7 +49,7 @@ func (suite *HandlerSuite) Test_Import_Success() {
 		),
 	)
 
-	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
+	data, err := proto.Marshal(&imports.ExecuteImportChannel{
 		ImportId: iID.String(),
 	})
 	suite.NoError(err)
@@ -112,7 +112,7 @@ func (suite *HandlerSuite) Test_Import_ServerFail() {
 		),
 	)
 
-	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
+	data, err := proto.Marshal(&imports.ExecuteImportChannel{
 		ImportId: iID.String(),
 	})
 	suite.NoError(err)
@@ -223,7 +223,7 @@ func (suite *HandlerSuite) Test_Import_ProtoDecodeFail() {
 		),
 	)
 
-	data, err := proto.Marshal(&jobs.ExecuteImportChannel{
+	data, err := proto.Marshal(&imports.ExecuteImportChannel{
 		ImportId: "foobar",
 	})
 	suite.NoError(err)

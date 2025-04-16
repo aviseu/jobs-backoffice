@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/jobs"
+	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/proto"
@@ -15,25 +15,25 @@ import (
 	"time"
 )
 
-func TestService(t *testing.T) {
+func TestImportService(t *testing.T) {
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
-	suite.Run(t, new(ServiceSuite))
+	suite.Run(t, new(ImportServiceSuite))
 }
 
-type ServiceSuite struct {
+type ImportServiceSuite struct {
 	testutils.PubSubSuite
 }
 
-func (suite *ServiceSuite) Test_PublishImport_Success() {
+func (suite *ImportServiceSuite) Test_PublishImport_Success() {
 	// Prepare
 	ctx := context.Background()
-	s := pubsub.NewService(suite.ImportTopic, pubsub.Config{Timeout: 1 * time.Second})
+	s := pubsub.NewImportService(suite.ImportTopic, pubsub.Config{Timeout: 1 * time.Second})
 	importID := uuid.New()
 
-	var resp jobs.ExecuteImportChannel
+	var resp imports.ExecuteImportChannel
 	subCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -60,10 +60,10 @@ func (suite *ServiceSuite) Test_PublishImport_Success() {
 	suite.Equal(importID.String(), resp.ImportId)
 }
 
-func (suite *ServiceSuite) Test_PublishImport_ConnectionFailed() {
+func (suite *ImportServiceSuite) Test_PublishImport_ConnectionFailed() {
 	// Prepare
 	ctx := context.Background()
-	s := pubsub.NewService(suite.BadImportTopic, pubsub.Config{Timeout: 1 * time.Second})
+	s := pubsub.NewImportService(suite.BadImportTopic, pubsub.Config{Timeout: 1 * time.Second})
 	importID := uuid.New()
 
 	// Execute
