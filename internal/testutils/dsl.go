@@ -26,10 +26,11 @@ type DSL struct {
 	Config           *importing.Config
 
 	// Infrastructure
-	JobRepository     *JobRepository
-	ChannelRepository *ChannelRepository
-	ImportRepository  *ImportRepository
-	PubSubService     *PubSubService
+	JobRepository       *JobRepository
+	ChannelRepository   *ChannelRepository
+	ImportRepository    *ImportRepository
+	PubSubImportService *PubSubImportService
+	PubSubJobService    *PubSubJobService
 
 	// Domains
 	ConfiguringService *configuring.Service
@@ -64,10 +65,10 @@ func WithImportRepositoryError(err error) DSLOptions {
 
 func WithPubSubServiceError(err error) DSLOptions {
 	return func(dsl *DSL) {
-		if dsl.PubSubService == nil {
-			dsl.PubSubService = NewPubSubService()
+		if dsl.PubSubImportService == nil {
+			dsl.PubSubImportService = NewPubSubImportService()
 		}
-		dsl.PubSubService.FailWith(err)
+		dsl.PubSubImportService.FailWith(err)
 	}
 }
 
@@ -365,14 +366,17 @@ func NewDSL(opts ...DSLOptions) *DSL {
 	if dsl.Logger == nil {
 		dsl.LogBuffer, dsl.Logger = NewLogger()
 	}
-	if dsl.ImportService == nil {
-		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.HTTPClient, *dsl.Config, dsl.Config.Import.ResultBufferSize, dsl.Config.Import.ResultWorkers, dsl.Logger)
+	if dsl.PubSubJobService == nil {
+		dsl.PubSubJobService = NewPubSubJobService()
 	}
-	if dsl.PubSubService == nil {
-		dsl.PubSubService = NewPubSubService()
+	if dsl.ImportService == nil {
+		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.HTTPClient, *dsl.Config, dsl.Config.Import.ResultBufferSize, dsl.Config.Import.ResultWorkers, dsl.Config.Import.PublishWorkers, dsl.PubSubJobService, dsl.Logger)
+	}
+	if dsl.PubSubImportService == nil {
+		dsl.PubSubImportService = NewPubSubImportService()
 	}
 	if dsl.SchedulingService == nil {
-		dsl.SchedulingService = scheduling.NewService(dsl.ImportRepository, dsl.ChannelRepository, dsl.PubSubService, dsl.Logger)
+		dsl.SchedulingService = scheduling.NewService(dsl.ImportRepository, dsl.ChannelRepository, dsl.PubSubImportService, dsl.Logger)
 	}
 
 	if dsl.HTTPConfig == nil {
@@ -395,9 +399,11 @@ func (dsl *DSL) defaultConfig() *importing.Config {
 		Import: struct {
 			ResultBufferSize int `split_words:"true" default:"10"`
 			ResultWorkers    int `split_words:"true" default:"10"`
+			PublishWorkers   int `split_words:"true" default:"10"`
 		}{
 			ResultBufferSize: 10,
 			ResultWorkers:    10,
+			PublishWorkers:   10,
 		},
 	}
 }
@@ -441,7 +447,7 @@ func (dsl *DSL) FirstImport() *aggregator.Import {
 }
 
 func (dsl *DSL) PublishedImports() []uuid.UUID {
-	return dsl.PubSubService.ImportIDs
+	return dsl.PubSubImportService.ImportIDs
 }
 
 func (dsl *DSL) ImportJobs() []*aggregator.ImportJob {
@@ -468,6 +474,19 @@ func (dsl *DSL) Jobs() []*aggregator.Job {
 
 func (dsl *DSL) Job(id uuid.UUID) *aggregator.Job {
 	return dsl.JobRepository.Jobs[id]
+}
+
+func (dsl *DSL) PublishedJobs() []*aggregator.Job {
+	return dsl.PubSubJobService.Jobs
+}
+func (dsl *DSL) PublishedJob(id uuid.UUID) *aggregator.Job {
+	for _, j := range dsl.PubSubJobService.Jobs {
+		if j.ID == id {
+			return j
+		}
+	}
+
+	return nil
 }
 
 func (dsl *DSL) LogLines() []string {

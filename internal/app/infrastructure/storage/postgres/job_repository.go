@@ -52,3 +52,13 @@ func (r *JobRepository) GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*
 
 	return results, nil
 }
+
+func (r *JobRepository) GetUnpublishedByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error) {
+	var results []*aggregator.Job
+	err := r.db.SelectContext(ctx, &results, "SELECT * FROM jobs WHERE channel_id = $1 AND publish_status = 0 ORDER BY posted_at DESC", chID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get jobs by channel id %s: %w", chID, err)
+	}
+
+	return results, nil
+}

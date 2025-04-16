@@ -60,3 +60,18 @@ func (r *JobRepository) GetByChannelID(_ context.Context, chID uuid.UUID) ([]*ag
 
 	return jobs, nil
 }
+
+func (r *JobRepository) GetUnpublishedByChannelID(_ context.Context, chID uuid.UUID) ([]*aggregator.Job, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+
+	var jobs []*aggregator.Job
+	for _, j := range r.Jobs {
+		if j.ChannelID == chID && j.PublishStatus == aggregator.JobPublishStatusUnpublished {
+			jobs = append(jobs, j)
+		}
+	}
+
+	return jobs, nil
+}

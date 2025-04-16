@@ -75,7 +75,6 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to build pubsub client for project %s: %w", cfg.PubSub.ProjectID, err)
 	}
-
 	pis := pubsub.NewImportService(client.Topic(cfg.PubSub.ImportTopicID), cfg.PubSub.Client)
 
 	// services

@@ -1,8 +1,10 @@
 package main
 
 import (
+	cpubsub "cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"log/slog"
 	"net"
 	ohttp "net/http"
@@ -22,14 +24,15 @@ import (
 )
 
 type config struct {
+	PubSub struct {
+		ProjectID  string `split_words:"true" required:"true"`
+		JobTopicID string `split_words:"true" required:"true"`
+		Client     pubsub.Config
+	} `split_words:"false"`
 	DB      storage.Config
 	Gateway importing.Config
 	Import  http.Config `split_words:"true"`
-	Job     struct {
-		Workers int `default:"10"`
-		Buffer  int `default:"10"`
-	}
-	Log struct {
+	Log     struct {
 		Level slog.Level `default:"info"`
 	}
 }
@@ -75,13 +78,20 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
+	// pubsub
+	client, err := cpubsub.NewClient(ctx, cfg.PubSub.ProjectID)
+	if err != nil {
+		return fmt.Errorf("failed to build pubsub client for project %s: %w", cfg.PubSub.ProjectID, err)
+	}
+	pjs := pubsub.NewJobService(client.Topic(cfg.PubSub.JobTopicID), cfg.PubSub.Client)
+
 	// services
 	slog.Info("setting up services...")
 	chr := postgres.NewChannelRepository(db)
 	ir := postgres.NewImportRepository(db)
 	jr := postgres.NewJobRepository(db)
 
-	is := importing.NewService(chr, ir, jr, ohttp.DefaultClient, cfg.Gateway, cfg.Job.Buffer, cfg.Job.Workers, log)
+	is := importing.NewService(chr, ir, jr, ohttp.DefaultClient, cfg.Gateway, cfg.Gateway.Import.ResultBufferSize, cfg.Gateway.Import.ResultWorkers, cfg.Gateway.Import.PublishWorkers, pjs, log)
 
 	// start server
 	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(is, log))

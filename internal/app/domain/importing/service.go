@@ -12,12 +12,17 @@ import (
 	"sync"
 )
 
+type PubSubService interface {
+	PublishJobInformation(ctx context.Context, job *aggregator.Job) error
+}
+
 type Config struct {
 	Arbeitnow arbeitnow.Config
 
 	Import struct {
 		ResultBufferSize int `split_words:"true" default:"10"`
 		ResultWorkers    int `split_words:"true" default:"10"`
+		PublishWorkers   int `split_words:"true" default:"10"`
 	}
 }
 
@@ -31,6 +36,7 @@ type ImportRepository interface {
 type JobRepository interface {
 	Save(ctx context.Context, j *aggregator.Job) error
 	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
+	GetUnpublishedByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
 }
 
 type ChannelRepository interface {
@@ -43,26 +49,30 @@ type HTTPClient interface {
 }
 
 type Service struct {
-	jr           JobRepository
-	ir           ImportRepository
-	chr          ChannelRepository
-	f            *factory
-	log          *slog.Logger
-	cfg          Config
-	workerBuffer int
-	workerCount  int
+	jr                 JobRepository
+	ir                 ImportRepository
+	chr                ChannelRepository
+	f                  *factory
+	log                *slog.Logger
+	cfg                Config
+	pjs                PubSubService
+	workerBuffer       int
+	workerCount        int
+	publishWorkerCount int
 }
 
-func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c HTTPClient, cfg Config, buffer, workers int, log *slog.Logger) *Service {
+func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c HTTPClient, cfg Config, buffer, workers, publishWorkers int, pjs PubSubService, log *slog.Logger) *Service {
 	return &Service{
-		chr:          chr,
-		jr:           jr,
-		ir:           ir,
-		f:            newFactory(c, cfg),
-		log:          log,
-		cfg:          cfg,
-		workerBuffer: buffer,
-		workerCount:  workers,
+		chr:                chr,
+		jr:                 jr,
+		ir:                 ir,
+		f:                  newFactory(c, cfg),
+		pjs:                pjs,
+		log:                log,
+		cfg:                cfg,
+		workerBuffer:       buffer,
+		workerCount:        workers,
+		publishWorkerCount: publishWorkers,
 	}
 }
 
@@ -242,7 +252,46 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		return fmt.Errorf("failed to set status publishing for import %s: %w", i.id, err)
 	}
 
-	// Publish (eventually)
+	// Get all jobs needing publishing
+	jj, err := s.jr.GetUnpublishedByChannelID(ctx, ch.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get unpublished jobs for channel %s: %w", ch.ID, err)
+	}
+
+	// Publish jobs to pubsub
+	var wgPublish sync.WaitGroup
+	publishJobs := make(chan *aggregator.Job, s.workerBuffer)
+
+	for w := 1; w <= s.publishWorkerCount; w++ {
+		wgPublish.Add(1)
+		go func(jobs <-chan *aggregator.Job) {
+			for j := range jobs {
+				// Publish
+				err := s.pjs.PublishJobInformation(ctx, j)
+				if err != nil {
+					s.log.Error(fmt.Errorf("failed to publish job %s: %w", j.ID, err).Error())
+					continue
+				}
+
+				// Mark as published
+				dj := newJobFromAggregator(j)
+				dj.markAsPublished()
+
+				// Save in db
+				if err := s.jr.Save(ctx, dj.toAggregator()); err != nil {
+					s.log.Error(fmt.Errorf("failed to save job %s: %w", j.ID, err).Error())
+					continue
+				}
+			}
+			wgPublish.Done()
+		}(publishJobs)
+	}
+
+	for _, j := range jj {
+		publishJobs <- j
+	}
+	close(publishJobs)
+	wgPublish.Wait()
 
 	// *******************************************************
 	// Import status: completed
