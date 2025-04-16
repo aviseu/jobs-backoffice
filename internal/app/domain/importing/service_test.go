@@ -112,7 +112,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(j2ID, dsl.Job(j2ID).ID)
 	suite.Equal(chID, dsl.Job(j2ID).ChannelID)
 	suite.Equal(aggregator.JobStatusInactive, dsl.Job(j2ID).Status)
-	suite.Equal(aggregator.JobPublishStatusPublished, dsl.Job(j2ID).PublishStatus)
+	suite.Equal(aggregator.JobPublishStatusUnpublished, dsl.Job(j2ID).PublishStatus)
 	suite.Equal("https://www.arbeitnow.com/jobs/companies/opus-one-recruitment-gmbh/another", dsl.Job(j2ID).URL)
 	suite.Equal("bankkaufmann-fur-front", dsl.Job(j2ID).Title)
 	suite.Equal("Das Wichtigste für unseren Kunden: Mitarbeiter", dsl.Job(j2ID).Description)
@@ -148,8 +148,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(time.Unix(1739357344, 0), dsl.Job(jNew2ID).PostedAt)
 
 	// Assert publish
-	suite.Len(dsl.PublishedJobs(), 3)
-	suite.NotNil(dsl.PublishedJob(j2ID))    // updated
+	suite.Len(dsl.PublishedJobs(), 2)
 	suite.NotNil(dsl.PublishedJob(jNew1ID)) // new
 	suite.NotNil(dsl.PublishedJob(jNew2ID)) // new
 

@@ -252,3 +252,117 @@ func (suite *JobRepositorySuite) Test_GetByChannelID_Error() {
 	suite.Error(err)
 	suite.ErrorContains(err, "sql: database is closed")
 }
+
+func (suite *JobRepositorySuite) Test_GetActiveUnpublishedByChannelID_Success() {
+	// Prepare
+	chID1 := uuid.New()
+	inactiveUnpublished := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		inactiveUnpublished,
+		chID1,
+		aggregator.JobStatusInactive,
+		aggregator.JobPublishStatusUnpublished,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 1, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	activeUnpublished := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		activeUnpublished,
+		chID1,
+		aggregator.JobStatusActive,
+		aggregator.JobPublishStatusUnpublished,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	inactivePublished := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		inactivePublished,
+		chID1,
+		aggregator.JobStatusInactive,
+		aggregator.JobPublishStatusPublished,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	activePublished := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		activePublished,
+		chID1,
+		aggregator.JobStatusActive,
+		aggregator.JobPublishStatusPublished,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+	chID2 := uuid.New()
+	otherChannel := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO jobs (id, channel_id, status, publish_status, url, title, description, source, location, remote, posted_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		otherChannel,
+		chID2,
+		aggregator.JobStatusActive,
+		aggregator.JobPublishStatusUnpublished,
+		"https://example.com/job/id",
+		"Software Engineer",
+		"Job Description",
+		"Indeed",
+		"Amsterdam",
+		true,
+		time.Date(2025, 1, 1, 0, 2, 0, 0, time.UTC),
+		time.Now(),
+		time.Now(),
+	)
+	suite.NoError(err)
+
+	r := postgres.NewJobRepository(suite.DB)
+
+	// Execute
+	jobs, err := r.GetActiveUnpublishedByChannelID(context.Background(), chID1)
+
+	// Assert return
+	suite.NoError(err)
+	suite.Len(jobs, 1)
+	suite.Equal(activeUnpublished, jobs[0].ID)
+}
+
+func (suite *JobRepositorySuite) Test_GetActiveUnpublishedByChannelID_Error() {
+	// Prepare
+	r := postgres.NewJobRepository(suite.BadDB)
+
+	// Execute
+	jobs, err := r.GetActiveUnpublishedByChannelID(context.Background(), uuid.New())
+
+	// Assert return
+	suite.Nil(jobs)
+	suite.Error(err)
+	suite.ErrorContains(err, "sql: database is closed")
+}

@@ -36,7 +36,7 @@ type ImportRepository interface {
 type JobRepository interface {
 	Save(ctx context.Context, j *aggregator.Job) error
 	GetByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
-	GetUnpublishedByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
+	GetActiveUnpublishedByChannelID(ctx context.Context, chID uuid.UUID) ([]*aggregator.Job, error)
 }
 
 type ChannelRepository interface {
@@ -253,7 +253,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 
 	// Get all jobs needing publishing
-	jj, err := s.jr.GetUnpublishedByChannelID(ctx, ch.ID)
+	jj, err := s.jr.GetActiveUnpublishedByChannelID(ctx, ch.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get unpublished jobs for channel %s: %w", ch.ID, err)
 	}
