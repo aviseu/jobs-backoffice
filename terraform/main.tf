@@ -109,7 +109,8 @@ module "import" {
 
   service_account_roles = [
     "roles/cloudsql.client",
-    "roles/secretmanager.secretAccessor"
+    "roles/secretmanager.secretAccessor",
+    "roles/run.invoker"
   ]
 }
 
