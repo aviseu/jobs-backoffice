@@ -72,7 +72,7 @@ func (i *Import) MissingJobs() int {
 }
 
 func (i *Import) TotalJobs() int {
-	return i.NewJobs() + i.UpdatedJobs() + i.NoChangeJobs() + i.MissingJobs()
+	return i.NewJobs() + i.UpdatedJobs() + i.NoChangeJobs()
 }
 
 func (i *Import) Errors() int {

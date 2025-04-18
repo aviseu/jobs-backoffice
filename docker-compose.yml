@@ -27,6 +27,7 @@ services:
         gcloud pubsub topics create import-topic
         gcloud pubsub topics create import-topic-dead-letter
         gcloud pubsub subscriptions create import-topic-sub --topic=import-topic --dead-letter-topic=import-topic-dead-letter --max-delivery-attempts=5 --push-endpoint=http://host.docker.internal:8081/import
+        gcloud pubsub topics create job-topic
         fg %1
     environment:
       CLOUDSDK_ACTIVE_CONFIG_NAME: default

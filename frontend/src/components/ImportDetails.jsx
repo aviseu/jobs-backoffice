@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {Link, useLocation } from "react-router-dom";
-import { faSquarePlus, faBan, faRetweet, faEquals, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faSquarePlus, faPlus, faBan, faRetweet, faEquals, faQuestion, faCircleQuestion, faFolderPlus } from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 
@@ -76,19 +76,25 @@ const ImportDetails = () => {
                                 <th scope="col">New</th>
                                 <th scope="col">Updated</th>
                                 <th scope="col">No Changes</th>
-                                <th scope="col">Missing</th>
-                                <th scope="col">Failed</th>
                                 <th scope="col">Total</th>
+                                <th scope="col">Errors</th>
+                                <th scope="col">Missing</th>
+                                <th scope="col">P. Missing</th>
+                                <th scope="col">P. Info</th>
+                                <th scope="col">P. Late</th>
                             </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faSquarePlus} /> {importEntry.new_jobs}</span></td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faPlus} /> {importEntry.new_jobs}</span></td>
                                     <td><span className="me-1" title="new"><FontAwesomeIcon icon={faRetweet} /> {importEntry.updated_jobs}</span></td>
                                     <td><span className="me-1" title="new"><FontAwesomeIcon icon={faEquals} /> {importEntry.no_change_jobs}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faBan} /> {importEntry.missing_jobs}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faTriangleExclamation} /> {importEntry.failed_jobs}</span></td>
                                     <td>{importEntry.total_jobs}</td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faBan} /> {importEntry.errors}</span></td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faQuestion} /> {importEntry.missing_jobs}</span></td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faCircleQuestion} /> {importEntry.missing_published}</span></td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faSquarePlus} /> {importEntry.published}</span></td>
+                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faFolderPlus} /> {importEntry.late_published}</span></td>
                                 </tr>
                             </tbody>
                         </table>

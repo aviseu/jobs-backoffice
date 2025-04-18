@@ -74,7 +74,7 @@ func (suite *ImportSuite) Test_Import_Success() {
 	suite.Equal(2, i.UpdatedJobs())
 	suite.Equal(3, i.NoChangeJobs())
 	suite.Equal(4, i.MissingJobs())
-	suite.Equal(10, i.TotalJobs())
+	suite.Equal(6, i.TotalJobs())
 	suite.Equal(5, i.Errors())
 	suite.Equal(1, i.Published())
 	suite.Equal(2, i.LatePublished())

@@ -76,20 +76,23 @@ func NewListIntegrationsResponse(integrations []aggregator.Integration) *Integra
 }
 
 type ImportResponse struct {
-	ID           string      `json:"id"`
-	ChannelID    string      `json:"channel_id"`
-	ChannelName  string      `json:"channel_name"`
-	Integration  string      `json:"integration"`
-	Status       string      `json:"status"`
-	StartedAt    string      `json:"started_at"`
-	EndedAt      null.String `json:"ended_at"`
-	Error        null.String `json:"error"`
-	NewJobs      int         `json:"new_jobs"`
-	UpdatedJobs  int         `json:"updated_jobs"`
-	NoChangeJobs int         `json:"no_change_jobs"`
-	MissingJobs  int         `json:"missing_jobs"`
-	FailedJobs   int         `json:"failed_jobs"`
-	TotalJobs    int         `json:"total_jobs"`
+	ID               string      `json:"id"`
+	ChannelID        string      `json:"channel_id"`
+	ChannelName      string      `json:"channel_name"`
+	Integration      string      `json:"integration"`
+	Status           string      `json:"status"`
+	StartedAt        string      `json:"started_at"`
+	EndedAt          null.String `json:"ended_at"`
+	Error            null.String `json:"error"`
+	NewJobs          int         `json:"new_jobs"`
+	UpdatedJobs      int         `json:"updated_jobs"`
+	NoChangeJobs     int         `json:"no_change_jobs"`
+	MissingJobs      int         `json:"missing_jobs"`
+	TotalJobs        int         `json:"total_jobs"`
+	Errors           int         `json:"errors"`
+	Published        int         `json:"published"`
+	LatePublished    int         `json:"late_published"`
+	MissingPublished int         `json:"missing_published"`
 }
 
 func NewImportResponse(i *aggregator.Import, ch *aggregator.Channel) *ImportResponse {
@@ -99,20 +102,23 @@ func NewImportResponse(i *aggregator.Import, ch *aggregator.Channel) *ImportResp
 	}
 
 	return &ImportResponse{
-		ID:           i.ID.String(),
-		ChannelID:    i.ChannelID.String(),
-		ChannelName:  ch.Name,
-		Integration:  ch.Integration.String(),
-		Status:       i.Status.String(),
-		StartedAt:    i.StartedAt.Format(time.RFC3339),
-		EndedAt:      ended,
-		Error:        i.Error,
-		NewJobs:      i.NewJobs(),
-		UpdatedJobs:  i.UpdatedJobs(),
-		NoChangeJobs: i.NoChangeJobs(),
-		MissingJobs:  i.MissingJobs(),
-		FailedJobs:   i.Errors(),
-		TotalJobs:    i.TotalJobs(),
+		ID:               i.ID.String(),
+		ChannelID:        i.ChannelID.String(),
+		ChannelName:      ch.Name,
+		Integration:      ch.Integration.String(),
+		Status:           i.Status.String(),
+		StartedAt:        i.StartedAt.Format(time.RFC3339),
+		EndedAt:          ended,
+		Error:            i.Error,
+		NewJobs:          i.NewJobs(),
+		UpdatedJobs:      i.UpdatedJobs(),
+		NoChangeJobs:     i.NoChangeJobs(),
+		MissingJobs:      i.MissingJobs(),
+		TotalJobs:        i.TotalJobs(),
+		Errors:           i.Errors(),
+		Published:        i.Published(),
+		LatePublished:    i.LatePublished(),
+		MissingPublished: i.MissingPublished(),
 	}
 }
 

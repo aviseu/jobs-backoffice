@@ -80,7 +80,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(1, dbImport.NoChangeJobs())
 	suite.Equal(1, dbImport.MissingJobs())
 	suite.Equal(0, dbImport.Errors())
-	suite.Equal(4, dbImport.TotalJobs())
+	suite.Equal(3, dbImport.TotalJobs())
 	suite.Equal(2, dbImport.Published())
 	suite.Equal(0, dbImport.LatePublished())
 	suite.Equal(aggregator.ImportStatusCompleted, dbImport.Status)
