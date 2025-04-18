@@ -93,15 +93,18 @@ module "import" {
   is_public               = false
 
   environment_variables = {
-    "IMPORT_ADDR"                       = "0.0.0.0:80"
-    "DB_MAXOPENCONNS"                   = "5"
-    "DB_MAXIDLECONNS"                   = "5"
-    "PUBSUB_PROJECT_ID"                 = "aviseu-jobs"
-    "PUBSUB_JOB_TOPIC_ID"               = "jobs"
-    "IMPORT_MAX_CONNECTIONS"            = "1"
-    "GATEWAY_IMPORT_RESULT_BUFFER_SIZE" = "10"
-    "GATEWAY_IMPORT_RESULT_WORKERS"     = "2"
-    "GATEWAY_IMPORT_PUBLISH_WORKERS"    = "10"
+    "IMPORT_ADDR"                        = "0.0.0.0:80"
+    "DB_MAXOPENCONNS"                    = "5"
+    "DB_MAXIDLECONNS"                    = "5"
+    "PUBSUB_PROJECT_ID"                  = "aviseu-jobs"
+    "PUBSUB_JOB_TOPIC_ID"                = "jobs"
+    "IMPORT_MAX_CONNECTIONS"             = "1"
+    "GATEWAY_IMPORT_METRIC_BUFFER_SIZE"  = "10"
+    "GATEWAY_IMPORT_METRIC_WORKERS"      = "2"
+    "GATEWAY_IMPORT_PUBLISH_BUFFER_SIZE" = "10"
+    "GATEWAY_IMPORT_PUBLISH_WORKERS"     = "2"
+    "GATEWAY_IMPORT_JOB_BUFFER_SIZE"     = "10"
+    "GATEWAY_IMPORT_JOB_WORKERS"         = "2"
   }
 
   sql_instances = length(module.database.connection_name) > 0 ? [
