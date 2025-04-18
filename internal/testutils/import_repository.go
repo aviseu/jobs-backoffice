@@ -12,8 +12,7 @@ import (
 type ImportRepository struct {
 	Imports map[uuid.UUID]*aggregator.Import
 	err     error
-	im      sync.Mutex
-	jrm     sync.Mutex
+	m       sync.Mutex
 }
 
 func NewImportRepository() *ImportRepository {
@@ -66,7 +65,8 @@ func (r *ImportRepository) SaveImport(_ context.Context, i *aggregator.Import) e
 	if r.err != nil {
 		return r.err
 	}
-	r.im.Lock()
+	r.m.Lock()
+	defer r.m.Unlock()
 	old, ok := r.Imports[i.ID]
 
 	if ok {
@@ -80,7 +80,6 @@ func (r *ImportRepository) SaveImport(_ context.Context, i *aggregator.Import) e
 		}
 	}
 	r.Imports[i.ID] = i
-	r.im.Unlock()
 	return nil
 }
 
@@ -119,8 +118,8 @@ func (r *ImportRepository) SaveImportMetric(_ context.Context, importID uuid.UUI
 		return r.err
 	}
 
-	r.jrm.Lock()
-	defer r.jrm.Unlock()
+	r.m.Lock()
+	defer r.m.Unlock()
 
 	i, ok := r.Imports[importID]
 	if !ok {
