@@ -370,7 +370,7 @@ func NewDSL(opts ...DSLOptions) *DSL {
 		dsl.PubSubJobService = NewPubSubJobService()
 	}
 	if dsl.ImportService == nil {
-		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.HTTPClient, *dsl.Config, dsl.Config.Import.ResultBufferSize, dsl.Config.Import.ResultWorkers, dsl.Config.Import.PublishWorkers, dsl.PubSubJobService, dsl.Logger)
+		dsl.ImportService = importing.NewService(dsl.ChannelRepository, dsl.ImportRepository, dsl.JobRepository, dsl.HTTPClient, *dsl.Config, dsl.PubSubJobService, dsl.Logger)
 	}
 	if dsl.PubSubImportService == nil {
 		dsl.PubSubImportService = NewPubSubImportService()
@@ -397,13 +397,22 @@ func NewDSL(opts ...DSLOptions) *DSL {
 func (dsl *DSL) defaultConfig() *importing.Config {
 	return &importing.Config{
 		Import: struct {
-			ResultBufferSize int `split_words:"true" default:"10"`
-			ResultWorkers    int `split_words:"true" default:"10"`
-			PublishWorkers   int `split_words:"true" default:"10"`
+			Metric  importing.ConfigWorker
+			Job     importing.ConfigWorker
+			Publish importing.ConfigWorker
 		}{
-			ResultBufferSize: 10,
-			ResultWorkers:    10,
-			PublishWorkers:   10,
+			Metric: importing.ConfigWorker{
+				BufferSize: 10,
+				Workers:    10,
+			},
+			Job: importing.ConfigWorker{
+				BufferSize: 10,
+				Workers:    10,
+			},
+			Publish: importing.ConfigWorker{
+				BufferSize: 10,
+				Workers:    10,
+			},
 		},
 	}
 }

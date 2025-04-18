@@ -29,11 +29,13 @@ const (
 	ImportMetricTypeUpdated
 	ImportMetricTypeNoChange
 	ImportMetricTypeMissing
-	ImportMetricTypeFailed
+	ImportMetricTypeError
+	ImportMetricTypePublish
+	ImportMetricTypeLatePublish
 )
 
 func (s ImportMetricType) String() string {
-	return [...]string{"new", "updated", "no_change", "missing", "failed"}[s]
+	return [...]string{"new", "updated", "no_change", "missing", "error", "publish", "late_publish"}[s]
 }
 
 type ImportMetric struct {
@@ -67,12 +69,20 @@ func (i *Import) MissingJobs() int {
 	return i.jobCount(ImportMetricTypeMissing)
 }
 
-func (i *Import) FailedJobs() int {
-	return i.jobCount(ImportMetricTypeFailed)
+func (i *Import) TotalJobs() int {
+	return i.NewJobs() + i.UpdatedJobs() + i.NoChangeJobs() + i.MissingJobs()
 }
 
-func (i *Import) TotalJobs() int {
-	return len(i.Metrics)
+func (i *Import) Errors() int {
+	return i.jobCount(ImportMetricTypeError)
+}
+
+func (i *Import) Published() int {
+	return i.jobCount(ImportMetricTypePublish)
+}
+
+func (i *Import) LatePublished() int {
+	return i.jobCount(ImportMetricTypeLatePublish)
 }
 
 func (i *Import) jobCount(metricType ImportMetricType) int {

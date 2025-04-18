@@ -111,7 +111,7 @@ func NewImportResponse(i *aggregator.Import, ch *aggregator.Channel) *ImportResp
 		UpdatedJobs:  i.UpdatedJobs(),
 		NoChangeJobs: i.NoChangeJobs(),
 		MissingJobs:  i.MissingJobs(),
-		FailedJobs:   i.FailedJobs(),
+		FailedJobs:   i.Errors(),
 		TotalJobs:    i.TotalJobs(),
 	}
 }

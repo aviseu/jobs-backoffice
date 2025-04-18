@@ -58,6 +58,10 @@ func (j *job) markAsPublished() {
 	j.updatedAt = time.Now()
 }
 
+func (j *job) needsPublishing() bool {
+	return j.publishStatus == aggregator.JobPublishStatusUnpublished && j.status == aggregator.JobStatusActive
+}
+
 func (j *job) IsEqual(other *job) bool {
 	// ignore publish status, created at and updated at
 	return j.status == other.status &&

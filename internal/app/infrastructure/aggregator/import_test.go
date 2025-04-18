@@ -26,12 +26,14 @@ func (suite *ImportSuite) Test_ImportStatus_Success() {
 	suite.Equal("failed", aggregator.ImportStatusFailed.String())
 }
 
-func (suite *ImportSuite) Test_ImportPublishStatus_Success() {
+func (suite *ImportSuite) Test_ImportMetric_Success() {
 	suite.Equal("new", aggregator.ImportMetricTypeNew.String())
 	suite.Equal("updated", aggregator.ImportMetricTypeUpdated.String())
 	suite.Equal("no_change", aggregator.ImportMetricTypeNoChange.String())
 	suite.Equal("missing", aggregator.ImportMetricTypeMissing.String())
-	suite.Equal("failed", aggregator.ImportMetricTypeFailed.String())
+	suite.Equal("error", aggregator.ImportMetricTypeError.String())
+	suite.Equal("publish", aggregator.ImportMetricTypePublish.String())
+	suite.Equal("late_publish", aggregator.ImportMetricTypeLatePublish.String())
 }
 
 func (suite *ImportSuite) Test_Import_Success() {
@@ -52,11 +54,14 @@ func (suite *ImportSuite) Test_Import_Success() {
 			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissing},
 			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissing},
 			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissing},
-			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeFailed},
-			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeFailed},
-			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeFailed},
-			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeFailed},
-			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeFailed},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeError},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeError},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeError},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeError},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeError},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypePublish},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeLatePublish},
+			{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeLatePublish},
 		},
 	}
 
@@ -65,6 +70,8 @@ func (suite *ImportSuite) Test_Import_Success() {
 	suite.Equal(2, i.UpdatedJobs())
 	suite.Equal(3, i.NoChangeJobs())
 	suite.Equal(4, i.MissingJobs())
-	suite.Equal(5, i.FailedJobs())
-	suite.Equal(15, i.TotalJobs())
+	suite.Equal(10, i.TotalJobs())
+	suite.Equal(5, i.Errors())
+	suite.Equal(1, i.Published())
+	suite.Equal(2, i.LatePublished())
 }

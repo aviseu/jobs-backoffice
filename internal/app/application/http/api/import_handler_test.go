@@ -45,7 +45,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
-			testutils.WithImportMetrics(aggregator.ImportMetricTypeFailed, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
 		),
 		testutils.WithImport(
 			testutils.WithImportID(id2),
@@ -71,7 +71,7 @@ func (suite *ImportHandlerSuite) Test_List_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"imports":[{"id":"`+id1.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:03Z","ended_at":"2020-01-01T00:00:04Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":15},{"id":"`+id2.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:02Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0},{"id":"`+id3.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:01Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0}]}`+"\n", rr.Body.String())
+	suite.Equal(`{"imports":[{"id":"`+id1.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:03Z","ended_at":"2020-01-01T00:00:04Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":10},{"id":"`+id2.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:02Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0},{"id":"`+id3.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"pending","started_at":"2020-01-01T00:00:01Z","ended_at":null,"error":null,"new_jobs":0,"updated_jobs":0,"no_change_jobs":0,"missing_jobs":0,"failed_jobs":0,"total_jobs":0}]}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -98,7 +98,7 @@ func (suite *ImportHandlerSuite) Test_List_ImportRepositoryFail() {
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
-			testutils.WithImportMetrics(aggregator.ImportMetricTypeFailed, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
 		),
 		testutils.WithImportRepositoryError(errors.New("boom")),
 	)
@@ -171,7 +171,7 @@ func (suite *ImportHandlerSuite) Test_List_BadResponseWriterFail() {
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
-			testutils.WithImportMetrics(aggregator.ImportMetricTypeFailed, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
 		),
 		testutils.WithImport(
 			testutils.WithImportID(id2),
@@ -227,7 +227,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
-			testutils.WithImportMetrics(aggregator.ImportMetricTypeFailed, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
 		),
 	)
 
@@ -241,7 +241,7 @@ func (suite *ImportHandlerSuite) Test_Find_Success() {
 	// Assert
 	suite.Equal(oghttp.StatusOK, rr.Code)
 	suite.Equal("application/json", rr.Header().Get("Content-Type"))
-	suite.Equal(`{"id":"`+id.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:01Z","ended_at":"2020-01-01T00:00:02Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":15}`+"\n", rr.Body.String())
+	suite.Equal(`{"id":"`+id.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:01Z","ended_at":"2020-01-01T00:00:02Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"failed_jobs":5,"total_jobs":10}`+"\n", rr.Body.String())
 
 	// Assert log
 	suite.Empty(dsl.LogLines())
@@ -288,7 +288,7 @@ func (suite *ImportHandlerSuite) Test_Find_ImportRepositoryFail() {
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
 			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
-			testutils.WithImportMetrics(aggregator.ImportMetricTypeFailed, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
 		),
 		testutils.WithImportRepositoryError(errors.New("boom")),
 	)

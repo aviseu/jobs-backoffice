@@ -51,7 +51,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		EndedAt:   null.TimeFrom(eAt),
 		Metrics: []*aggregator.ImportMetric{
 			{ID: m1ID, MetricType: aggregator.ImportMetricTypeNew},
-			{ID: m2ID, MetricType: aggregator.ImportMetricTypeFailed},
+			{ID: m2ID, MetricType: aggregator.ImportMetricTypeError},
 		},
 	}
 
@@ -90,7 +90,7 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		}
 		if m.ID == m2ID {
 			m2Found = true
-			suite.Equal(aggregator.ImportMetricTypeFailed, m.MetricType)
+			suite.Equal(aggregator.ImportMetricTypeError, m.MetricType)
 		}
 	}
 	suite.True(m1Found)

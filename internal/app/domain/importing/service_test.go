@@ -79,7 +79,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(0, dbImport.UpdatedJobs())
 	suite.Equal(1, dbImport.NoChangeJobs())
 	suite.Equal(1, dbImport.MissingJobs())
-	suite.Equal(0, dbImport.FailedJobs())
+	suite.Equal(0, dbImport.Errors())
 
 	// Assert import results
 	importJobs := dsl.ImportMetrics()
@@ -153,10 +153,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.NotNil(dsl.PublishedJob(jNew2ID)) // new
 
 	// Assert Logs
-	logs := dsl.LogLines()
-	suite.Len(logs, 1)
-	suite.Contains(logs[0], `"level":"INFO"`)
-	suite.Contains(logs[0], "published 2 jobs for import "+iID.String())
+	suite.Empty(dsl.LogLines())
 }
 
 func (suite *ServiceSuite) Test_Execute_ImportRepositoryFail() {

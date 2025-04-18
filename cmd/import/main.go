@@ -91,7 +91,7 @@ func run(ctx context.Context) error {
 	ir := postgres.NewImportRepository(db)
 	jr := postgres.NewJobRepository(db)
 
-	is := importing.NewService(chr, ir, jr, ohttp.DefaultClient, cfg.Gateway, cfg.Gateway.Import.ResultBufferSize, cfg.Gateway.Import.ResultWorkers, cfg.Gateway.Import.PublishWorkers, pjs, log)
+	is := importing.NewService(chr, ir, jr, ohttp.DefaultClient, cfg.Gateway, pjs, log)
 
 	// start server
 	server := http.SetupServer(ctx, cfg.Import, http.ImportRootHandler(is, log))
