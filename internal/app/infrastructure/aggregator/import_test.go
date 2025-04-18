@@ -34,6 +34,7 @@ func (suite *ImportSuite) Test_ImportMetric_Success() {
 	suite.Equal("error", aggregator.ImportMetricTypeError.String())
 	suite.Equal("publish", aggregator.ImportMetricTypePublish.String())
 	suite.Equal("late_publish", aggregator.ImportMetricTypeLatePublish.String())
+	suite.Equal("missing_publish", aggregator.ImportMetricTypeMissingPublish.String())
 }
 
 func (suite *ImportSuite) Test_Import_Success() {
@@ -62,6 +63,9 @@ func (suite *ImportSuite) Test_Import_Success() {
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypePublish},
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeLatePublish},
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeLatePublish},
+			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
+			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
+			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
 		},
 	}
 
@@ -74,4 +78,5 @@ func (suite *ImportSuite) Test_Import_Success() {
 	suite.Equal(5, i.Errors())
 	suite.Equal(1, i.Published())
 	suite.Equal(2, i.LatePublished())
+	suite.Equal(3, i.MissingPublished())
 }

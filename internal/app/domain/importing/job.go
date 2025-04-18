@@ -59,7 +59,7 @@ func (j *job) markAsPublished() {
 }
 
 func (j *job) needsPublishing() bool {
-	return j.publishStatus == aggregator.JobPublishStatusUnpublished && j.status == aggregator.JobStatusActive
+	return j.publishStatus == aggregator.JobPublishStatusUnpublished
 }
 
 func (j *job) IsEqual(other *job) bool {

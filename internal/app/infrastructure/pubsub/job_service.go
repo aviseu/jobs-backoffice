@@ -33,3 +33,11 @@ func (s *JobService) PublishJobInformation(ctx context.Context, job *aggregator.
 
 	return s.client.publish(ctx, &msg)
 }
+
+func (s *JobService) PublishJobMissing(ctx context.Context, job *aggregator.Job) error {
+	msg := jobs.JobMissing{
+		Id: job.ID.String(),
+	}
+
+	return s.client.publish(ctx, &msg)
+}

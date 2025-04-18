@@ -28,7 +28,7 @@ type JobServiceSuite struct {
 	testutils.PubSubSuite
 }
 
-func (suite *JobServiceSuite) Test_PublishJob_Success() {
+func (suite *JobServiceSuite) Test_PublishJobInformation_Success() {
 	// Prepare
 	ctx := context.Background()
 	s := pubsub.NewJobService(suite.JobTopic, pubsub.Config{Timeout: 1 * time.Second})
@@ -80,7 +80,76 @@ func (suite *JobServiceSuite) Test_PublishJob_Success() {
 	suite.Equal(job.Remote, resp.Remote)
 }
 
-func (suite *JobServiceSuite) Test_PublishImport_ConnectionFailed() {
+func (suite *JobServiceSuite) Test_PublishJobInformation_ConnectionFailed() {
+	// Prepare
+	ctx := context.Background()
+	s := pubsub.NewJobService(suite.BadJobTopic, pubsub.Config{Timeout: 1 * time.Second})
+
+	job := &aggregator.Job{
+		ID:          uuid.New(),
+		ChannelID:   uuid.New(),
+		Title:       "Test Job",
+		Description: "Test Description",
+		URL:         "https://example.com",
+		Source:      "Test Source",
+		Location:    "Test Location",
+		PostedAt:    time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC),
+		Remote:      true,
+	}
+
+	// Execute
+	err := s.PublishJobInformation(ctx, job)
+
+	// Assert result
+	suite.Error(err)
+	suite.ErrorContains(err, "failed to publish pubsub message")
+}
+
+func (suite *JobServiceSuite) Test_PublishJobMissing_Success() {
+	// Prepare
+	ctx := context.Background()
+	s := pubsub.NewJobService(suite.JobTopic, pubsub.Config{Timeout: 1 * time.Second})
+
+	var resp jobs.JobMissing
+	subCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		err := suite.JobSubscription.Receive(subCtx, func(ctx context.Context, msg *gpubsub.Message) {
+			if err := proto.Unmarshal(msg.Data, &resp); err != nil {
+				suite.Fail(fmt.Errorf("failed to unmarshal message: %w", err).Error())
+			}
+			msg.Ack()
+			cancel()
+		})
+		suite.NoError(err)
+		wg.Done()
+	}()
+
+	job := &aggregator.Job{
+		ID:          uuid.New(),
+		ChannelID:   uuid.New(),
+		Title:       "Test Job",
+		Description: "Test Description",
+		URL:         "https://example.com",
+		Source:      "Test Source",
+		Location:    "Test Location",
+		PostedAt:    time.Date(2023, 10, 1, 0, 0, 0, 0, time.UTC),
+		Remote:      true,
+	}
+
+	// Execute
+	err := s.PublishJobMissing(ctx, job)
+
+	// Assert result
+	suite.NoError(err)
+
+	// Assert message received by subscription attached to the topic
+	wg.Wait()
+	suite.Equal(job.ID.String(), resp.Id)
+}
+
+func (suite *JobServiceSuite) Test_PublishJobMissing_ConnectionFailed() {
 	// Prepare
 	ctx := context.Background()
 	s := pubsub.NewJobService(suite.BadJobTopic, pubsub.Config{Timeout: 1 * time.Second})

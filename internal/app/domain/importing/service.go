@@ -14,6 +14,7 @@ import (
 
 type PubSubService interface {
 	PublishJobInformation(ctx context.Context, job *aggregator.Job) error
+	PublishJobMissing(ctx context.Context, job *aggregator.Job) error
 }
 
 type ConfigWorker struct {
@@ -89,13 +90,24 @@ func (s *Service) metricWorker(ctx context.Context, wg *sync.WaitGroup, i *impor
 func (s *Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan *job, metrics chan<- *aggregator.ImportMetric, errs chan<- error, publishMetric aggregator.ImportMetricType) {
 	for j := range jobs {
 		if j.needsPublishing() {
-			err := s.pjs.PublishJobInformation(ctx, j.toAggregator())
-			if err != nil {
-				errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
-				metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
+			if j.status == aggregator.JobStatusInactive {
+				err := s.pjs.PublishJobMissing(ctx, j.toAggregator())
+				if err != nil {
+					errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
+				} else {
+					j.markAsPublished()
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeMissingPublish}
+				}
 			} else {
-				j.markAsPublished()
-				metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: publishMetric}
+				err := s.pjs.PublishJobInformation(ctx, j.toAggregator())
+				if err != nil {
+					errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
+				} else {
+					j.markAsPublished()
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: publishMetric}
+				}
 			}
 		}
 

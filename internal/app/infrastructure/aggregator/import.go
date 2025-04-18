@@ -32,10 +32,11 @@ const (
 	ImportMetricTypeError
 	ImportMetricTypePublish
 	ImportMetricTypeLatePublish
+	ImportMetricTypeMissingPublish
 )
 
 func (s ImportMetricType) String() string {
-	return [...]string{"new", "updated", "no_change", "missing", "error", "publish", "late_publish"}[s]
+	return [...]string{"new", "updated", "no_change", "missing", "error", "publish", "late_publish", "missing_publish"}[s]
 }
 
 type ImportMetric struct {
@@ -84,6 +85,10 @@ func (i *Import) Published() int {
 
 func (i *Import) LatePublished() int {
 	return i.jobCount(ImportMetricTypeLatePublish)
+}
+
+func (i *Import) MissingPublished() int {
+	return i.jobCount(ImportMetricTypeMissingPublish)
 }
 
 func (i *Import) jobCount(metricType ImportMetricType) int {

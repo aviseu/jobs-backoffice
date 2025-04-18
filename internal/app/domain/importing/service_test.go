@@ -168,9 +168,11 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(time.Unix(1739357344, 0), dsl.Job(jNew2ID).PostedAt)
 
 	// Assert publish
-	suite.Len(dsl.PublishedJobs(), 2)
-	suite.NotNil(dsl.PublishedJob(jNew1ID)) // new
-	suite.NotNil(dsl.PublishedJob(jNew2ID)) // new
+	suite.Len(dsl.PublishedJobInformations(), 2)
+	suite.NotNil(dsl.PublishedJobInformation(jNew1ID)) // new
+	suite.NotNil(dsl.PublishedJobInformation(jNew2ID)) // new
+
+	suite.Len(dsl.PublishedJobMissings(), 0)
 
 	// Assert Logs
 	suite.Empty(dsl.LogLines())

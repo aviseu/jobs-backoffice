@@ -7,9 +7,10 @@ import (
 )
 
 type PubSubJobService struct {
-	Jobs []*aggregator.Job
-	err  error
-	m    sync.Mutex
+	JobInformations []*aggregator.Job
+	JobMissings     []*aggregator.Job
+	err             error
+	m               sync.Mutex
 }
 
 func NewPubSubJobService() *PubSubJobService {
@@ -27,6 +28,17 @@ func (p *PubSubJobService) PublishJobInformation(_ context.Context, job *aggrega
 
 	p.m.Lock()
 	defer p.m.Unlock()
-	p.Jobs = append(p.Jobs, job)
+	p.JobInformations = append(p.JobInformations, job)
+	return nil
+}
+
+func (p *PubSubJobService) PublishJobMissing(_ context.Context, job *aggregator.Job) error {
+	if p.err != nil {
+		return p.err
+	}
+
+	p.m.Lock()
+	defer p.m.Unlock()
+	p.JobMissings = append(p.JobMissings, job)
 	return nil
 }

@@ -497,11 +497,26 @@ func (dsl *DSL) Job(id uuid.UUID) *aggregator.Job {
 	return dsl.JobRepository.Jobs[id]
 }
 
-func (dsl *DSL) PublishedJobs() []*aggregator.Job {
-	return dsl.PubSubJobService.Jobs
+func (dsl *DSL) PublishedJobInformations() []*aggregator.Job {
+	return dsl.PubSubJobService.JobInformations
 }
-func (dsl *DSL) PublishedJob(id uuid.UUID) *aggregator.Job {
-	for _, j := range dsl.PubSubJobService.Jobs {
+
+func (dsl *DSL) PublishedJobInformation(id uuid.UUID) *aggregator.Job {
+	for _, j := range dsl.PubSubJobService.JobInformations {
+		if j.ID == id {
+			return j
+		}
+	}
+
+	return nil
+}
+
+func (dsl *DSL) PublishedJobMissings() []*aggregator.Job {
+	return dsl.PubSubJobService.JobMissings
+}
+
+func (dsl *DSL) PublishedJobMissing(id uuid.UUID) *aggregator.Job {
+	for _, j := range dsl.PubSubJobService.JobMissings {
 		if j.ID == id {
 			return j
 		}
