@@ -71,7 +71,7 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggre
 	})
 
 	eg.Go(func() error {
-		err := r.db.SelectContext(ctx, &metrics, "SELECT job_id, metric_type FROM import_metrics WHERE import_id = $1", id)
+		err := r.db.SelectContext(ctx, &metrics, "SELECT id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id = $1 ORDER BY created_at DESC", id)
 		if err != nil {
 			return fmt.Errorf("failed to get metrics for import %s: %w", id, err)
 		}
@@ -97,7 +97,7 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 	for _, i := range imports {
 		eg.Go(func() error {
 			var metrics []*aggregator.ImportMetric
-			err := r.db.SelectContext(ctx, &metrics, "SELECT job_id, metric_type FROM import_metrics WHERE import_id = $1", i.ID)
+			err := r.db.SelectContext(ctx, &metrics, "SELECT id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id = $1 ORDER BY created_at DESC", i.ID)
 			if err != nil {
 				return fmt.Errorf("failed to get metrics for import %s: %w", i.ID, err)
 			}
@@ -116,14 +116,17 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 func (r *ImportRepository) SaveImportMetric(ctx context.Context, importID uuid.UUID, m *aggregator.ImportMetric) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO import_metrics (id, import_id, job_id, metric_type)
-				VALUES ($1, $2, $3, $4)
+		`INSERT INTO import_metrics (id, import_id, job_id, metric_type, error, created_at)
+				VALUES ($1, $2, $3, $4, $5, $6)
 				ON CONFLICT (id) DO UPDATE SET
-					metric_type = EXCLUDED.metric_type`,
+					metric_type = EXCLUDED.metric_type,
+					error = EXCLUDED.error`,
 		m.ID,
 		importID,
 		m.JobID,
 		m.MetricType,
+		m.Err,
+		m.CreatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to save import job metric %s: %w", m.ID, err)

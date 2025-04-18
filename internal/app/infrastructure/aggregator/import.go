@@ -43,6 +43,8 @@ type ImportMetric struct {
 	ID         uuid.UUID        `db:"id"`
 	JobID      uuid.UUID        `db:"job_id"`
 	MetricType ImportMetricType `db:"metric_type"`
+	Err        null.String      `db:"error"`
+	CreatedAt  time.Time        `db:"created_at"`
 }
 
 type Import struct {

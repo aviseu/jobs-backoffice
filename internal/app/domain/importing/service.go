@@ -7,6 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v3"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -94,7 +95,7 @@ func (s *Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan
 				err := s.pjs.PublishJobMissing(ctx, j.toAggregator())
 				if err != nil {
 					errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
-					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError, Err: null.NewString(err.Error(), true)}
 				} else {
 					j.markAsPublished()
 					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeMissingPublish}
