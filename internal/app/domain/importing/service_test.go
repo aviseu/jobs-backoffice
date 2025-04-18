@@ -82,14 +82,14 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(0, dbImport.FailedJobs())
 
 	// Assert import results
-	importJobs := dsl.ImportJobs()
+	importJobs := dsl.ImportMetrics()
 	suite.Len(importJobs, 4)
-	suite.Equal(aggregator.ImportJobResultNoChange, dsl.ImportJob(j1ID).Result)
-	suite.Equal(aggregator.ImportJobResultMissing, dsl.ImportJob(j2ID).Result)
+	suite.Equal(aggregator.ImportMetricTypeNoChange, dsl.ImportMetric(j1ID).MetricType)
+	suite.Equal(aggregator.ImportMetricTypeMissing, dsl.ImportMetric(j2ID).MetricType)
 	jNew1ID := uuid.NewSHA1(chID, []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))
-	suite.Equal(aggregator.ImportJobResultNew, dsl.ImportJob(jNew1ID).Result)
+	suite.Equal(aggregator.ImportMetricTypeNew, dsl.ImportMetric(jNew1ID).MetricType)
 	jNew2ID := uuid.NewSHA1(chID, []byte("fund-accountant-wertpapierfonds-munich-310570"))
-	suite.Equal(aggregator.ImportJobResultNew, dsl.ImportJob(jNew2ID).Result)
+	suite.Equal(aggregator.ImportMetricTypeNew, dsl.ImportMetric(jNew2ID).MetricType)
 
 	// Assert Job
 	jobs := dsl.Jobs()

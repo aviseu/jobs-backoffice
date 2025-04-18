@@ -27,3 +27,6 @@ migrate-up:
 
 migrate-down:
 	sh -c "migrate -path config/migrations -database postgres://jobs:pwd@localhost:5433/jobs?sslmode=disable down"
+
+proxy:
+	cloud-sql-proxy --port 5434 aviseu-jobs:europe-west4:jobs-db

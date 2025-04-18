@@ -40,9 +40,9 @@ func (r *ImportRepository) SaveImport(ctx context.Context, i *aggregator.Import)
 
 	// Save import jobs
 	var eg errgroup.Group
-	for _, job := range i.Jobs {
+	for _, job := range i.Metrics {
 		eg.Go(func() error {
-			return r.SaveImportJob(ctx, i.ID, job)
+			return r.SaveImportMetric(ctx, i.ID, job)
 		})
 	}
 
@@ -55,7 +55,7 @@ func (r *ImportRepository) SaveImport(ctx context.Context, i *aggregator.Import)
 
 func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error) {
 	var i aggregator.Import
-	var jobs []*aggregator.ImportJob
+	var metrics []*aggregator.ImportMetric
 	var eg errgroup.Group
 
 	eg.Go(func() error {
@@ -71,9 +71,9 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggre
 	})
 
 	eg.Go(func() error {
-		err := r.db.SelectContext(ctx, &jobs, "SELECT job_id, result FROM import_job_results WHERE import_id = $1", id)
+		err := r.db.SelectContext(ctx, &metrics, "SELECT job_id, metric_type FROM import_metrics WHERE import_id = $1", id)
 		if err != nil {
-			return fmt.Errorf("failed to get jobs for import %s: %w", id, err)
+			return fmt.Errorf("failed to get metrics for import %s: %w", id, err)
 		}
 		return nil
 	})
@@ -81,7 +81,7 @@ func (r *ImportRepository) FindImport(ctx context.Context, id uuid.UUID) (*aggre
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
-	i.Jobs = jobs
+	i.Metrics = metrics
 
 	return &i, nil
 }
@@ -96,12 +96,12 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 	var eg errgroup.Group
 	for _, i := range imports {
 		eg.Go(func() error {
-			var jobs []*aggregator.ImportJob
-			err := r.db.SelectContext(ctx, &jobs, "SELECT job_id, result FROM import_job_results WHERE import_id = $1", i.ID)
+			var metrics []*aggregator.ImportMetric
+			err := r.db.SelectContext(ctx, &metrics, "SELECT job_id, metric_type FROM import_metrics WHERE import_id = $1", i.ID)
 			if err != nil {
-				return fmt.Errorf("failed to get jobs for import %s: %w", i.ID, err)
+				return fmt.Errorf("failed to get metrics for import %s: %w", i.ID, err)
 			}
-			i.Jobs = jobs
+			i.Metrics = metrics
 			return nil
 		})
 	}
@@ -113,19 +113,19 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 	return imports, nil
 }
 
-func (r *ImportRepository) SaveImportJob(ctx context.Context, importID uuid.UUID, ij *aggregator.ImportJob) error {
+func (r *ImportRepository) SaveImportMetric(ctx context.Context, importID uuid.UUID, ij *aggregator.ImportMetric) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO import_job_results (import_id, job_id, result)
+		`INSERT INTO import_metrics (import_id, job_id, metric_type)
 				VALUES ($1, $2, $3)
 				ON CONFLICT (import_id, job_id) DO UPDATE SET
-					result = EXCLUDED.result`,
+					metric_type = EXCLUDED.metric_type`,
 		importID,
 		ij.ID,
-		ij.Result,
+		ij.MetricType,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to save import job result %s: %w", ij.ID, err)
+		return fmt.Errorf("failed to save import job metric %s: %w", ij.ID, err)
 	}
 
 	return nil

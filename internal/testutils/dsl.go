@@ -202,12 +202,12 @@ func WithoutImportEndedAt() WithImportOptions {
 	}
 }
 
-func WithImportJobs(result aggregator.ImportJobResult, count int) WithImportOptions {
+func WithImportMetrics(metricType aggregator.ImportMetricType, count int) WithImportOptions {
 	return func(i *aggregator.Import) {
 		for j := 0; j < count; j++ {
-			i.Jobs = append(i.Jobs, &aggregator.ImportJob{
-				ID:     uuid.New(),
-				Result: result,
+			i.Metrics = append(i.Metrics, &aggregator.ImportMetric{
+				ID:         uuid.New(),
+				MetricType: metricType,
 			})
 		}
 	}
@@ -222,7 +222,7 @@ func WithImport(opts ...WithImportOptions) DSLOptions {
 			StartedAt: time.Date(2020, 1, 1, 0, 0, 3, 0, time.UTC),
 			EndedAt:   null.NewTime(time.Now(), false),
 			Error:     null.NewString("", false),
-			Jobs:      make([]*aggregator.ImportJob, 0),
+			Metrics:   make([]*aggregator.ImportMetric, 0),
 			Status:    aggregator.ImportStatusPending,
 			ID:        uuid.New(),
 			ChannelID: uuid.New(),
@@ -450,17 +450,17 @@ func (dsl *DSL) PublishedImports() []uuid.UUID {
 	return dsl.PubSubImportService.ImportIDs
 }
 
-func (dsl *DSL) ImportJobs() []*aggregator.ImportJob {
-	var jobs []*aggregator.ImportJob
-	for _, i := range dsl.ImportRepository.ImportJobs() {
-		jobs = append(jobs, i)
+func (dsl *DSL) ImportMetrics() []*aggregator.ImportMetric {
+	var metrics []*aggregator.ImportMetric
+	for _, m := range dsl.ImportRepository.ImportMetrics() {
+		metrics = append(metrics, m)
 	}
 
-	return jobs
+	return metrics
 }
 
-func (dsl *DSL) ImportJob(id uuid.UUID) *aggregator.ImportJob {
-	return dsl.ImportRepository.ImportJobs()[id]
+func (dsl *DSL) ImportMetric(id uuid.UUID) *aggregator.ImportMetric {
+	return dsl.ImportRepository.ImportMetrics()[id]
 }
 
 func (dsl *DSL) Jobs() []*aggregator.Job {

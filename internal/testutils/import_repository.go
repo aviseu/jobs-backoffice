@@ -30,32 +30,32 @@ func (r *ImportRepository) First() *aggregator.Import {
 	return nil
 }
 
-func (r *ImportRepository) ImportJobs() map[uuid.UUID]*aggregator.ImportJob {
-	jobs := make(map[uuid.UUID]*aggregator.ImportJob)
+func (r *ImportRepository) ImportMetrics() map[uuid.UUID]*aggregator.ImportMetric {
+	metrics := make(map[uuid.UUID]*aggregator.ImportMetric)
 	for _, i := range r.Imports {
-		for _, j := range i.Jobs {
-			jobs[j.ID] = j
+		for _, m := range i.Metrics {
+			metrics[m.ID] = m
 		}
 	}
-	return jobs
+	return metrics
 }
 
 func (r *ImportRepository) AddImport(i *aggregator.Import) {
 	r.Imports[i.ID] = i
 }
 
-func (r *ImportRepository) AddImportJob(importID uuid.UUID, j *aggregator.ImportJob) {
+func (r *ImportRepository) AddImportMetric(importID uuid.UUID, m *aggregator.ImportMetric) {
 	i, ok := r.Imports[importID]
 	if !ok {
 		panic("import not found")
 	}
-	for idx, job := range i.Jobs {
-		if job.ID == j.ID {
-			i.Jobs[idx] = j
+	for idx, metric := range i.Metrics {
+		if metric.ID == m.ID {
+			i.Metrics[idx] = m
 			return
 		}
 	}
-	i.Jobs = append(i.Jobs, j)
+	i.Metrics = append(i.Metrics, m)
 }
 
 func (r *ImportRepository) FailWith(err error) {
@@ -70,13 +70,13 @@ func (r *ImportRepository) SaveImport(_ context.Context, i *aggregator.Import) e
 	old, ok := r.Imports[i.ID]
 
 	if ok {
-		for _, job := range old.Jobs {
-			for _, newJob := range i.Jobs {
-				if job.ID == newJob.ID {
+		for _, metric := range old.Metrics {
+			for _, newMetric := range i.Metrics {
+				if metric.ID == newMetric.ID {
 					continue
 				}
 			}
-			i.Jobs = append(i.Jobs, job)
+			i.Metrics = append(i.Metrics, metric)
 		}
 	}
 	r.Imports[i.ID] = i
@@ -114,7 +114,7 @@ func (r *ImportRepository) GetImports(_ context.Context) ([]*aggregator.Import, 
 	return ii, nil
 }
 
-func (r *ImportRepository) SaveImportJob(_ context.Context, importID uuid.UUID, j *aggregator.ImportJob) error {
+func (r *ImportRepository) SaveImportMetric(_ context.Context, importID uuid.UUID, m *aggregator.ImportMetric) error {
 	if r.err != nil {
 		return r.err
 	}
@@ -126,13 +126,13 @@ func (r *ImportRepository) SaveImportJob(_ context.Context, importID uuid.UUID, 
 	if !ok {
 		return infrastructure.ErrImportNotFound
 	}
-	for idx, job := range i.Jobs {
-		if job.ID == j.ID {
-			i.Jobs[idx] = j
+	for idx, metric := range i.Metrics {
+		if metric.ID == m.ID {
+			i.Metrics[idx] = m
 			return nil
 		}
 	}
-	i.Jobs = append(i.Jobs, j)
+	i.Metrics = append(i.Metrics, m)
 
 	return nil
 }

@@ -28,7 +28,7 @@ type Config struct {
 
 type ImportRepository interface {
 	SaveImport(ctx context.Context, i *aggregator.Import) error
-	SaveImportJob(ctx context.Context, importID uuid.UUID, j *aggregator.ImportJob) error
+	SaveImportMetric(ctx context.Context, importID uuid.UUID, j *aggregator.ImportMetric) error
 
 	FindImport(ctx context.Context, id uuid.UUID) (*aggregator.Import, error)
 }
@@ -76,9 +76,9 @@ func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c 
 	}
 }
 
-func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *importEntry, results <-chan *aggregator.ImportJob) {
+func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *importEntry, results <-chan *aggregator.ImportMetric) {
 	for j := range results {
-		if err := s.ir.SaveImportJob(ctx, i.id, j); err != nil {
+		if err := s.ir.SaveImportMetric(ctx, i.id, j); err != nil {
 			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.id, err).Error())
 			continue
 		}
@@ -86,11 +86,11 @@ func (s *Service) metricsWorker(ctx context.Context, wg *sync.WaitGroup, i *impo
 	wg.Done()
 }
 
-func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *job, importJobs chan<- *aggregator.ImportJob, errs chan<- error) {
+func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *job, importJobs chan<- *aggregator.ImportMetric, errs chan<- error) {
 	for j := range jobs {
 		if err := r.Save(ctx, j.toAggregator()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.id, err)
-			importJobs <- &aggregator.ImportJob{ID: j.id, Result: aggregator.ImportJobResultFailed}
+			importJobs <- &aggregator.ImportMetric{ID: j.id, MetricType: aggregator.ImportMetricTypeFailed}
 		}
 	}
 	wg.Done()
@@ -156,7 +156,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 
 	// Create worker group for saving metrics (ImportJobs)
 	var metricsWG sync.WaitGroup
-	metrics := make(chan *aggregator.ImportJob, s.cfg.Import.ResultBufferSize)
+	metrics := make(chan *aggregator.ImportMetric, s.cfg.Import.ResultBufferSize)
 	for w := 1; w <= s.cfg.Import.ResultWorkers; w++ {
 		metricsWG.Add(1)
 		go s.metricsWorker(ctx, &metricsWG, i, metrics)
@@ -201,7 +201,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 			if incoming.id == existing.id {
 				found = true
 				if incoming.IsEqual(existing) {
-					metrics <- &aggregator.ImportJob{ID: incoming.id, Result: aggregator.ImportJobResultNoChange}
+					metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeNoChange}
 					goto next
 				}
 			}
@@ -210,9 +210,9 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		incoming.markAsChanged()
 		jobsToSave <- incoming
 		if found {
-			metrics <- &aggregator.ImportJob{ID: incoming.id, Result: aggregator.ImportJobResultUpdated}
+			metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeUpdated}
 		} else {
-			metrics <- &aggregator.ImportJob{ID: incoming.id, Result: aggregator.ImportJobResultNew}
+			metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeNew}
 		}
 
 	next:
@@ -231,7 +231,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 
 		existing.markAsMissing()
 		jobsToSave <- existing
-		metrics <- &aggregator.ImportJob{ID: existing.id, Result: aggregator.ImportJobResultMissing}
+		metrics <- &aggregator.ImportMetric{ID: existing.id, MetricType: aggregator.ImportMetricTypeMissing}
 
 	skip:
 	}

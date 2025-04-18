@@ -22,63 +22,63 @@ func (s ImportStatus) String() string {
 	return [...]string{"pending", "fetching", "processing", "publishing", "completed", "failed"}[s]
 }
 
-type ImportJobResult int
+type ImportMetricType int
 
 const (
-	ImportJobResultNew ImportJobResult = iota
-	ImportJobResultUpdated
-	ImportJobResultNoChange
-	ImportJobResultMissing
-	ImportJobResultFailed
+	ImportMetricTypeNew ImportMetricType = iota
+	ImportMetricTypeUpdated
+	ImportMetricTypeNoChange
+	ImportMetricTypeMissing
+	ImportMetricTypeFailed
 )
 
-func (s ImportJobResult) String() string {
+func (s ImportMetricType) String() string {
 	return [...]string{"new", "updated", "no_change", "missing", "failed"}[s]
 }
 
-type ImportJob struct {
-	ID     uuid.UUID       `db:"job_id"`
-	Result ImportJobResult `db:"result"`
+type ImportMetric struct {
+	ID         uuid.UUID        `db:"job_id"`
+	MetricType ImportMetricType `db:"metric_type"`
 }
 
 type Import struct {
-	StartedAt time.Time    `db:"started_at"`
-	EndedAt   null.Time    `db:"ended_at"`
-	Error     null.String  `db:"error"`
-	Jobs      []*ImportJob `db:"jobs"`
-	Status    ImportStatus `db:"status"`
-	ID        uuid.UUID    `db:"id"`
-	ChannelID uuid.UUID    `db:"channel_id"`
+	StartedAt time.Time       `db:"started_at"`
+	EndedAt   null.Time       `db:"ended_at"`
+	Error     null.String     `db:"error"`
+	Metrics   []*ImportMetric `db:"jobs"`
+	Status    ImportStatus    `db:"status"`
+	ID        uuid.UUID       `db:"id"`
+	ChannelID uuid.UUID       `db:"channel_id"`
 }
 
 func (i *Import) NewJobs() int {
-	return i.jobCount(ImportJobResultNew)
+	return i.jobCount(ImportMetricTypeNew)
 }
 
 func (i *Import) UpdatedJobs() int {
-	return i.jobCount(ImportJobResultUpdated)
+	return i.jobCount(ImportMetricTypeUpdated)
 }
 
 func (i *Import) NoChangeJobs() int {
-	return i.jobCount(ImportJobResultNoChange)
+	return i.jobCount(ImportMetricTypeNoChange)
 }
 
 func (i *Import) MissingJobs() int {
-	return i.jobCount(ImportJobResultMissing)
+	return i.jobCount(ImportMetricTypeMissing)
 }
 
 func (i *Import) FailedJobs() int {
-	return i.jobCount(ImportJobResultFailed)
+	return i.jobCount(ImportMetricTypeFailed)
 }
 
 func (i *Import) TotalJobs() int {
-	return len(i.Jobs)
+	return len(i.Metrics)
 }
 
-func (i *Import) jobCount(result ImportJobResult) int {
+func (i *Import) jobCount(metricType ImportMetricType) int {
 	var count int
-	for _, j := range i.Jobs {
-		if j.Result == result {
+	for _, j := range i.Metrics {
+		if j.MetricType == metricType {
 			count++
 		}
 	}
