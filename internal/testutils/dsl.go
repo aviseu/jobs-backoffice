@@ -207,6 +207,7 @@ func WithImportMetrics(metricType aggregator.ImportMetricType, count int) WithIm
 		for j := 0; j < count; j++ {
 			i.Metrics = append(i.Metrics, &aggregator.ImportMetric{
 				ID:         uuid.New(),
+				JobID:      uuid.New(),
 				MetricType: metricType,
 			})
 		}
@@ -470,6 +471,17 @@ func (dsl *DSL) ImportMetrics() []*aggregator.ImportMetric {
 
 func (dsl *DSL) ImportMetric(id uuid.UUID) *aggregator.ImportMetric {
 	return dsl.ImportRepository.ImportMetrics()[id]
+}
+
+func (dsl *DSL) ImportMetricsByJobID(jobID uuid.UUID) map[aggregator.ImportMetricType]int {
+	metrics := make(map[aggregator.ImportMetricType]int)
+	for _, m := range dsl.ImportRepository.ImportMetrics() {
+		if m.JobID == jobID {
+			metrics[m.MetricType]++
+		}
+	}
+
+	return metrics
 }
 
 func (dsl *DSL) Jobs() []*aggregator.Job {

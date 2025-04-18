@@ -39,7 +39,8 @@ func (s ImportMetricType) String() string {
 }
 
 type ImportMetric struct {
-	ID         uuid.UUID        `db:"job_id"`
+	ID         uuid.UUID        `db:"id"`
+	JobID      uuid.UUID        `db:"job_id"`
 	MetricType ImportMetricType `db:"metric_type"`
 }
 

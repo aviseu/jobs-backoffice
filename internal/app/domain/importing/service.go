@@ -75,48 +75,33 @@ func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c 
 	}
 }
 
-func (s *Service) metricWorker(ctx context.Context, wg *sync.WaitGroup, i *importEntry, results <-chan *aggregator.ImportMetric, errs chan<- error) {
-	for j := range results {
-		if err := s.ir.SaveImportMetric(ctx, i.id, j); err != nil {
-			errs <- fmt.Errorf("failed to save job %s: %w", j.ID, err)
-			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", j.ID, i.id, err).Error())
+func (s *Service) metricWorker(ctx context.Context, wg *sync.WaitGroup, i *importEntry, metrics <-chan *aggregator.ImportMetric, errs chan<- error) {
+	for m := range metrics {
+		if err := s.ir.SaveImportMetric(ctx, i.id, m); err != nil {
+			errs <- fmt.Errorf("failed to save job %s: %w", m.JobID, err)
+			s.log.Error(fmt.Errorf("failed to save job result %s for import %s: %w", m.JobID, i.id, err).Error())
 			continue
 		}
 	}
 	wg.Done()
 }
 
-func (*Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, r JobRepository, jobs <-chan *job, metrics chan<- *aggregator.ImportMetric, publish chan<- *job, errs chan<- error) {
+func (s *Service) jobWorker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan *job, metrics chan<- *aggregator.ImportMetric, errs chan<- error, publishMetric aggregator.ImportMetricType) {
 	for j := range jobs {
-		if err := r.Save(ctx, j.toAggregator()); err != nil {
-			errs <- fmt.Errorf("failed to save job %s: %w", j.id, err)
-			metrics <- &aggregator.ImportMetric{ID: j.id, MetricType: aggregator.ImportMetricTypeError}
-		}
 		if j.needsPublishing() {
-			publish <- j
-		}
-	}
-	wg.Done()
-}
-
-func (s *Service) publishWorker(ctx context.Context, wg *sync.WaitGroup, jobs <-chan *job, metrics chan<- *aggregator.ImportMetric, errs chan<- error) {
-	for j := range jobs {
-		// Publish
-		err := s.pjs.PublishJobInformation(ctx, j.toAggregator())
-		if err != nil {
-			errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
-			metrics <- &aggregator.ImportMetric{ID: j.id, MetricType: aggregator.ImportMetricTypeError}
-			continue
+			err := s.pjs.PublishJobInformation(ctx, j.toAggregator())
+			if err != nil {
+				errs <- fmt.Errorf("failed to publish job %s: %w", j.id, err)
+				metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
+			} else {
+				j.markAsPublished()
+				metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: publishMetric}
+			}
 		}
 
-		// Mark as published
-		j.markAsPublished()
-
-		// Save in db
 		if err := s.jr.Save(ctx, j.toAggregator()); err != nil {
 			errs <- fmt.Errorf("failed to save job %s: %w", j.id, err)
-			metrics <- &aggregator.ImportMetric{ID: j.id, MetricType: aggregator.ImportMetricTypeError}
-			continue
+			metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: j.id, MetricType: aggregator.ImportMetricTypeError}
 		}
 	}
 	wg.Done()
@@ -190,20 +175,12 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		go s.metricWorker(ctx, &metricsWG, i, metrics, errs)
 	}
 
-	// Publish workers
-	var publishWG sync.WaitGroup
-	jobsToPublish := make(chan *job, s.cfg.Import.Publish.BufferSize)
-	for w := 1; w <= s.cfg.Import.Publish.Workers; w++ {
-		publishWG.Add(1)
-		go s.publishWorker(ctx, &publishWG, jobsToPublish, metrics, errs)
-	}
-
 	// Job workers
 	var jobsWG sync.WaitGroup
 	jobsToSave := make(chan *job, s.cfg.Import.Job.BufferSize)
 	for w := 1; w <= s.cfg.Import.Job.Workers; w++ {
 		jobsWG.Add(1)
-		go s.jobWorker(ctx, &jobsWG, s.jr, jobsToSave, metrics, jobsToPublish, errs)
+		go s.jobWorker(ctx, &jobsWG, jobsToSave, metrics, errs, aggregator.ImportMetricTypePublish)
 	}
 
 	// Error workers
@@ -236,7 +213,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 			if incoming.id == existing.id {
 				found = true
 				if incoming.IsEqual(existing) {
-					metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeNoChange}
+					metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: incoming.id, MetricType: aggregator.ImportMetricTypeNoChange}
 					goto next
 				}
 			}
@@ -245,9 +222,9 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		incoming.markAsChanged()
 		jobsToSave <- incoming
 		if found {
-			metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeUpdated}
+			metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: incoming.id, MetricType: aggregator.ImportMetricTypeUpdated}
 		} else {
-			metrics <- &aggregator.ImportMetric{ID: incoming.id, MetricType: aggregator.ImportMetricTypeNew}
+			metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: incoming.id, MetricType: aggregator.ImportMetricTypeNew}
 		}
 
 	next:
@@ -266,7 +243,7 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 
 		existing.markAsMissing()
 		jobsToSave <- existing
-		metrics <- &aggregator.ImportMetric{ID: existing.id, MetricType: aggregator.ImportMetricTypeMissing}
+		metrics <- &aggregator.ImportMetric{ID: uuid.New(), JobID: existing.id, MetricType: aggregator.ImportMetricTypeMissing}
 
 	skip:
 	}
@@ -274,8 +251,6 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	// Close channels and wait for workers to finish
 	close(jobsToSave)
 	jobsWG.Wait()
-	close(metrics)
-	metricsWG.Wait()
 
 	// *******************************************************
 	// Import status: publishing
@@ -285,6 +260,14 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 		return fmt.Errorf("failed to set status publishing for import %s: %w", i.id, err)
 	}
 
+	// Late publish workers
+	var latePublishWG sync.WaitGroup
+	jobsToLatePublish := make(chan *job, s.cfg.Import.Publish.BufferSize)
+	for w := 1; w <= s.cfg.Import.Publish.Workers; w++ {
+		latePublishWG.Add(1)
+		go s.jobWorker(ctx, &latePublishWG, jobsToLatePublish, metrics, errs, aggregator.ImportMetricTypeLatePublish)
+	}
+
 	// Get all jobs needing publishing
 	jj, err := s.jr.GetActiveUnpublishedByChannelID(ctx, ch.ID)
 	if err != nil {
@@ -292,11 +275,13 @@ func (s *Service) Import(ctx context.Context, importID uuid.UUID) error {
 	}
 
 	for _, j := range jj {
-		jobsToPublish <- newJobFromAggregator(j)
+		jobsToLatePublish <- newJobFromAggregator(j)
 	}
 
-	close(jobsToPublish)
-	publishWG.Wait()
+	close(jobsToLatePublish)
+	latePublishWG.Wait()
+	close(metrics)
+	metricsWG.Wait()
 	close(errs)
 	errorWG.Wait()
 

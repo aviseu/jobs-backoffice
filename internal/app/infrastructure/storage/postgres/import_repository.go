@@ -113,19 +113,20 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 	return imports, nil
 }
 
-func (r *ImportRepository) SaveImportMetric(ctx context.Context, importID uuid.UUID, ij *aggregator.ImportMetric) error {
+func (r *ImportRepository) SaveImportMetric(ctx context.Context, importID uuid.UUID, m *aggregator.ImportMetric) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO import_metrics (import_id, job_id, metric_type)
-				VALUES ($1, $2, $3)
-				ON CONFLICT (import_id, job_id) DO UPDATE SET
+		`INSERT INTO import_metrics (id, import_id, job_id, metric_type)
+				VALUES ($1, $2, $3, $4)
+				ON CONFLICT (id) DO UPDATE SET
 					metric_type = EXCLUDED.metric_type`,
+		m.ID,
 		importID,
-		ij.ID,
-		ij.MetricType,
+		m.JobID,
+		m.MetricType,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to save import job metric %s: %w", ij.ID, err)
+		return fmt.Errorf("failed to save import job metric %s: %w", m.ID, err)
 	}
 
 	return nil

@@ -39,6 +39,9 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	r := postgres.NewImportRepository(suite.DB)
 	m1ID := uuid.New()
 	m2ID := uuid.New()
+	m3ID := uuid.New()
+	j1ID := uuid.New()
+	j2ID := uuid.New()
 	id := uuid.New()
 	sAt := time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)
 	eAt := time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)
@@ -50,8 +53,9 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 		StartedAt: sAt,
 		EndedAt:   null.TimeFrom(eAt),
 		Metrics: []*aggregator.ImportMetric{
-			{ID: m1ID, MetricType: aggregator.ImportMetricTypeNew},
-			{ID: m2ID, MetricType: aggregator.ImportMetricTypeError},
+			{ID: m1ID, JobID: j1ID, MetricType: aggregator.ImportMetricTypeNew},
+			{ID: m2ID, JobID: j1ID, MetricType: aggregator.ImportMetricTypePublish},
+			{ID: m3ID, JobID: j2ID, MetricType: aggregator.ImportMetricTypeError},
 		},
 	}
 
@@ -78,23 +82,32 @@ func (suite *ImportRepositorySuite) Test_SaveImport_Success() {
 	suite.Equal(i.Error.String, dbImport.Error.String)
 
 	var dbImportMetrics []*aggregator.ImportMetric
-	err = suite.DB.Select(&dbImportMetrics, "SELECT job_id, metric_type FROM import_metrics WHERE import_id = $1", i.ID)
+	err = suite.DB.Select(&dbImportMetrics, "SELECT id, job_id, metric_type FROM import_metrics WHERE import_id = $1", i.ID)
 	suite.NoError(err)
-	suite.Len(dbImportMetrics, 2)
+	suite.Len(dbImportMetrics, 3)
 	m1Found := false
 	m2Found := false
+	m3Found := false
 	for _, m := range dbImportMetrics {
 		if m.ID == m1ID {
 			m1Found = true
 			suite.Equal(aggregator.ImportMetricTypeNew, m.MetricType)
+			suite.Equal(j1ID, m.JobID)
 		}
 		if m.ID == m2ID {
 			m2Found = true
+			suite.Equal(aggregator.ImportMetricTypePublish, m.MetricType)
+			suite.Equal(j1ID, m.JobID)
+		}
+		if m.ID == m3ID {
+			m3Found = true
 			suite.Equal(aggregator.ImportMetricTypeError, m.MetricType)
+			suite.Equal(j2ID, m.JobID)
 		}
 	}
 	suite.True(m1Found)
 	suite.True(m2Found)
+	suite.True(m3Found)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImport_Fail() {
@@ -143,9 +156,9 @@ func (suite *ImportRepositorySuite) Test_FindImport_Success() {
 	}
 	err = r.SaveImport(context.Background(), i)
 	suite.NoError(err)
-	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}))
-	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}))
-	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeNew}))
+	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}))
+	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}))
+	suite.NoError(r.SaveImportMetric(context.Background(), i.ID, &aggregator.ImportMetric{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeNew}))
 
 	// Execute
 	i2, err := r.FindImport(context.Background(), i.ID)
@@ -257,7 +270,7 @@ func (suite *ImportRepositorySuite) Test_GetImports_Fail() {
 	suite.ErrorContains(err, "sql: database is closed")
 }
 
-func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
+func (suite *ImportRepositorySuite) Test_SaveImportJob_New_Success() {
 	// Prepare
 	chID := uuid.New()
 	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
@@ -278,7 +291,8 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 	suite.NoError(err)
 
 	r := postgres.NewImportRepository(suite.DB)
-	m := &aggregator.ImportMetric{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}
+	mID := uuid.New()
+	m := &aggregator.ImportMetric{ID: mID, JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}
 
 	// Execute
 	err = r.SaveImportMetric(context.Background(), iID, m)
@@ -288,20 +302,64 @@ func (suite *ImportRepositorySuite) Test_SaveImportJob_Success() {
 
 	// Assert state change
 	var count int
-	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_metrics WHERE job_id = $1 and import_id = $2", m.ID, iID)
+	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_metrics WHERE job_id = $1 and import_id = $2", m.JobID, iID)
 	suite.NoError(err)
 	suite.Equal(1, count)
 
 	var dbImportJob aggregator.ImportMetric
-	err = suite.DB.Get(&dbImportJob, "SELECT job_id, metric_type FROM import_metrics WHERE job_id = $1 and import_id = $2", m.ID, iID)
+	err = suite.DB.Get(&dbImportJob, "SELECT id, job_id, metric_type FROM import_metrics WHERE id = $1", mID)
 	suite.NoError(err)
+	suite.Equal(m.JobID, dbImportJob.JobID)
+	suite.Equal(aggregator.ImportMetricTypeUpdated, dbImportJob.MetricType)
+}
+
+func (suite *ImportRepositorySuite) Test_SaveImportJob_Existing_Success() {
+	// Prepare
+	chID := uuid.New()
+	_, err := suite.DB.Exec("INSERT INTO channels (id, name, integration, status) VALUES ($1, $2, $3, $4)",
+		chID,
+		"Channel Name",
+		aggregator.IntegrationArbeitnow,
+		aggregator.ChannelStatusInactive,
+	)
+	suite.NoError(err)
+
+	iID := uuid.New()
+	_, err = suite.DB.Exec("INSERT INTO imports (id, channel_id, status, started_at) VALUES ($1, $2, $3, $4)",
+		iID,
+		chID,
+		aggregator.ImportStatusProcessing,
+		time.Now(),
+	)
+	suite.NoError(err)
+
+	r := postgres.NewImportRepository(suite.DB)
+	mID := uuid.New()
+	m := &aggregator.ImportMetric{ID: mID, JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}
+
+	// Execute
+	err = r.SaveImportMetric(context.Background(), iID, m)
+
+	// Assert
+	suite.NoError(err)
+
+	// Assert state change
+	var count int
+	err = suite.DB.Get(&count, "SELECT COUNT(*) FROM import_metrics WHERE job_id = $1 and import_id = $2", m.JobID, iID)
+	suite.NoError(err)
+	suite.Equal(1, count)
+
+	var dbImportJob aggregator.ImportMetric
+	err = suite.DB.Get(&dbImportJob, "SELECT id, job_id, metric_type FROM import_metrics WHERE id = $1", mID)
+	suite.NoError(err)
+	suite.Equal(m.JobID, dbImportJob.JobID)
 	suite.Equal(aggregator.ImportMetricTypeUpdated, dbImportJob.MetricType)
 }
 
 func (suite *ImportRepositorySuite) Test_SaveImportJob_Fail() {
 	// Prepare
 	r := postgres.NewImportRepository(suite.BadDB)
-	m := &aggregator.ImportMetric{ID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}
+	m := &aggregator.ImportMetric{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeUpdated}
 
 	// Execute
 	err := r.SaveImportMetric(context.Background(), uuid.New(), m)

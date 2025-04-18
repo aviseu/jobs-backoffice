@@ -80,16 +80,36 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(1, dbImport.NoChangeJobs())
 	suite.Equal(1, dbImport.MissingJobs())
 	suite.Equal(0, dbImport.Errors())
+	suite.Equal(4, dbImport.TotalJobs())
+	suite.Equal(2, dbImport.Published())
+	suite.Equal(0, dbImport.LatePublished())
+	suite.Equal(aggregator.ImportStatusCompleted, dbImport.Status)
+	suite.False(dbImport.Error.Valid)
+	suite.Empty(dbImport.Error.String)
 
-	// Assert import results
+	// Assert import metrics
 	importJobs := dsl.ImportMetrics()
-	suite.Len(importJobs, 4)
-	suite.Equal(aggregator.ImportMetricTypeNoChange, dsl.ImportMetric(j1ID).MetricType)
-	suite.Equal(aggregator.ImportMetricTypeMissing, dsl.ImportMetric(j2ID).MetricType)
+	suite.Len(importJobs, 6)
+
+	job1Metrics := dsl.ImportMetricsByJobID(j1ID)
+	suite.Len(job1Metrics, 1)
+	suite.Equal(1, job1Metrics[aggregator.ImportMetricTypeNoChange])
+
+	job2Metrics := dsl.ImportMetricsByJobID(j2ID)
+	suite.Len(job2Metrics, 1)
+	suite.Equal(1, job2Metrics[aggregator.ImportMetricTypeMissing])
+
 	jNew1ID := uuid.NewSHA1(chID, []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))
-	suite.Equal(aggregator.ImportMetricTypeNew, dsl.ImportMetric(jNew1ID).MetricType)
+	jNew1Metrics := dsl.ImportMetricsByJobID(jNew1ID)
+	suite.Len(jNew1Metrics, 2)
+	suite.Equal(1, jNew1Metrics[aggregator.ImportMetricTypeNew])
+	suite.Equal(1, jNew1Metrics[aggregator.ImportMetricTypePublish])
+
 	jNew2ID := uuid.NewSHA1(chID, []byte("fund-accountant-wertpapierfonds-munich-310570"))
-	suite.Equal(aggregator.ImportMetricTypeNew, dsl.ImportMetric(jNew2ID).MetricType)
+	jNew2Metrics := dsl.ImportMetricsByJobID(jNew2ID)
+	suite.Len(jNew2Metrics, 2)
+	suite.Equal(1, jNew2Metrics[aggregator.ImportMetricTypeNew])
+	suite.Equal(1, jNew2Metrics[aggregator.ImportMetricTypePublish])
 
 	// Assert Job
 	jobs := dsl.Jobs()
