@@ -94,8 +94,8 @@ module "import" {
 
   environment_variables = {
     "IMPORT_ADDR"                        = "0.0.0.0:80"
-    "DB_MAXOPENCONNS"                    = "5"
-    "DB_MAXIDLECONNS"                    = "5"
+    "DB_MAXOPENCONNS"                    = "20"
+    "DB_MAXIDLECONNS"                    = "20"
     "PUBSUB_PROJECT_ID"                  = "aviseu-jobs"
     "PUBSUB_JOB_TOPIC_ID"                = "jobs"
     "IMPORT_MAX_CONNECTIONS"             = "1"
