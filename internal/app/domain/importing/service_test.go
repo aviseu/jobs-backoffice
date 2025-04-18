@@ -89,15 +89,16 @@ func (suite *ServiceSuite) Test_Success() {
 
 	// Assert import metrics
 	importJobs := dsl.ImportMetrics()
-	suite.Len(importJobs, 6)
+	suite.Len(importJobs, 7)
 
 	job1Metrics := dsl.ImportMetricsByJobID(j1ID)
 	suite.Len(job1Metrics, 1)
 	suite.Equal(1, job1Metrics[aggregator.ImportMetricTypeNoChange])
 
 	job2Metrics := dsl.ImportMetricsByJobID(j2ID)
-	suite.Len(job2Metrics, 1)
+	suite.Len(job2Metrics, 2)
 	suite.Equal(1, job2Metrics[aggregator.ImportMetricTypeMissing])
+	suite.Equal(1, job2Metrics[aggregator.ImportMetricTypeMissingPublish])
 
 	jNew1ID := uuid.NewSHA1(chID, []byte("bankkaufmann-fur-front-office-middle-office-back-office-munich-304839"))
 	jNew1Metrics := dsl.ImportMetricsByJobID(jNew1ID)
@@ -132,7 +133,7 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.Equal(j2ID, dsl.Job(j2ID).ID)
 	suite.Equal(chID, dsl.Job(j2ID).ChannelID)
 	suite.Equal(aggregator.JobStatusInactive, dsl.Job(j2ID).Status)
-	suite.Equal(aggregator.JobPublishStatusUnpublished, dsl.Job(j2ID).PublishStatus)
+	suite.Equal(aggregator.JobPublishStatusPublished, dsl.Job(j2ID).PublishStatus)
 	suite.Equal("https://www.arbeitnow.com/jobs/companies/opus-one-recruitment-gmbh/another", dsl.Job(j2ID).URL)
 	suite.Equal("bankkaufmann-fur-front", dsl.Job(j2ID).Title)
 	suite.Equal("Das Wichtigste für unseren Kunden: Mitarbeiter", dsl.Job(j2ID).Description)
@@ -172,7 +173,8 @@ func (suite *ServiceSuite) Test_Success() {
 	suite.NotNil(dsl.PublishedJobInformation(jNew1ID)) // new
 	suite.NotNil(dsl.PublishedJobInformation(jNew2ID)) // new
 
-	suite.Len(dsl.PublishedJobMissings(), 0)
+	suite.Len(dsl.PublishedJobMissings(), 1)
+	suite.NotNil(dsl.PublishedJobMissing(j2ID))
 
 	// Assert Logs
 	suite.Empty(dsl.LogLines())
