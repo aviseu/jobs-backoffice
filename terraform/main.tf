@@ -57,8 +57,8 @@ module "api" {
   environment_variables = {
     "API_ADDR"               = "0.0.0.0:80"
     "API_CORS"               = "0"
-    "DB_MAXOPENCONNS"        = "5"
-    "DB_MAXIDLECONNS"        = "5"
+    "DB_MAXOPENCONNS"        = "20"
+    "DB_MAXIDLECONNS"        = "20"
     "PUBSUB_PROJECT_ID"      = "aviseu-jobs"
     "PUBSUB_IMPORT_TOPIC_ID" = module.importsTopic.topic_name
   }
