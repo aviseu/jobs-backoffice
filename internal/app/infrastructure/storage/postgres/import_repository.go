@@ -5,13 +5,28 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/sync/errgroup"
 )
+
+type importMetric struct {
+	aggregator.ImportMetric
+
+	ImportID uuid.UUID `db:"import_id"`
+}
+
+func (m *importMetric) toAggregator() *aggregator.ImportMetric {
+	return &aggregator.ImportMetric{
+		ID:         m.ID,
+		JobID:      m.JobID,
+		MetricType: m.MetricType,
+		Err:        m.Err,
+		CreatedAt:  m.CreatedAt,
+	}
+}
 
 type ImportRepository struct {
 	db *sqlx.DB
@@ -93,21 +108,29 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 		return nil, fmt.Errorf("failed to get imports: %w", err)
 	}
 
-	var eg errgroup.Group
-	for _, i := range imports {
-		eg.Go(func() error {
-			var metrics []*aggregator.ImportMetric
-			err := r.db.SelectContext(ctx, &metrics, "SELECT id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id = $1 ORDER BY created_at DESC", i.ID)
-			if err != nil {
-				return fmt.Errorf("failed to get metrics for import %s: %w", i.ID, err)
-			}
-			i.Metrics = metrics
-			return nil
-		})
+	ids := make([]uuid.UUID, len(imports))
+	for i, imp := range imports {
+		ids[i] = imp.ID
 	}
 
-	if err := eg.Wait(); err != nil {
-		return nil, err
+	query, args, err := sqlx.In("SELECT id, import_id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id IN (?) ORDER BY created_at DESC", ids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query for import metrics: %w", err)
+	}
+	query = r.db.Rebind(query)
+
+	var metrics []*importMetric
+	if err := r.db.SelectContext(ctx, &metrics, query, args...); err != nil {
+		return nil, fmt.Errorf("failed to get import metrics: %w", err)
+	}
+
+	var indexes = make(map[uuid.UUID]int)
+	for i, imp := range imports {
+		indexes[imp.ID] = i
+	}
+
+	for _, m := range metrics {
+		imports[indexes[m.ImportID]].Metrics = append(imports[indexes[m.ImportID]].Metrics, m.toAggregator())
 	}
 
 	return imports, nil
