@@ -113,7 +113,7 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 		ids[i] = imp.ID
 	}
 
-	query, args, err := sqlx.In("SELECT id, import_id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id IN (?) ORDER BY created_at DESC", ids)
+	query, args, err := sqlx.In("SELECT id, import_id, job_id, metric_type, error, created_at FROM import_metrics WHERE import_id IN (?)", ids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build query for import metrics: %w", err)
 	}
