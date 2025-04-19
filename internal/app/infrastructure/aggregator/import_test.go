@@ -37,7 +37,7 @@ func (suite *ImportSuite) Test_ImportMetric_Success() {
 	suite.Equal("missing_publish", aggregator.ImportMetricTypeMissingPublish.String())
 }
 
-func (suite *ImportSuite) Test_Import_Success() {
+func (suite *ImportSuite) Test_Import_NoMetadata_Success() {
 	// Prepare
 	i := &aggregator.Import{
 		ID:        uuid.New(),
@@ -66,6 +66,37 @@ func (suite *ImportSuite) Test_Import_Success() {
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
 			{ID: uuid.New(), JobID: uuid.New(), MetricType: aggregator.ImportMetricTypeMissingPublish},
+		},
+	}
+
+	// Assert
+	suite.Equal(1, i.NewJobs())
+	suite.Equal(2, i.UpdatedJobs())
+	suite.Equal(3, i.NoChangeJobs())
+	suite.Equal(4, i.MissingJobs())
+	suite.Equal(6, i.TotalJobs())
+	suite.Equal(5, i.Errors())
+	suite.Equal(1, i.Published())
+	suite.Equal(2, i.LatePublished())
+	suite.Equal(3, i.MissingPublished())
+}
+
+func (suite *ImportSuite) Test_Import_Metadata_Success() {
+	// Prepare
+	i := &aggregator.Import{
+		ID:        uuid.New(),
+		ChannelID: uuid.New(),
+		Status:    aggregator.ImportStatusPending,
+		StartedAt: time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC),
+		Metadata: &aggregator.ImportMetadata{
+			New:              1,
+			Updated:          2,
+			NoChange:         3,
+			Missing:          4,
+			Errors:           5,
+			Published:        1,
+			LatePublished:    2,
+			MissingPublished: 3,
 		},
 	}
 

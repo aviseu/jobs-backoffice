@@ -214,6 +214,41 @@ func WithImportMetrics(metricType aggregator.ImportMetricType, count int) WithIm
 	}
 }
 
+func WithImportMetadata(metricType aggregator.ImportMetricType, count int) WithImportOptions {
+	return func(i *aggregator.Import) {
+		if i.Metadata == nil {
+			i.Metadata = &aggregator.ImportMetadata{
+				New:              0,
+				Updated:          0,
+				NoChange:         0,
+				Missing:          0,
+				Errors:           0,
+				Published:        0,
+				LatePublished:    0,
+				MissingPublished: 0,
+			}
+		}
+		switch metricType {
+		case aggregator.ImportMetricTypeNew:
+			i.Metadata.New += count
+		case aggregator.ImportMetricTypeUpdated:
+			i.Metadata.Updated += count
+		case aggregator.ImportMetricTypeNoChange:
+			i.Metadata.NoChange += count
+		case aggregator.ImportMetricTypeMissing:
+			i.Metadata.Missing += count
+		case aggregator.ImportMetricTypeError:
+			i.Metadata.Errors += count
+		case aggregator.ImportMetricTypePublish:
+			i.Metadata.Published += count
+		case aggregator.ImportMetricTypeLatePublish:
+			i.Metadata.LatePublished += count
+		case aggregator.ImportMetricTypeMissingPublish:
+			i.Metadata.MissingPublished += count
+		}
+	}
+}
+
 func WithImport(opts ...WithImportOptions) DSLOptions {
 	return func(dsl *DSL) {
 		if dsl.ImportRepository == nil {
