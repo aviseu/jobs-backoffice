@@ -70,66 +70,93 @@ type Import struct {
 }
 
 func (i *Import) NewJobs() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeNew)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.New
 	}
-	return i.jobCount(ImportMetricTypeNew)
+	return 0
 }
 
 func (i *Import) UpdatedJobs() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeUpdated)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.Updated
 	}
-	return i.jobCount(ImportMetricTypeUpdated)
+	return 0
 }
 
 func (i *Import) NoChangeJobs() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeNoChange)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.NoChange
 	}
-	return i.jobCount(ImportMetricTypeNoChange)
+	return 0
 }
 
 func (i *Import) MissingJobs() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeMissing)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.Missing
 	}
-	return i.jobCount(ImportMetricTypeMissing)
+	return 0
 }
 
 func (i *Import) TotalJobs() int {
+	if len(i.Metrics) > 0 {
+		return i.NewJobs() + i.UpdatedJobs() + i.NoChangeJobs()
+	}
 	if i.Metadata != nil {
 		return i.Metadata.New + i.Metadata.Updated + i.Metadata.NoChange
 	}
-	return i.NewJobs() + i.UpdatedJobs() + i.NoChangeJobs()
+	return 0
 }
 
 func (i *Import) Errors() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeError)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.Errors
 	}
-	return i.jobCount(ImportMetricTypeError)
+	return 0
 }
 
 func (i *Import) Published() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypePublish)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.Published
 	}
-	return i.jobCount(ImportMetricTypePublish)
+	return 0
 }
 
 func (i *Import) LatePublished() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeLatePublish)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.LatePublished
 	}
-	return i.jobCount(ImportMetricTypeLatePublish)
+	return 0
 }
 
 func (i *Import) MissingPublished() int {
+	if len(i.Metrics) > 0 {
+		return i.jobCount(ImportMetricTypeMissingPublish)
+	}
 	if i.Metadata != nil {
 		return i.Metadata.MissingPublished
 	}
-	return i.jobCount(ImportMetricTypeMissingPublish)
+	return 0
 }
 
 func (i *Import) jobCount(metricType ImportMetricType) int {

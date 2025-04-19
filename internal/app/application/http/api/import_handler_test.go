@@ -215,7 +215,7 @@ func (suite *ImportHandlerSuite) Test_List_BadResponseWriterFail() {
 	suite.Contains(log[1], `"msg":"bad response writer"`)
 }
 
-func (suite *ImportHandlerSuite) Test_Find_NoMetadata_Success() {
+func (suite *ImportHandlerSuite) Test_Find_Metric_Success() {
 	// Prepare
 	chID := uuid.New()
 	id := uuid.New()
@@ -284,6 +284,58 @@ func (suite *ImportHandlerSuite) Test_Find_Metadata_Success() {
 			testutils.WithImportMetadata(aggregator.ImportMetricTypePublish, 6),
 			testutils.WithImportMetadata(aggregator.ImportMetricTypeLatePublish, 7),
 			testutils.WithImportMetadata(aggregator.ImportMetricTypeMissingPublish, 8),
+		),
+	)
+
+	req, err := oghttp.NewRequest("GET", "/api/imports/"+id.String(), nil)
+	suite.NoError(err)
+	rr := httptest.NewRecorder()
+
+	// Execute
+	dsl.APIServer.ServeHTTP(rr, req)
+
+	// Assert
+	suite.Equal(oghttp.StatusOK, rr.Code)
+	suite.Equal("application/json", rr.Header().Get("Content-Type"))
+	suite.Equal(`{"id":"`+id.String()+`","channel_id":"`+chID.String()+`","channel_name":"Channel Name","integration":"arbeitnow","status":"completed","started_at":"2020-01-01T00:00:01Z","ended_at":"2020-01-01T00:00:02Z","error":"happened this error","new_jobs":1,"updated_jobs":2,"no_change_jobs":3,"missing_jobs":4,"total_jobs":6,"errors":5,"published":6,"late_published":7,"missing_published":8}`+"\n", rr.Body.String())
+
+	// Assert log
+	suite.Empty(dsl.LogLines())
+}
+
+func (suite *ImportHandlerSuite) Test_Find_WithMetadataAndMetric_Success() {
+	// Prepare
+	chID := uuid.New()
+	id := uuid.New()
+	dsl := testutils.NewDSL(
+		testutils.WithChannel(
+			testutils.WithChannelID(chID),
+			testutils.WithChannelName("Channel Name"),
+			testutils.WithChannelIntegration(aggregator.IntegrationArbeitnow),
+		),
+		testutils.WithImport(
+			testutils.WithImportID(id),
+			testutils.WithImportChannelID(chID),
+			testutils.WithImportStatus(aggregator.ImportStatusCompleted),
+			testutils.WithImportStartedAt(time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC)),
+			testutils.WithImportEndedAt(time.Date(2020, 1, 1, 0, 0, 2, 0, time.UTC)),
+			testutils.WithImportError("happened this error"),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeNew, 2),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeUpdated, 3),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeNoChange, 4),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeMissing, 5),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeError, 6),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypePublish, 7),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeLatePublish, 8),
+			testutils.WithImportMetadata(aggregator.ImportMetricTypeMissingPublish, 9),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeNew, 1),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeUpdated, 2),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeNoChange, 3),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissing, 4),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeError, 5),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypePublish, 6),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeLatePublish, 7),
+			testutils.WithImportMetrics(aggregator.ImportMetricTypeMissingPublish, 8),
 		),
 	)
 
