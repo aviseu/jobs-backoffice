@@ -12,22 +12,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type importMetric struct {
-	aggregator.ImportMetric
-
-	ImportID uuid.UUID `db:"import_id"`
-}
-
-func (m *importMetric) toAggregator() *aggregator.ImportMetric {
-	return &aggregator.ImportMetric{
-		ID:         m.ID,
-		JobID:      m.JobID,
-		MetricType: m.MetricType,
-		Err:        m.Err,
-		CreatedAt:  m.CreatedAt,
-	}
-}
-
 type importMetadata struct {
 	aggregator.ImportMetadata
 	ImportID uuid.UUID `db:"import_id"`
@@ -209,7 +193,7 @@ func (r *ImportRepository) GetImports(ctx context.Context) ([]*aggregator.Import
 		return nil, fmt.Errorf("failed to get imports: %w", err)
 	}
 
-	var agImports []*aggregator.Import
+	agImports := make([]*aggregator.Import, 0, len(imports))
 	for _, imp := range imports {
 		agImports = append(agImports, imp.toImport())
 	}
