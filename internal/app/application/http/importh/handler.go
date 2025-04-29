@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
+	"github.com/aviseu/jobs-protobuf/build/gen/go/commands/imports"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"

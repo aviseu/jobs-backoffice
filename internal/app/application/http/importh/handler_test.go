@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
+	"github.com/aviseu/jobs-protobuf/build/gen/go/commands/imports"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/proto"

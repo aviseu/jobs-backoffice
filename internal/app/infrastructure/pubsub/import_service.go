@@ -3,7 +3,7 @@ package pubsub
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
-	"github.com/aviseu/jobs-protobuf/build/gen/commands/imports"
+	"github.com/aviseu/jobs-protobuf/build/gen/go/commands/imports"
 	"github.com/google/uuid"
 )
 

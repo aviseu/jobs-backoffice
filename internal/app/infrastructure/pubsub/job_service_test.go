@@ -7,7 +7,7 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/testutils"
-	"github.com/aviseu/jobs-protobuf/build/gen/events/jobs"
+	"github.com/aviseu/jobs-protobuf/build/gen/go/events/jobs"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/proto"

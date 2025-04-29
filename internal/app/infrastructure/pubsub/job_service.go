@@ -4,7 +4,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"context"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
-	"github.com/aviseu/jobs-protobuf/build/gen/events/jobs"
+	"github.com/aviseu/jobs-protobuf/build/gen/go/events/jobs"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
