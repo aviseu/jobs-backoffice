@@ -17,7 +17,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.37.0
 	golang.org/x/net v0.39.0
 	golang.org/x/sync v0.13.0
-	google.golang.org/api v0.230.0
+	google.golang.org/api v0.231.0
 	google.golang.org/grpc v1.72.0
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/guregu/null.v3 v3.5.0
