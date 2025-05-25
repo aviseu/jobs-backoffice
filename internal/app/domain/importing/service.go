@@ -19,18 +19,18 @@ type PubSubService interface {
 }
 
 type ConfigWorker struct {
-	BufferSize int `split_words:"true" default:"10"`
-	Workers    int `split_words:"true" default:"10"`
+	BufferSize int `env:"BUFFER_SIZE" envDefault:"10"`
+	Workers    int `env:"WORKERS" envDefault:"10"`
 }
 
 type Config struct {
 	Arbeitnow arbeitnow.Config `env:"ARBEITNOW"`
 
 	Import struct {
-		Metric  ConfigWorker `env:"IMPORT_METRIC"`
-		Job     ConfigWorker `env:"IMPORT_JOB"`
-		Publish ConfigWorker `env:"IMPORT_PUBLISH"`
-	}
+		Metric  ConfigWorker `envPrefix:"METRIC_"`
+		Job     ConfigWorker `envPrefix:"JOB_"`
+		Publish ConfigWorker `envPrefix:"PUBLISH_"`
+	} `envPrefix:"IMPORT_"`
 }
 
 type ImportRepository interface {

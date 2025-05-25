@@ -433,9 +433,9 @@ func NewDSL(opts ...DSLOptions) *DSL {
 func (dsl *DSL) defaultConfig() *importing.Config {
 	return &importing.Config{
 		Import: struct {
-			Metric  importing.ConfigWorker
-			Job     importing.ConfigWorker
-			Publish importing.ConfigWorker
+			Metric  importing.ConfigWorker `envPrefix:"METRIC_"`
+			Job     importing.ConfigWorker `envPrefix:"JOB_"`
+			Publish importing.ConfigWorker `envPrefix:"PUBLISH_"`
 		}{
 			Metric: importing.ConfigWorker{
 				BufferSize: 10,
