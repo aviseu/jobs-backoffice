@@ -52,6 +52,13 @@ const ImportDetails = () => {
                     </h2>
                 </div>
                 <div className="card-body">
+                    {importEntry.status === "failed" && (
+                        <div className="alert alert-danger" role="alert">
+                            <h4 className="alert-heading">Import Failed</h4>
+                            <hr/>
+                            <p>{importEntry.error || "An error occurred during the import."}</p>
+                        </div>
+                    )}
                     <ul className="list-group list-group-flush">
                         <li className="list-group-item d-flex">
                             <span><strong>Channel</strong></span>
