@@ -1,5 +1,5 @@
 package arbeitnow
 
 type Config struct {
-	URL string `default:"https://arbeitnow.com"`
+	URL string `env:"URL" envDefault:"https://arbeitnow.com"`
 }
