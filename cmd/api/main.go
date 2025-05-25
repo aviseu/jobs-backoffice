@@ -47,7 +47,6 @@ func run(ctx context.Context) error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
-	err := env.Parse(&cfg)
 	if err := env.Parse(&cfg); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
