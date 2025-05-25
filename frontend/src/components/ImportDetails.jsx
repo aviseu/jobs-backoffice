@@ -94,14 +94,14 @@ const ImportDetails = () => {
                             <tbody>
                                 <tr>
                                     <td><span className="me-1" title="new"><FontAwesomeIcon icon={faPlus} /> {importEntry.new_jobs}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faRetweet} /> {importEntry.updated_jobs}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faEquals} /> {importEntry.no_change_jobs}</span></td>
+                                    <td><span className="me-1" title="updated"><FontAwesomeIcon icon={faRetweet} /> {importEntry.updated_jobs}</span></td>
+                                    <td><span className="me-1" title="not changed"><FontAwesomeIcon icon={faEquals} /> {importEntry.no_change_jobs}</span></td>
                                     <td>{importEntry.total_jobs}</td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faBan} /> {importEntry.errors}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faQuestion} /> {importEntry.missing_jobs}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faCircleQuestion} /> {importEntry.missing_published}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faSquarePlus} /> {importEntry.published}</span></td>
-                                    <td><span className="me-1" title="new"><FontAwesomeIcon icon={faFolderPlus} /> {importEntry.late_published}</span></td>
+                                    <td><span className="me-1" title="failed"><FontAwesomeIcon icon={faBan} /> {importEntry.errors}</span></td>
+                                    <td><span className="me-1" title="missing"><FontAwesomeIcon icon={faQuestion} /> {importEntry.missing_jobs}</span></td>
+                                    <td><span className="me-1" title="missing published"><FontAwesomeIcon icon={faCircleQuestion} /> {importEntry.missing_published}</span></td>
+                                    <td><span className="me-1" title="published"><FontAwesomeIcon icon={faSquarePlus} /> {importEntry.published}</span></td>
+                                    <td><span className="me-1" title="late published"><FontAwesomeIcon icon={faFolderPlus} /> {importEntry.late_published}</span></td>
                                 </tr>
                             </tbody>
                         </table>
