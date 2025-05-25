@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
+	"github.com/caarlos0/env/v11"
 	"log/slog"
 	"net"
 	ohttp "net/http"
@@ -18,23 +19,22 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
-	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 	"golang.org/x/net/netutil"
 )
 
 type config struct {
 	PubSub struct {
-		ProjectID  string `split_words:"true" required:"true"`
-		JobTopicID string `split_words:"true" required:"true"`
-		Client     pubsub.Config
-	} `split_words:"false"`
-	DB      storage.Config
-	Gateway importing.Config
-	Import  http.Config `split_words:"true"`
+		ProjectID  string        `env:"PROJECT_ID" required:"true"`
+		JobTopicID string        `env:"JOB_TOPIC_ID,required"`
+		Client     pubsub.Config `envPrefix:"CLIENT"`
+	} `envPrefix:"PUBSUB_"`
+	DB      storage.Config   `envPrefix:"DB_"`
+	Gateway importing.Config `envPrefix:"GATEWAY_"`
+	Import  http.Config      `envPrefix:"IMPORT_"`
 	Log     struct {
-		Level slog.Level `default:"info"`
-	}
+		Level slog.Level `env:"LEVEL" envDefault:"info"`
+	} `envPrefix:"LOG_"`
 }
 
 func main() {
@@ -50,7 +50,7 @@ func run(ctx context.Context) error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := env.Parse(&cfg); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
 

@@ -24,12 +24,12 @@ type ConfigWorker struct {
 }
 
 type Config struct {
-	Arbeitnow arbeitnow.Config
+	Arbeitnow arbeitnow.Config `env:"ARBEITNOW"`
 
 	Import struct {
-		Metric  ConfigWorker
-		Job     ConfigWorker
-		Publish ConfigWorker
+		Metric  ConfigWorker `env:"IMPORT_METRIC"`
+		Job     ConfigWorker `env:"IMPORT_JOB"`
+		Publish ConfigWorker `env:"IMPORT_PUBLISH"`
 	}
 }
 

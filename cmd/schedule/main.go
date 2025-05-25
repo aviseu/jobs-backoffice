@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/caarlos0/env/v11"
 	"log/slog"
 	"os"
 
@@ -13,20 +14,19 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
-	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 )
 
 type config struct {
 	PubSub struct {
-		ProjectID     string `split_words:"true" required:"true"`
-		ImportTopicID string `split_words:"true" required:"true"`
-		Client        pubsub.Config
-	} `split_words:"false"`
-	DB  storage.Config
+		ProjectID     string        `env:"PROJECT_ID" required:"true"`
+		ImportTopicID string        `env:"IMPORT_TOPIC_ID,required"`
+		Client        pubsub.Config `envPrefix:"CLIENT"`
+	} `envPrefix:"PUBSUB_"`
+	DB  storage.Config `envPrefix:"DB_"`
 	Log struct {
-		Level slog.Level `default:"info"`
-	}
+		Level slog.Level `env:"LEVEL" envDefault:"info"`
+	} `envPrefix:"LOG_"`
 }
 
 func main() {
@@ -42,7 +42,7 @@ func run(ctx context.Context) error {
 	// load environment variables
 	slog.Info("loading environment variables...")
 	var cfg config
-	if err := envconfig.Process("", &cfg); err != nil {
+	if err := env.Parse(&cfg); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
 
