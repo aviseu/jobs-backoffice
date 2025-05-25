@@ -17,10 +17,10 @@ import (
 )
 
 type Config struct {
-	Addr            string        `default:":8080"`
-	ShutdownTimeout time.Duration `default:"5s"`
-	Cors            bool          `default:"false"`
-	MaxConnections  int           `split_words:"true" default:"0"`
+	Addr            string        `env:"ADDR" envDefault:":8080"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"5s"`
+	Cors            bool          `env:"CORS" envDefault:"false"`
+	MaxConnections  int           `env:"MAX_CONNECTIONS" envDefault:"0"`
 }
 
 func SetupServer(ctx context.Context, cfg Config, h http.Handler) http.Server {

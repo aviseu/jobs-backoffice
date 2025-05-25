@@ -11,9 +11,9 @@ import (
 )
 
 type Config struct {
-	DSN          string `required:"true"`
-	MaxOpenConns int    `default:"10"`
-	MaxIdleConns int    `default:"10"`
+	DSN          string `env:"DSN,required"`
+	MaxOpenConns int    `env:"MAXOPENCONNS" envDefault:"10"`
+	MaxIdleConns int    `env:"MAXIDLECONNS" envDefault:"10"`
 }
 
 func SetupDatabase(cfg Config) (*sqlx.DB, error) {
