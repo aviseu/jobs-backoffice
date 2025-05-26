@@ -16,20 +16,6 @@ jobs:
         with:
           github-token: '${{ secrets.TOKEN }}'
           script: |
-            const queryProjectID = `
-            query($login: String! $number: Int!) {
-              user(login: $login) {
-                projectV2(number: $number) {
-                  id
-                }
-              }
-            }`;
-            const variablesProjectID = {
-              number: 1,
-              login: context.payload.repository.owner.login
-            };
-            const resultProjectID = await github.graphql(queryProjectID, variablesProjectID);
-            
             const query = `mutation($projectId: ID! $contentId: ID!) {
                 addProjectV2ItemById(input: {projectId: $projectId contentId: $contentId}) {
                   item {
@@ -38,7 +24,7 @@ jobs:
                 }
               }`
             const variables = {
-              projectId: result.organization.projectV2.id,
+              projectId: "PVT_kwHOAK7y884A2-Fg",
               contentId: context.payload.pull_request.id
             };
             const result = await github.graphql(query, variables);
