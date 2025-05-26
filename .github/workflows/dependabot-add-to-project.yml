@@ -12,16 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add PR to Project
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
-            const projectNumber = 1;
-            const columnName = "Pending";
-            gh api graphql -f query='
-              mutation($projectNumber: Int! $contentId: Int!) {
+            const query = `mutation($projectNumber: Int! $contentId: Int!) {
                 addProjectV2ItemById(input: {projectId: $projectNumber contentId: $contentId}) {
                   item {
                     id
                   }
                 }
-              }' -f projectNumber=$projectNumber -F contentId=context.payload.pull_request.id
+              }`
+            const variables = {
+              projectNumber: projectNumber,
+              contentId: context.payload.pull_request.id
+            };
+            const result = await github.graphql(query, variables);
+            console.log(result);
