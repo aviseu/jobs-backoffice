@@ -16,8 +16,8 @@ jobs:
         with:
           script: |
             const queryProjectID = `
-            query($organization: String! $number: Int!) {
-              organization(login: $organization) {
+            query($login: String! $number: Int!) {
+              user(login: $login) {
                 projectV2(number: $number) {
                   id
                 }
@@ -25,7 +25,7 @@ jobs:
             }`;
             const variablesProjectID = {
               number: 1,
-              organization: "aviseu"
+              login: context.payload.repository.owner.login
             };
             const resultProjectID = await github.graphql(queryProjectID, variablesProjectID);
             
