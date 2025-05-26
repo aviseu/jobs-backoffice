@@ -15,15 +15,29 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const query = `mutation($projectNumber: ID! $contentId: ID!) {
-                addProjectV2ItemById(input: {projectId: $projectNumber contentId: $contentId}) {
+            const queryProjectID = `
+            query($organization: String! $number: Int!) {
+              organization(login: $organization) {
+                projectV2(number: $number) {
+                  id
+                }
+              }
+            }`;
+            const variablesProjectID = {
+              number: 1,
+              organization: "aviseu"
+            };
+            const resultProjectID = await github.graphql(queryProjectID, variablesProjectID);
+            
+            const query = `mutation($projectId: ID! $contentId: ID!) {
+                addProjectV2ItemById(input: {projectId: $projectId contentId: $contentId}) {
                   item {
                     id
                   }
                 }
               }`
             const variables = {
-              projectNumber: 1,
+              projectId: result.organization.projectV2.id,
               contentId: context.payload.pull_request.id
             };
             const result = await github.graphql(query, variables);
