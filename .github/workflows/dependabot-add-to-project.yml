@@ -23,7 +23,7 @@ jobs:
                 }
               }`
             const variables = {
-              projectNumber: projectNumber,
+              projectNumber: 1,
               contentId: context.payload.pull_request.id
             };
             const result = await github.graphql(query, variables);
