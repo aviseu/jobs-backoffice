@@ -25,7 +25,7 @@ jobs:
               }`
             const variables = {
               projectId: "PVT_kwHOAK7y884A2-Fg",
-              contentId: context.payload.pull_request.id
+              contentId: context.payload.pull_request.node_id
             };
             const result = await github.graphql(query, variables);
             console.log(result);
