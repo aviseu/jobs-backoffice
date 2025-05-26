@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	cloud.google.com/go/pubsub v1.49.0
-	github.com/aviseu/jobs-protobuf v1.3.0
+	github.com/aviseu/jobs-protobuf v1.4.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/cors v1.2.1
