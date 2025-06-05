@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	cloud.google.com/go/pubsub v1.49.0
-	github.com/aviseu/jobs-protobuf v1.3.0
+	github.com/aviseu/jobs-protobuf v1.5.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/cors v1.2.1
@@ -17,8 +17,8 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.37.0
 	golang.org/x/net v0.40.0
 	golang.org/x/sync v0.14.0
-	google.golang.org/api v0.234.0
-	google.golang.org/grpc v1.72.1
+	google.golang.org/api v0.235.0
+	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/guregu/null.v3 v3.5.0
 )
