@@ -29,7 +29,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::750556944723:oidc-provider/token.actions.githubusercontent.com
+          role-to-assume: arn:aws:iam::750556944723:role/GitHubActions
           aws-region: eu-central-1
 
       - name: Login to Amazon ECR
@@ -47,7 +47,7 @@ jobs:
         id: subscriber_meta
         uses: docker/metadata-action@v5
         with:
-          images: arn:aws:ecr:eu-central-1:750556944723:repository/jobs/jobs-backoffice-api-${{ matrix.app }}
+          images: arn:aws:ecr:eu-central-1:750556944723:repository/jobs/jobs-backoffice-${{ matrix.app }}
           flavor: |
             latest=auto
           tags: |
