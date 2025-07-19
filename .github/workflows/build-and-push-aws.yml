@@ -62,7 +62,3 @@ jobs:
           tags: ${{ steps.subscriber_meta.outputs.tags }}
           build-args: |
             APP=${{ matrix.app }}
-
-      - name: Push image to ECR
-        run: |
-          docker push $IMAGE_URI
