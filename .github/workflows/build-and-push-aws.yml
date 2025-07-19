@@ -47,7 +47,11 @@ jobs:
         id: subscriber_meta
         uses: docker/metadata-action@v5
         with:
-          images: arn:aws:ecr:eu-central-1:750556944723:repository/jobs/jobs-backoffice-${{ matrix.app }}
+          images: 750556944723.dkr.ecr.eu-central-1.amazonaws.com/jobs/jobs-backoffice-${{ matrix.app }}
+          flavor: |
+            latest=auto
+          tags: |
+            type=sha,format=long,priority=40
 
       - name: Build and push (${{ matrix.app }})
         uses: docker/build-push-action@v6
