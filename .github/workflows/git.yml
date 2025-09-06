@@ -1,0 +1,29 @@
+name: GIT
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  git:
+    name: No fixup! commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for this branch
+          ref: ${{ github.event.pull_request.head.sha }}  # Checkout the PR branch
+
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Prevent fixup commits from being merged
+        run: |
+          if git log --format=%s origin/${{ github.base_ref }}..HEAD | grep -q '^fixup!*.'; then
+            echo "Fixup commits found. Please squash them before merging.";
+            exit 1;
+          fi
