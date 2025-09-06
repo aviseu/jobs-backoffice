@@ -2,6 +2,11 @@ package testutils
 
 import (
 	"bytes"
+	"log/slog"
+	oghttp "net/http"
+	"net/http/httptest"
+	"time"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/configuring"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
@@ -10,10 +15,6 @@ import (
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
 	"gopkg.in/guregu/null.v3"
-	"log/slog"
-	oghttp "net/http"
-	"net/http/httptest"
-	"time"
 )
 
 type DSL struct {

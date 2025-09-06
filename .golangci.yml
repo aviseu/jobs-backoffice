@@ -1,111 +1,100 @@
+version: "2"
 run:
-  concurrency: 4
-  timeout: 3m
+  go: '1.25'
   tests: false
+output:
+  show-stats: false
 issues:
-  exclude-use-default: true
   max-same-issues: 0
   max-issues-per-linter: 0
   fix: true
-  exclude-dirs-use-default: false
-  exclude-dirs:
-    - configs
-    - internal/testutils
-  exclude-files:
-    - "\\.md$"
 linters:
-  disable-all: true
+  default: none
+  exclusions:
+    generated: strict
+    paths:
+      - frontend$
+      - configs$
+      - internal/testutils$
+      - '\\.md$'
+    presets:
+      - legacy
+  settings:
+    errcheck:
+      check-type-assertions: false
+    gocritic:
+      disabled-checks:
+        - unnamedResult
+        - whyNoLint
+        - hugeParam
+        - elseif
+        - singleCaseSwitch
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+    govet:
+      enable-all: true
+      disable:
+        - shadow
+        - tests
+    misspell:
+      locale: US
+      ignore-rules:
+        - cancelled
+        - cancelling
+    prealloc:
+      for-loops: true
+    revive:
+      severity: error
+      enable-all-rules: true
+      confidence: 0.1
+      rules:
+        - name: add-constant
+          disabled: true
+        - name: argument-limit
+          disabled: true
+        - name: banned-characters
+          disabled: true
+        - name: cyclomatic
+          disabled: true
+        - name: cognitive-complexity
+          disabled: true
+        - name: deep-exit
+          disabled: true
+        - name: file-header
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: function-result-limit
+          arguments: [ 99 ]
+        - name: import-shadowing
+          disabled: true
+        - name: line-length-limit
+          disabled: true
+        - name: max-public-structs
+          disabled: true
+        - name: modifies-parameter
+          disabled: true
+        - name: nested-structs
+          disabled: true
+        - name: unhandled-error
+          severity: warning
+        - name: var-naming
+          severity: warning
+        - name: if-return
+          severity: error
+        - name: flag-parameter
+          disabled: true
+    staticcheck:
+      checks: [ "all", "-SA1019" ]
+formatters:
   enable:
-    - bodyclose
-    - errcheck
-    - forbidigo
     - gci
-    - gocritic
     - gofumpt
     - goimports
-    - govet
-    - ineffassign
-    - misspell
-    - prealloc
-    - revive
-    - staticcheck
-    - unused
-linters-settings:
-  errcheck:
-    check-type-assertions: false
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/aviseu/*)
-    custom-order: true
-  gocritic:
-    disabled-checks:
-      - unnamedResult
-      - whyNoLint
-      - hugeParam
-      - elseif
-      - singleCaseSwitch
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-  gofumpt:
-    extra-rules: true
-  govet:
-    enable-all: true
-    disable:
-      - shadow
-      - tests
-  misspell:
-    locale: US
-    ignore-words: ["cancelled", "cancelling"]
-  prealloc:
-    for-loops: true
-  revive:
-    ignore-generated-header: true
-    severity: error
-    enable-all-rules: true
-    confidence: 0.1
-    rules:
-      - name: add-constant
-        disabled: true
-      - name: argument-limit
-        disabled: true
-      - name: banned-characters
-        disabled: true
-      - name: cyclomatic
-        disabled: true
-      - name: cognitive-complexity
-        disabled: true
-      - name: deep-exit
-        disabled: true
-      - name: file-header
-        disabled: true
-      - name: function-length
-        disabled: true
-      - name: function-length
-        disabled: true
-      - name: function-result-limit
-        arguments: [ 99 ]
-      - name: import-shadowing
-        disabled: true
-      - name: line-length-limit
-        disabled: true
-      - name: max-public-structs
-        disabled: true
-      - name: modifies-parameter
-        disabled: true
-      - name: nested-structs
-        disabled: true
-      - name: unhandled-error
-        severity: warning
-      - name: var-naming
-        severity: warning
-      - name: if-return
-        severity: error
-      - name: flag-parameter
-        disabled: true
-  staticcheck:
-    checks: ["all", "-SA1019"]
+
+
 

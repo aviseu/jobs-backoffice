@@ -2,6 +2,7 @@ package importing
 
 import (
 	"fmt"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 )

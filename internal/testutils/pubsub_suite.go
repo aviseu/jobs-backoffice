@@ -1,9 +1,11 @@
 package testutils
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
+	"time"
+
+	"cloud.google.com/go/pubsub"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -11,7 +13,6 @@ import (
 	"google.golang.org/api/option/internaloption"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"time"
 )
 
 type PubSubSuite struct {

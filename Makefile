@@ -1,5 +1,5 @@
 lint:
-	C:\ProgramData\chocolatey\bin\golangci-lint.exe run
+	golangci-lint.exe run
 
 test:
 	go test ./... -parallel 10
