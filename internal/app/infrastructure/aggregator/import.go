@@ -40,11 +40,11 @@ func (s ImportMetricType) String() string {
 }
 
 type ImportMetric struct {
+	CreatedAt  time.Time        `db:"created_at"`
+	Err        null.String      `db:"error"`
+	MetricType ImportMetricType `db:"metric_type"`
 	ID         uuid.UUID        `db:"id"`
 	JobID      uuid.UUID        `db:"job_id"`
-	MetricType ImportMetricType `db:"metric_type"`
-	Err        null.String      `db:"error"`
-	CreatedAt  time.Time        `db:"created_at"`
 }
 
 type ImportMetadata struct {
@@ -60,13 +60,13 @@ type ImportMetadata struct {
 
 type Import struct {
 	StartedAt time.Time       `db:"started_at"`
+	Metadata  *ImportMetadata `db:"-"`
 	EndedAt   null.Time       `db:"ended_at"`
 	Error     null.String     `db:"error"`
 	Metrics   []*ImportMetric `db:"jobs"`
 	Status    ImportStatus    `db:"status"`
 	ID        uuid.UUID       `db:"id"`
 	ChannelID uuid.UUID       `db:"channel_id"`
-	Metadata  *ImportMetadata `db:"-"`
 }
 
 func (i *Import) NewJobs() int {

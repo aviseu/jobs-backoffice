@@ -2,8 +2,9 @@ package testutils
 
 import (
 	"context"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"sync"
+
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 )
 
 type PubSubJobService struct {

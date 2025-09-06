@@ -1,11 +1,8 @@
 package main
 
 import (
-	cpubsub "cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
-	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
-	"github.com/caarlos0/env/v11"
 	"log/slog"
 	"net"
 	ohttp "net/http"
@@ -13,10 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	cpubsub "cloud.google.com/go/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/application/http"
 	"github.com/aviseu/jobs-backoffice/internal/app/domain/importing"
+	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/pubsub"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/storage/postgres"
+	"github.com/caarlos0/env/v11"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -30,8 +30,8 @@ type config struct {
 		Client     pubsub.Config `envPrefix:"CLIENT"`
 	} `envPrefix:"PUBSUB_"`
 	DB      storage.Config   `envPrefix:"DB_"`
-	Gateway importing.Config `envPrefix:"GATEWAY_"`
 	Import  http.Config      `envPrefix:"IMPORT_"`
+	Gateway importing.Config `envPrefix:"GATEWAY_"`
 	Log     struct {
 		Level slog.Level `env:"LEVEL" envDefault:"info"`
 	} `envPrefix:"LOG_"`

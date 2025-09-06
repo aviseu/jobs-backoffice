@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"sync"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/api/arbeitnow"
 	"github.com/google/uuid"
 	"gopkg.in/guregu/null.v3"
-	"log/slog"
-	"net/http"
-	"sync"
 )
 
 type PubSubService interface {
@@ -59,10 +60,10 @@ type Service struct {
 	jr  JobRepository
 	ir  ImportRepository
 	chr ChannelRepository
+	pjs PubSubService
 	f   *factory
 	log *slog.Logger
 	cfg Config
-	pjs PubSubService
 }
 
 func NewService(chr ChannelRepository, ir ImportRepository, jr JobRepository, c HTTPClient, cfg Config, pjs PubSubService, log *slog.Logger) *Service {

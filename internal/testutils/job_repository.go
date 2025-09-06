@@ -2,9 +2,10 @@ package testutils
 
 import (
 	"context"
+	"sync"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
-	"sync"
 )
 
 type JobRepository struct {

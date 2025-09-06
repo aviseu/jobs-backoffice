@@ -2,11 +2,12 @@ package testutils
 
 import (
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
-	"gopkg.in/guregu/null.v3"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"gopkg.in/guregu/null.v3"
 )
 
 const (
@@ -35,8 +36,7 @@ type JobBoardResponse struct {
 	} `json:"links"`
 }
 
-type ArbeitnowServer struct {
-}
+type ArbeitnowServer struct{}
 
 func NewArbeitnowServer() *httptest.Server {
 	r := chi.NewRouter()
@@ -96,7 +96,6 @@ func NewArbeitnowServer() *httptest.Server {
 func arbeitnowData() []*jobEntry {
 	return []*jobEntry{
 		{
-
 			Slug:        "bankkauffrau-im-bereich-zahlungsverkehr-und-kontoloschung-munich-290288",
 			CompanyName: "OPUS ONE Recruitment GmbH",
 			Title:       "Bankkauffrau im Bereich Zahlungsverkehr und Kontolöschung (m/w/d)",
@@ -111,7 +110,6 @@ func arbeitnowData() []*jobEntry {
 			CreatedAt: 1739357344,
 		},
 		{
-
 			Slug:        "bankkaufmann-fur-front-office-middle-office-back-office-munich-304839",
 			CompanyName: "OPUS ONE Recruitment GmbH",
 			Title:       "Bankkaufmann (m/w/d) für Front Office | Middle Office | Back Office",

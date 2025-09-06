@@ -2,6 +2,8 @@ package testutils
 
 import (
 	"context"
+	"time"
+
 	"github.com/golang-migrate/migrate/v4"
 	mpg "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -11,7 +13,6 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"time"
 )
 
 type PostgresSuite struct {

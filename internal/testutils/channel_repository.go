@@ -3,10 +3,11 @@ package testutils
 import (
 	"cmp"
 	"context"
+	"slices"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
-	"slices"
 )
 
 type ChannelRepository struct {
@@ -70,7 +71,6 @@ func (r *ChannelRepository) GetActive(_ context.Context) ([]*aggregator.Channel,
 	})
 
 	return channels, nil
-
 }
 
 func (r *ChannelRepository) Find(_ context.Context, id uuid.UUID) (*aggregator.Channel, error) {

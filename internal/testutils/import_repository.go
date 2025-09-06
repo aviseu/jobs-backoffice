@@ -2,11 +2,12 @@ package testutils
 
 import (
 	"context"
+	"slices"
+	"sync"
+
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure"
 	"github.com/aviseu/jobs-backoffice/internal/app/infrastructure/aggregator"
 	"github.com/google/uuid"
-	"slices"
-	"sync"
 )
 
 type ImportRepository struct {

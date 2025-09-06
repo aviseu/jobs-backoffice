@@ -1,8 +1,9 @@
 package pubsub
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
+
+	"cloud.google.com/go/pubsub"
 	"github.com/aviseu/jobs-protobuf/build/gen/go/commands/imports"
 	"github.com/google/uuid"
 )
