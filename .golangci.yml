@@ -22,7 +22,6 @@ linters:
   settings:
     errcheck:
       check-type-assertions: false
-      custom-order: true
     gocritic:
       disabled-checks:
         - unnamedResult
